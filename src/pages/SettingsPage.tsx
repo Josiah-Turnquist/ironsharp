@@ -1,7 +1,7 @@
 import AppLayout from "@/components/AppLayout";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Palette } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,13 @@ const SettingsPage = () => {
           <ChevronLeft className="h-4 w-4" /> Back
         </button>
         <h1 className="mb-6 font-serif text-2xl font-bold">Settings</h1>
+
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Appearance</h3>
+        <div className="mb-6">
+          <Button variant="outline" onClick={() => navigate("/themes")} className="h-12 w-full rounded-xl justify-start">
+            <Palette className="mr-3 h-4 w-4" /> Themes
+          </Button>
+        </div>
 
         <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Notifications</h3>
         <div className="mb-6 space-y-4 rounded-xl border border-border bg-card p-4">
