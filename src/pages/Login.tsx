@@ -66,6 +66,9 @@ const Login = () => {
       </Button>
 
       <div className="mt-6 flex flex-col items-center gap-2 text-sm">
+        <Button variant="ghost" onClick={() => navigate("/home")} className="mb-2 text-primary hover:underline text-sm">
+          Preview App →
+        </Button>
         <Link to="/forgot-password" className="text-primary hover:underline">Forgot password?</Link>
         <p className="text-muted-foreground">
           Don't have an account?{" "}

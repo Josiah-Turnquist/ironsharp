@@ -25,6 +25,12 @@ import Profile from "./pages/Profile";
 import SettingsPage from "./pages/SettingsPage";
 import CommunityFeed from "./pages/CommunityFeed";
 import DisciplerNotes from "./pages/DisciplerNotes";
+import FamilyDashboard from "./pages/FamilyDashboard";
+import FamilyOnboarding from "./pages/FamilyOnboarding";
+import AddChildProfile from "./pages/AddChildProfile";
+import ParentDashboard from "./pages/ParentDashboard";
+import YouthHome from "./pages/YouthHome";
+import YouthDevotional from "./pages/YouthDevotional";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,6 +64,12 @@ const App = () => (
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/community" element={<CommunityFeed />} />
               <Route path="/discipler-notes" element={<DisciplerNotes />} />
+              <Route path="/family" element={<FamilyDashboard />} />
+              <Route path="/onboarding/family" element={<FamilyOnboarding />} />
+              <Route path="/family/add-child" element={<AddChildProfile />} />
+              <Route path="/family/parent-dashboard" element={<ParentDashboard />} />
+              <Route path="/youth/home" element={<YouthHome />} />
+              <Route path="/youth/devotional" element={<YouthDevotional />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
