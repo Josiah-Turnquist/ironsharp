@@ -2,9 +2,10 @@ import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Flame, CheckCircle2, Circle, BookOpen } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const sampleMembers = [
-  { name: "You", done: true },
+  { name: "Juan", done: true },
   { name: "Marcus", done: true },
   { name: "David", done: false },
   { name: "Sarah", done: false },
@@ -12,13 +13,17 @@ const sampleMembers = [
 
 const Home = () => {
   const navigate = useNavigate();
+  const { displayName } = useAuth();
+  const firstName = displayName.split(" ")[0];
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
 
   return (
     <AppLayout>
       <div className="mx-auto max-w-lg px-6 py-8">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <h1 className="font-serif text-2xl font-bold">Good Morning</h1>
+          <h1 className="font-serif text-2xl font-bold">{greeting}, {firstName}</h1>
           <div className="flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1">
             <Flame className="h-4 w-4 text-primary" />
             <span className="text-sm font-semibold text-primary">5 day streak</span>

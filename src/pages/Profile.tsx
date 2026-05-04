@@ -1,12 +1,14 @@
 import AppLayout from "@/components/AppLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { Flame, BookOpen, Users, Settings } from "lucide-react";
+import { LogOut, Palette } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 const Profile = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, displayName } = useAuth();
   const navigate = useNavigate();
+  const initials = displayName.split(" ").map(n => n[0]).join("").toUpperCase();
 
   return (
     <AppLayout>
@@ -14,9 +16,9 @@ const Profile = () => {
         {/* Avatar & Name */}
         <div className="mb-6 flex flex-col items-center">
           <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-full bg-card text-2xl font-bold">
-            {user?.email?.[0]?.toUpperCase() || "U"}
+            {initials}
           </div>
-          <h1 className="font-serif text-xl font-bold">{user?.email || "User"}</h1>
+          <h1 className="font-serif text-xl font-bold">{displayName}</h1>
           <p className="text-sm text-muted-foreground">Grace Community Church</p>
         </div>
 
@@ -53,8 +55,11 @@ const Profile = () => {
           <Button variant="outline" onClick={() => navigate("/settings")} className="h-12 w-full rounded-xl justify-start">
             <Settings className="mr-3 h-4 w-4" /> Settings
           </Button>
+          <Button variant="outline" onClick={() => navigate("/themes")} className="h-12 w-full rounded-xl justify-start">
+            <Palette className="mr-3 h-4 w-4" /> Themes
+          </Button>
           <Button variant="outline" onClick={async () => { await signOut(); navigate("/"); }} className="h-12 w-full rounded-xl justify-start text-destructive hover:text-destructive">
-            Log Out
+            <LogOut className="mr-3 h-4 w-4" /> Log Out
           </Button>
         </div>
       </div>
