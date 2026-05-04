@@ -1,7 +1,7 @@
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Flame, CheckCircle2, Circle, BookOpen } from "lucide-react";
+import { Flame, CheckCircle2, Circle, BookOpen, Globe, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const sampleMembers = [
@@ -71,11 +71,31 @@ const Home = () => {
         </div>
 
         {/* Daily Quote */}
-        <div className="rounded-xl bg-card-deep p-4 text-center">
+        <div className="mb-6 rounded-xl bg-card-deep p-4 text-center">
           <p className="font-serif text-sm italic text-muted-foreground">
             "As iron sharpens iron, so one person sharpens another."
           </p>
           <p className="mt-1 text-xs font-medium text-muted-foreground">Proverbs 27:17</p>
+        </div>
+
+        {/* Quick Links — Expansion Features */}
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => navigate("/community")}
+            className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 hover:shadow-md transition-shadow"
+          >
+            <Globe className="h-5 w-5 text-primary" />
+            <span className="text-sm font-medium">Community</span>
+            <span className="text-[10px] text-muted-foreground">Shared devotionals</span>
+          </button>
+          <button
+            onClick={() => navigate("/discipler-notes")}
+            className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 hover:shadow-md transition-shadow"
+          >
+            <Shield className="h-5 w-5 text-primary" />
+            <span className="text-sm font-medium">Discipler Notes</span>
+            <span className="text-[10px] text-muted-foreground">Private feedback</span>
+          </button>
         </div>
       </div>
     </AppLayout>
