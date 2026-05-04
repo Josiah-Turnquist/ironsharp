@@ -3,7 +3,7 @@ import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Headphones, ChevronLeft } from "lucide-react";
+import { Headphones, ChevronLeft, Mic, Square, Play, Smile, Heart, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -39,8 +39,23 @@ const Devotional = () => {
   const [response2, setResponse2] = useState("");
   const [prayer, setPrayer] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [hasRecording, setHasRecording] = useState(false);
+  const [mood, setMood] = useState<string | null>(null);
+  const [gratitude, setGratitude] = useState("");
+  const [accountability, setAccountability] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const toggleRecording = () => {
+    if (isRecording) {
+      setIsRecording(false);
+      setHasRecording(true);
+      toast({ title: "Voice memo saved 🎙️" });
+    } else {
+      setIsRecording(true);
+    }
+  };
 
   const handleSubmit = () => {
     setSubmitted(true);
@@ -124,6 +139,105 @@ const Devotional = () => {
             placeholder="A personal prayer or praise..."
             className="min-h-[80px] rounded-xl"
           />
+        </div>
+
+        {/* Voice Memo */}
+        <div className="mb-6">
+          <h3 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Voice Memo <span className="normal-case font-normal">(optional)</span>
+          </h3>
+          <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
+            <button
+              onClick={toggleRecording}
+              className={`flex h-12 w-12 items-center justify-center rounded-full transition-all ${
+                isRecording
+                  ? "bg-destructive text-destructive-foreground animate-pulse"
+                  : "bg-primary/10 text-primary hover:bg-primary/20"
+              }`}
+            >
+              {isRecording ? <Square className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+            </button>
+            <div className="flex-1">
+              {isRecording ? (
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 flex-1 rounded-full bg-destructive/30">
+                    <div className="h-full w-1/3 animate-pulse rounded-full bg-destructive" />
+                  </div>
+                  <span className="text-xs text-destructive font-medium">Recording...</span>
+                </div>
+              ) : hasRecording ? (
+                <div className="flex items-center gap-2">
+                  <Play className="h-4 w-4 text-primary" />
+                  <div className="h-1.5 flex-1 rounded-full bg-primary/20">
+                    <div className="h-full w-2/3 rounded-full bg-primary" />
+                  </div>
+                  <span className="text-xs text-muted-foreground">0:42</span>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">Record a voice reflection</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Expanded Submissions */}
+        <div className="mb-6">
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Daily Check-In</h3>
+
+          {/* Mood */}
+          <div className="mb-4">
+            <p className="mb-2 text-sm text-muted-foreground">How are you feeling today?</p>
+            <div className="flex gap-2">
+              {[
+                { emoji: "😊", label: "Great" },
+                { emoji: "🙂", label: "Good" },
+                { emoji: "😐", label: "Okay" },
+                { emoji: "😔", label: "Low" },
+                { emoji: "🥲", label: "Struggling" },
+              ].map(m => (
+                <button
+                  key={m.label}
+                  onClick={() => setMood(m.label)}
+                  className={`flex flex-1 flex-col items-center gap-1 rounded-xl border p-2 transition-all ${
+                    mood === m.label
+                      ? "border-primary bg-primary/10"
+                      : "border-border hover:border-primary/40"
+                  }`}
+                >
+                  <span className="text-lg">{m.emoji}</span>
+                  <span className="text-[10px] text-muted-foreground">{m.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Gratitude */}
+          <div className="mb-4">
+            <div className="mb-2 flex items-center gap-1.5">
+              <Heart className="h-3.5 w-3.5 text-primary" />
+              <p className="text-sm text-muted-foreground">One thing you're grateful for</p>
+            </div>
+            <Textarea
+              value={gratitude}
+              onChange={e => setGratitude(e.target.value)}
+              placeholder="Today I'm thankful for..."
+              className="min-h-[60px] rounded-xl"
+            />
+          </div>
+
+          {/* Accountability */}
+          <div>
+            <div className="mb-2 flex items-center gap-1.5">
+              <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+              <p className="text-sm text-muted-foreground">Accountability check-in</p>
+            </div>
+            <Textarea
+              value={accountability}
+              onChange={e => setAccountability(e.target.value)}
+              placeholder="How did you do with yesterday's commitment?"
+              className="min-h-[60px] rounded-xl"
+            />
+          </div>
         </div>
 
         <Button
