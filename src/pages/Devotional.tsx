@@ -4,7 +4,7 @@ import DevotionalHub from "@/components/devotional/DevotionalHub";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Headphones, ChevronLeft, Mic, Square, Play } from "lucide-react";
+import { Headphones, ChevronLeft, Mic, Square, Play, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -187,6 +187,18 @@ const Devotional = () => {
               )}
             </div>
           </div>
+        </div>
+
+        {/* Discipler Notes */}
+        <div className="mb-6 rounded-xl border border-border bg-card p-4">
+          <div className="mb-2 flex items-center gap-2">
+            <Shield className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Discipler Notes</h3>
+          </div>
+          <p className="text-sm italic text-muted-foreground">
+            "Great reflection on verse 6 — keep pressing into that tension between honesty and love. Praying for you this week."
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground">— Marcus, 2 days ago</p>
         </div>
 
         <Button
