@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, BookOpen } from "lucide-react";
+import { Flame, BookOpen, Plus } from "lucide-react";
 
 /* ── colour tokens per plan type ── */
 const typeColors: Record<string, string> = {
@@ -11,70 +11,56 @@ const typeColors: Record<string, string> = {
   group: "#B8A86A",
 };
 
-const typeLabels: Record<string, string> = {
-  community: "WITH THE COMMUNITY",
-  partner: "WITH MARCUS",
-  family: "WITH THE FAMILY",
-  group: "SMALL GROUP — THE FORGE",
-};
-
 interface PlanCard {
   id: string;
   type: "community" | "partner" | "family" | "group";
+  name: string;
   reference: string;
-  planName: string;
   day: number;
   totalDays: number;
-  doneCount: number;
-  memberCount: number;
+  streak: number;
   tagline: string;
-  hasPodcast?: boolean;
 }
 
 const mockPlans: PlanCard[] = [
   {
     id: "1",
     type: "community",
+    name: "Community Plan",
     reference: "Proverbs 27",
-    planName: "Proverbs — Wisdom for the Journey",
     day: 14,
     totalDays: 30,
-    doneCount: 4200,
-    memberCount: 6800,
-    tagline: "4.2K have completed today",
-    hasPodcast: true,
+    streak: 14,
+    tagline: "4.2K completed today",
   },
   {
     id: "2",
     type: "partner",
+    name: "Marcus & Me",
     reference: "James 1",
-    planName: "James — Faith Under Fire",
     day: 5,
     totalDays: 7,
-    doneCount: 1,
-    memberCount: 2,
+    streak: 5,
     tagline: "Marcus finished · your turn",
   },
   {
     id: "3",
     type: "family",
+    name: "The Johnsons",
     reference: "Psalm 23",
-    planName: "Psalms for the Family",
     day: 3,
     totalDays: 14,
-    doneCount: 2,
-    memberCount: 4,
-    tagline: "Mom & Dad finished · 2 remaining",
+    streak: 3,
+    tagline: "2 of 4 done today",
   },
   {
     id: "4",
     type: "group",
+    name: "The Forge",
     reference: "Romans 8",
-    planName: "Romans — Identity in Christ",
     day: 10,
     totalDays: 30,
-    doneCount: 3,
-    memberCount: 5,
+    streak: 7,
     tagline: "3 of 5 done today",
   },
 ];
@@ -84,44 +70,12 @@ interface Props {
 }
 
 const DevotionalHub = ({ onOpenPlan }: Props) => {
-  const activePlans = mockPlans.filter((p) => p.type !== "community");
-  const slotsUsed = activePlans.length; // max 3
-
-  const today = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
-
   return (
-    <div className="mx-auto max-w-lg px-5 py-6">
-      {/* Header */}
-      <div className="mb-1">
-        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          {today}
-        </p>
-        <h1 className="font-serif text-2xl font-bold">Your Active Plans</h1>
-      </div>
-
-      {/* 3-slot indicator */}
-      <div className="mb-5 flex items-center gap-2">
-        {[0, 1, 2].map((i) => (
-          <span
-            key={i}
-            className="inline-block h-2 w-2 rounded-full transition-colors"
-            style={{
-              backgroundColor:
-                i < slotsUsed
-                  ? "hsl(var(--primary))"
-                  : "hsl(var(--muted))",
-              border: i < slotsUsed ? "none" : "1px solid hsl(var(--border))",
-            }}
-          />
-        ))}
-        <span className="ml-1 text-[11px] text-muted-foreground">
-          {slotsUsed}/3 plan slots
-        </span>
-      </div>
+    <div className="mx-auto max-w-lg px-6 py-8">
+      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        Your Daily Reading
+      </p>
+      <h1 className="mb-6 font-serif text-2xl font-bold">Devotionals</h1>
 
       {/* Plan cards */}
       <div className="space-y-4">
@@ -132,72 +86,45 @@ const DevotionalHub = ({ onOpenPlan }: Props) => {
           return (
             <div
               key={plan.id}
-              className="relative overflow-hidden rounded-2xl border border-border bg-card"
+              className="overflow-hidden rounded-2xl border border-border bg-card"
             >
               {/* Accent bar */}
-              <div
-                className="h-1 w-full"
-                style={{ backgroundColor: accent }}
-              />
+              <div className="h-[3px] w-full" style={{ backgroundColor: accent }} />
 
               <div className="px-4 py-4">
-                {/* Type label + podcast badge */}
-                <div className="mb-2 flex items-center gap-2">
-                  <span
-                    className="text-[10px] font-bold tracking-widest"
-                    style={{ color: accent }}
-                  >
-                    {typeLabels[plan.type]}
-                  </span>
-                  {plan.hasPodcast && (
-                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-semibold text-primary">
-                      🎙 PODCAST
-                    </span>
-                  )}
+                {/* Name + streak */}
+                <div className="flex items-start justify-between">
+                  <h2 className="font-serif text-lg font-bold leading-tight">
+                    {plan.name}
+                  </h2>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Flame className="h-3.5 w-3.5" />
+                    <span className="font-semibold">{plan.streak}</span>
+                  </div>
                 </div>
 
-                {/* Reference + plan name */}
-                <h2 className="font-serif text-lg font-semibold leading-tight">
-                  {plan.reference}{" "}
-                  <span className="font-sans text-sm font-normal text-muted-foreground">
-                    · {plan.planName}
-                  </span>
-                </h2>
-
-                {/* Day counter */}
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Day {plan.day} of {plan.totalDays}
+                {/* Subtitle */}
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {plan.reference} · Day {plan.day}/{plan.totalDays}
                 </p>
 
-                {/* Tagline + done count */}
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">
-                    {plan.tagline}
-                  </span>
-                  <span className="text-xs font-medium text-foreground">
-                    {typeof plan.doneCount === "number" && plan.doneCount > 999
-                      ? `${(plan.doneCount / 1000).toFixed(1)}K`
-                      : plan.doneCount}
-                    /
-                    {typeof plan.memberCount === "number" &&
-                    plan.memberCount > 999
-                      ? `${(plan.memberCount / 1000).toFixed(1)}K`
-                      : plan.memberCount}
-                  </span>
+                {/* Progress bar */}
+                <div className="mt-3">
+                  <Progress value={pct} className="h-[2px]" />
                 </div>
 
-                {/* Progress bar */}
-                <div className="mt-2">
-                  <Progress value={pct} className="h-1.5" />
-                </div>
+                {/* Tagline */}
+                <p className="mt-2 text-xs italic text-muted-foreground">
+                  {plan.tagline}
+                </p>
 
                 {/* Open button */}
                 <Button
+                  className="mt-3 w-full rounded-xl text-sm font-semibold text-white"
+                  style={{ backgroundColor: accent }}
                   onClick={() => onOpenPlan(plan.id)}
-                  className="mt-4 w-full rounded-xl text-sm font-semibold"
                 >
-                  Open Today's Reading
-                  <ChevronRight className="ml-1 h-4 w-4" />
+                  Open Today's Reading →
                 </Button>
               </div>
             </div>
@@ -206,13 +133,10 @@ const DevotionalHub = ({ onOpenPlan }: Props) => {
       </div>
 
       {/* Browse Plans */}
-      <Button
-        variant="outline"
-        className="mt-6 w-full rounded-xl border-dashed"
-      >
-        <BookOpen className="mr-2 h-4 w-4" />
+      <button className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border py-4 text-sm font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary">
+        <Plus className="h-4 w-4" />
         Browse Plans
-      </Button>
+      </button>
     </div>
   );
 };

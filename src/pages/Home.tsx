@@ -1,7 +1,7 @@
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Flame, CheckCircle2, Circle, BookOpen, Globe, Shield } from "lucide-react";
+import { Flame, CheckCircle2, Circle, BookOpen, Globe } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const sampleMembers = [
@@ -78,25 +78,17 @@ const Home = () => {
           <p className="mt-1 text-xs font-medium text-muted-foreground">Proverbs 27:17</p>
         </div>
 
-        {/* Quick Links — Expansion Features */}
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => navigate("/community")}
-            className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 hover:shadow-md transition-shadow"
-          >
-            <Globe className="h-5 w-5 text-primary" />
+        {/* Community */}
+        <button
+          onClick={() => navigate("/community")}
+          className="flex w-full items-center gap-3 rounded-xl border border-border bg-card p-4 hover:shadow-md transition-shadow"
+        >
+          <Globe className="h-5 w-5 text-primary" />
+          <div className="text-left">
             <span className="text-sm font-medium">Community</span>
-            <span className="text-[10px] text-muted-foreground">Shared devotionals</span>
-          </button>
-          <button
-            onClick={() => navigate("/discipler-notes")}
-            className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 hover:shadow-md transition-shadow"
-          >
-            <Shield className="h-5 w-5 text-primary" />
-            <span className="text-sm font-medium">Discipler Notes</span>
-            <span className="text-[10px] text-muted-foreground">Private feedback</span>
-          </button>
-        </div>
+            <p className="text-[10px] text-muted-foreground">Shared devotionals</p>
+          </div>
+        </button>
       </div>
     </AppLayout>
   );
