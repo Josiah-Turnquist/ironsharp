@@ -31,6 +31,7 @@ import AddChildProfile from "./pages/AddChildProfile";
 import ParentDashboard from "./pages/ParentDashboard";
 import YouthHome from "./pages/YouthHome";
 import YouthDevotional from "./pages/YouthDevotional";
+import Plans from "./pages/Plans";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -59,6 +60,7 @@ const App = () => (
               <Route path="/waiting" element={<Waiting />} />
               <Route path="/compare" element={<CompareNotes />} />
               <Route path="/groups" element={<Groups />} />
+              <Route path="/plans" element={<Plans />} />
               <Route path="/themes" element={<ThemePicker />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<SettingsPage />} />
