@@ -1,22 +1,26 @@
-## Add Personal Devotional Card to Home Screen
 
-The existing "Today's Devotional Card" on the Home screen currently points to the group/plan-based Devotional Hub. The user wants a separate **Personal Devotional** card — the user's own time with God, independent of any group — placed directly above Group Progress.
+## Home Screen Changes (`src/pages/Home.tsx`)
 
-### Changes
+1. **Remove** the "Today's Devotional" group reading card (Day 5 of 7 / Proverbs 27)
+2. **Promote "My Time with God"** as the main, prominent card at the top (below greeting/streak) with:
+   - Larger, more prominent styling
+   - A scripture preview snippet (a few opening verses from the current reading) so there's substance
+3. **Move the "Iron sharpens iron" quote** to sit directly below the personal devotional card
+4. **Remove** the Group Progress section entirely
+5. **Replace** the full-width Community button with two half-width tiles side by side:
+   - **Community Devotional** (renamed from "Community") -- navigates to `/community`
+   - **Podcast** -- a new tile (placeholder/coming soon for now)
 
-**`src/pages/Home.tsx`**
-- Add a new "My Devotional" card between the existing Today's Devotional card and Group Progress.
-- The card will have its own distinct feel — a personal, quieter tone:
-  - A subtle icon (e.g., `Heart` or `Sun`) to differentiate from the group-linked card above.
-  - Title like "Personal Devotional" or "My Time with God."
-  - A short prompt or scripture snippet and a "Begin Reading" action link.
-  - Tapping navigates to a personal devotional reading flow (for now, can route to a placeholder or reuse the existing reading view with a personal context flag).
-- Positioned right above the "Group Progress" section.
-
-### Layout order on Home screen (after change)
+**New Home layout order:**
 1. Greeting + streak
-2. Today's Devotional (group plan card — existing)
-3. **Personal Devotional (new)**
-4. Group Progress
-5. Daily Quote
-6. Community button
+2. Personal Devotional (prominent, with verse preview)
+3. Daily quote ("Iron sharpens iron")
+4. Two tiles: Community Devotional | Podcast
+
+## Profile Changes (`src/pages/Profile.tsx`)
+
+1. **Remove** the "My Groups" section entirely
+2. **Remove** the standalone "Themes" button (Themes is already accessible from Settings page)
+
+## No changes needed to Settings
+The Themes button already exists inside `SettingsPage.tsx`, so that flow is already correct.
