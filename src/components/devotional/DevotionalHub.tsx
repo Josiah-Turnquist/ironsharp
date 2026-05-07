@@ -132,11 +132,6 @@ const DevotionalHub = ({ onOpenPlan }: Props) => {
         })}
       </div>
 
-      {/* Browse Plans */}
-      <button className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border py-4 text-sm font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary">
-        <Plus className="h-4 w-4" />
-        Browse Plans
-      </button>
     </div>
   );
 };
