@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Flame, BookOpen, Plus } from "lucide-react";
+import { Flame, BookOpen } from "lucide-react";
 
 /* ── colour tokens per plan type ── */
 const typeColors: Record<string, string> = {
