@@ -3,13 +3,68 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Flame, BookOpen, Globe, Sun, Headphones } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface ActiveDevotional {
+  planTitle: string;
+  chapter: string;
+  theme: string | null;
+  currentDay: number;
+  totalDays: number;
+  planId: string;
+}
 
 const Home = () => {
   const navigate = useNavigate();
-  const { displayName } = useAuth();
+  const { displayName, user } = useAuth();
   const firstName = displayName.split(" ")[0];
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
+
+  const [activeDevotional, setActiveDevotional] = useState<ActiveDevotional | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    const load = async () => {
+      // Get user's most recent active plan
+      const { data: progress } = await supabase
+        .from("user_plan_progress")
+        .select("plan_id, current_day")
+        .eq("user_id", user.id)
+        .is("completed_at", null)
+        .order("started_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!progress) return;
+
+      const { data: plan } = await supabase
+        .from("devotional_plans")
+        .select("id, title, total_days")
+        .eq("id", progress.plan_id)
+        .single();
+
+      const { data: day } = await supabase
+        .from("devotional_days")
+        .select("chapter, theme")
+        .eq("plan_id", progress.plan_id)
+        .eq("day_number", progress.current_day)
+        .single();
+
+      if (plan && day) {
+        setActiveDevotional({
+          planTitle: plan.title,
+          chapter: day.chapter,
+          theme: day.theme,
+          currentDay: progress.current_day,
+          totalDays: plan.total_days,
+          planId: plan.id,
+        });
+      }
+    };
+    load();
+  }, [user]);
 
   return (
     <AppLayout>
@@ -25,16 +80,21 @@ const Home = () => {
 
         {/* Personal Devotional — Main Highlight */}
         <button
-          onClick={() => navigate("/devotional")}
+          onClick={() => navigate(activeDevotional ? `/devotional?plan=${activeDevotional.planId}` : "/devotional")}
           className="mb-6 w-full rounded-2xl border border-border bg-card p-6 text-left shadow-sm hover:shadow-md transition-shadow"
         >
           <div className="mb-3 flex items-center gap-2">
             <Sun className="h-5 w-5 text-primary" />
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">My Time with God</h2>
           </div>
-          <h3 className="mb-2 font-serif text-xl font-bold">Psalm 46</h3>
+          <p className="mb-1 text-xs text-muted-foreground">
+            {activeDevotional ? `${activeDevotional.planTitle} · Day ${activeDevotional.currentDay} of ${activeDevotional.totalDays}` : "Start a plan to begin"}
+          </p>
+          <h3 className="mb-2 font-serif text-xl font-bold">
+            {activeDevotional?.chapter || "Choose a Plan"}
+          </h3>
           <p className="mb-3 font-serif text-sm italic text-muted-foreground leading-relaxed">
-            "God is our refuge and strength, a very present help in trouble. Therefore we will not fear though the earth gives way, though the mountains be moved into the heart of the sea..."
+            {activeDevotional?.theme || "Head to Plans to pick your first devotional and start your journey."}
           </p>
           <div className="flex items-center gap-2 pt-1">
             <BookOpen className="h-4 w-4 text-primary" />
