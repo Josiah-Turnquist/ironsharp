@@ -14,7 +14,124 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      devotional_days: {
+        Row: {
+          chapter: string
+          commentary: string
+          created_at: string
+          day_number: number
+          id: string
+          plan_id: string
+          reflection_q1: string
+          reflection_q2: string
+          theme: string | null
+        }
+        Insert: {
+          chapter: string
+          commentary: string
+          created_at?: string
+          day_number: number
+          id?: string
+          plan_id: string
+          reflection_q1: string
+          reflection_q2: string
+          theme?: string | null
+        }
+        Update: {
+          chapter?: string
+          commentary?: string
+          created_at?: string
+          day_number?: number
+          id?: string
+          plan_id?: string
+          reflection_q1?: string
+          reflection_q2?: string
+          theme?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "devotional_days_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "devotional_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      devotional_plans: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          how_to_use: string | null
+          id: string
+          image_url: string | null
+          subtitle: string | null
+          title: string
+          total_days: number
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          how_to_use?: string | null
+          id?: string
+          image_url?: string | null
+          subtitle?: string | null
+          title: string
+          total_days?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          how_to_use?: string | null
+          id?: string
+          image_url?: string | null
+          subtitle?: string | null
+          title?: string
+          total_days?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_plan_progress: {
+        Row: {
+          completed_at: string | null
+          current_day: number
+          id: string
+          plan_id: string
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          current_day?: number
+          id?: string
+          plan_id: string
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          current_day?: number
+          id?: string
+          plan_id?: string
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_plan_progress_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "devotional_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -1,38 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AppLayout from "@/components/AppLayout";
 import DevotionalHub from "@/components/devotional/DevotionalHub";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Headphones, ChevronLeft, Mic, Square, Play, Shield } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 const translations = ["NIV", "ESV", "NLT", "KJV", "NKJV", "CSB", "MSG"];
 
-const passageText = `Do not boast about tomorrow, for you do not know what a day may bring.
+interface DayContent {
+  chapter: string;
+  theme: string | null;
+  commentary: string;
+  reflection_q1: string;
+  reflection_q2: string;
+  day_number: number;
+  plan_id: string;
+}
 
-Let someone else praise you, and not your own mouth; an outsider, and not your own lips.
-
-Stone is heavy and sand a burden, but a fool's provocation is heavier than both.
-
-Anger is cruel and fury overwhelming, but who can stand before jealousy?
-
-Better is open rebuke than hidden love.
-
-Faithful are the wounds of a friend; profuse are the kisses of an enemy.
-
-One who is full loathes honey from the comb, but to the hungry even what is bitter tastes sweet.
-
-Like a bird that flees its nest is anyone who flees from home.
-
-Perfume and incense bring joy to the heart, and the pleasantness of a friend springs from their heartfelt advice.
-
-Do not forsake your friend or a friend of your family, and do not go to your relative's house when disaster strikes you — better a neighbor nearby than a relative far away.
-
-As iron sharpens iron, so one person sharpens another.`;
-
-const commentary = `Proverbs 27 is a chapter about the value of honest, close relationships. Solomon contrasts the wounds of a faithful friend with the flattery of an enemy — reminding us that real love sometimes tells hard truths. This chapter celebrates proximity, loyalty, and the refining power of doing life with others.`;
+interface PlanInfo {
+  id: string;
+  title: string;
+  total_days: number;
+  how_to_use: string | null;
+}
 
 const Devotional = () => {
   const [translation, setTranslation] = useState("NIV");
@@ -43,8 +38,85 @@ const Devotional = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [hasRecording, setHasRecording] = useState(false);
   const [activePlanId, setActivePlanId] = useState<string | null>(null);
+  const [dayContent, setDayContent] = useState<DayContent | null>(null);
+  const [planInfo, setPlanInfo] = useState<PlanInfo | null>(null);
+  const [currentDay, setCurrentDay] = useState(1);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  // If navigated from Plans page with a category, load the first plan in that category
+  useEffect(() => {
+    const category = searchParams.get("category");
+    const planId = searchParams.get("plan");
+    if (planId) {
+      setActivePlanId(planId);
+    } else if (category) {
+      const loadCategoryPlan = async () => {
+        const { data } = await supabase
+          .from("devotional_plans")
+          .select("id")
+          .eq("category", category)
+          .limit(1)
+          .single();
+        if (data) setActivePlanId(data.id);
+      };
+      loadCategoryPlan();
+    }
+  }, [searchParams]);
+
+  // Load plan info and day content when activePlanId changes
+  useEffect(() => {
+    if (!activePlanId) {
+      setDayContent(null);
+      setPlanInfo(null);
+      return;
+    }
+
+    const loadContent = async () => {
+      // Get plan info
+      const { data: plan } = await supabase
+        .from("devotional_plans")
+        .select("id, title, total_days, how_to_use")
+        .eq("id", activePlanId)
+        .single();
+      if (plan) setPlanInfo(plan);
+
+      // Check user progress
+      let day = 1;
+      if (user) {
+        const { data: progress } = await supabase
+          .from("user_plan_progress")
+          .select("current_day")
+          .eq("plan_id", activePlanId)
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (progress) {
+          day = progress.current_day;
+        } else {
+          // Start the plan
+          await supabase.from("user_plan_progress").insert({
+            user_id: user.id,
+            plan_id: activePlanId,
+            current_day: 1,
+          });
+        }
+      }
+      setCurrentDay(day);
+
+      // Get day content
+      const { data: dayData } = await supabase
+        .from("devotional_days")
+        .select("*")
+        .eq("plan_id", activePlanId)
+        .eq("day_number", day)
+        .single();
+      if (dayData) setDayContent(dayData);
+    };
+
+    loadContent();
+  }, [activePlanId, user]);
 
   const toggleRecording = () => {
     if (isRecording) {
@@ -59,7 +131,46 @@ const Devotional = () => {
   const handleSubmit = () => {
     setSubmitted(true);
     toast({ title: "Devotional submitted! 🙏" });
-    navigate("/waiting");
+
+    // Advance day if not at end
+    if (user && activePlanId && planInfo && currentDay < planInfo.total_days) {
+      const nextDay = currentDay + 1;
+      supabase
+        .from("user_plan_progress")
+        .update({ current_day: nextDay })
+        .eq("user_id", user.id)
+        .eq("plan_id", activePlanId)
+        .then(() => {
+          setCurrentDay(nextDay);
+          // Load next day's content
+          supabase
+            .from("devotional_days")
+            .select("*")
+            .eq("plan_id", activePlanId)
+            .eq("day_number", nextDay)
+            .single()
+            .then(({ data }) => {
+              if (data) setDayContent(data);
+              setSubmitted(false);
+              setResponse1("");
+              setResponse2("");
+              setPrayer("");
+            });
+        });
+    } else if (user && activePlanId) {
+      // Mark completed
+      supabase
+        .from("user_plan_progress")
+        .update({ completed_at: new Date().toISOString() })
+        .eq("user_id", user.id)
+        .eq("plan_id", activePlanId)
+        .then(() => {
+          toast({ title: "Plan completed! 🎉" });
+          navigate("/waiting");
+        });
+    } else {
+      navigate("/waiting");
+    }
   };
 
   // Hub view
@@ -77,7 +188,7 @@ const Devotional = () => {
       <div className="mx-auto max-w-lg px-6 py-6">
         {/* Top bar */}
         <div className="mb-4 flex items-center justify-between">
-          <button onClick={() => setActivePlanId(null)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+          <button onClick={() => { setActivePlanId(null); navigate("/devotional", { replace: true }); }} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
             <ChevronLeft className="h-4 w-4" /> Back
           </button>
           <Select value={translation} onValueChange={setTranslation}>
@@ -93,23 +204,27 @@ const Devotional = () => {
         {/* Title */}
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Day 5 of 7</p>
-            <h1 className="font-serif text-2xl font-bold">Proverbs 27</h1>
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Day {currentDay} of {planInfo?.total_days || 7}
+            </p>
+            <h1 className="font-serif text-2xl font-bold">{dayContent?.chapter || "Loading..."}</h1>
           </div>
           <button className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
             <Headphones className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Passage */}
+        {/* Theme */}
+        {dayContent?.theme && (
         <div className="mb-6 rounded-xl bg-card p-5">
-          <p className="font-serif text-base leading-relaxed whitespace-pre-line">{passageText}</p>
+          <p className="font-serif text-base italic leading-relaxed text-muted-foreground">{dayContent.theme}</p>
         </div>
+        )}
 
         {/* Commentary */}
         <div className="mb-6">
           <h3 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Context</h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">{commentary}</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">{dayContent?.commentary || ""}</p>
         </div>
 
         {/* Questions */}
@@ -117,7 +232,7 @@ const Devotional = () => {
           <div>
             <h3 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Reflect</h3>
             <p className="mb-3 font-serif text-base italic">
-              Where in your own life right now does this passage hit closest to home?
+              {dayContent?.reflection_q1 || ""}
             </p>
             <Textarea
               value={response1}
@@ -128,7 +243,7 @@ const Devotional = () => {
           </div>
           <div>
             <p className="mb-3 font-serif text-base italic">
-              What is God asking you to step into or let go of based on what you just read?
+              {dayContent?.reflection_q2 || ""}
             </p>
             <Textarea
               value={response2}

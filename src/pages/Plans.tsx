@@ -1,5 +1,8 @@
 import AppLayout from "@/components/AppLayout";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 import menImg from "@/assets/plans/mens-devotional.jpg";
 import womenImg from "@/assets/plans/womens-devotional.jpg";
@@ -33,6 +36,42 @@ const categories: PlanCategory[] = [
 
 const Plans = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [planCounts, setPlanCounts] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      const { data } = await supabase
+        .from("devotional_plans")
+        .select("id, category");
+      if (data) {
+        const counts: Record<string, number> = {};
+        data.forEach((p) => {
+          const cat = p.category;
+          counts[cat] = (counts[cat] || 0) + 1;
+        });
+        setPlanCounts(counts);
+      }
+    };
+    fetchCounts();
+  }, []);
+
+  const getCategoryCount = (catId: string) => {
+    const mapping: Record<string, string> = {
+      men: "men",
+      women: "women",
+      fathers: "fathers",
+      mothers: "mothers",
+      family: "family",
+      marriage: "marriage",
+      youth: "youth",
+      "new-believer": "new-believer",
+      general: "general",
+    };
+    const dbCat = mapping[catId] || catId;
+    const count = planCounts[dbCat] || 0;
+    return count > 0 ? `${count} Plan${count !== 1 ? "s" : ""}` : "Coming Soon";
+  };
 
   return (
     <AppLayout>
@@ -46,7 +85,15 @@ const Plans = () => {
           {categories.map((cat) => (
             <button
               key={cat.id}
-              onClick={() => toast({ title: `${cat.title} — Coming Soon` })}
+              onClick={() => {
+                const dbCat = cat.id;
+                const count = planCounts[dbCat] || 0;
+                if (count > 0) {
+                  navigate(`/devotional?category=${dbCat}`);
+                } else {
+                  toast({ title: `${cat.title} — Coming Soon` });
+                }
+              }}
               className="group relative overflow-hidden rounded-2xl text-left"
               style={{ aspectRatio: "4/5" }}
             >
@@ -75,7 +122,7 @@ const Plans = () => {
                 <h3 className="font-serif text-base font-bold uppercase leading-tight text-white">
                   {cat.title}
                 </h3>
-                <p className="mt-0.5 text-xs text-white/70">{cat.subtitle}</p>
+                <p className="mt-0.5 text-xs text-white/70">{getCategoryCount(cat.id)}</p>
               </div>
             </button>
           ))}
