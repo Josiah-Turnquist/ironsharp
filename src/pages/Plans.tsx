@@ -89,7 +89,7 @@ const Plans = () => {
                 const dbCat = cat.id;
                 const count = planCounts[dbCat] || 0;
                 if (count > 0) {
-                  navigate(`/devotional?category=${dbCat}`);
+                  navigate(`/plans/${dbCat}`);
                 } else {
                   toast({ title: `${cat.title} — Coming Soon` });
                 }
