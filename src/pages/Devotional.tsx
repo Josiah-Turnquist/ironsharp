@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import AppLayout from "@/components/AppLayout";
 import DevotionalHub from "@/components/devotional/DevotionalHub";
+import StudyNotesDrawer from "@/components/devotional/StudyNotesDrawer";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -226,6 +227,15 @@ const Devotional = () => {
           <h3 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Context</h3>
           <p className="text-sm leading-relaxed text-muted-foreground">{dayContent?.commentary || ""}</p>
         </div>
+
+        {/* Study Notes Drawer */}
+        {activePlanId && dayContent && (
+          <StudyNotesDrawer
+            planId={activePlanId}
+            dayNumber={currentDay}
+            passageReference={dayContent.chapter}
+          />
+        )}
 
         {/* Questions */}
         <div className="mb-6 space-y-5">
