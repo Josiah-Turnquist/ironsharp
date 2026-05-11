@@ -49,7 +49,7 @@ const mockGroups: GroupData[] = [
   },
   {
     id: "2",
-    name: "The Johnsons",
+    name: "Aguilar Family",
     type: "family",
     reference: "Psalm 23",
     day: 3,
