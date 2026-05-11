@@ -76,6 +76,12 @@ const Devotional = () => {
   const [completedToday, setCompletedToday] = useState(false);
   const [completedDay, setCompletedDay] = useState<number | null>(null);
   const [encouragement, setEncouragement] = useState(() => encouragementVerses[Math.floor(Math.random() * encouragementVerses.length)]);
+  const [contextOpen, setContextOpen] = useState(false);
+
+  // Reset context drawer when day changes
+  useEffect(() => {
+    setContextOpen(false);
+  }, [activePlanId, currentDay]);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
