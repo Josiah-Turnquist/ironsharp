@@ -1,57 +1,51 @@
-## Goals
+## 1. Drag-to-reorder on Groups page
 
-1. Make the personal devotional **actually functional** by wiring scripture to a free Bible API.
-2. Declutter the Devotionals hub and Groups page.
-3. Keep Community / Discipler / Family / Forge as visible-but-static placeholder cards, with the user's **Personal Plan pinned at the top** and the rest reorderable.
+Mirror the same native drag pattern used in `DevotionalHub.tsx`:
+- Add a drag handle (`GripVertical` icon) on the left of each collapsed group row in `src/pages/Groups.tsx`.
+- Use HTML5 drag events (`draggable`, `onDragStart`, `onDragOver`, `onDrop`) on the row container, same approach as the hub.
+- Persist the order in `localStorage` under `ironsharp.groups_order`, hydrating on mount.
+- Disable drag while a row is expanded (to avoid conflicts with the expand toggle).
+- Tapping the row body still expands; the handle is the only drag affordance.
 
----
+## 2. "Done. Come back tomorrow." completion screen
 
-## 1. Free Bible translations (functional scripture)
+Replace the auto-advance behavior in `handleSubmit` (`src/pages/Devotional.tsx`):
 
-Use **bible-api.com** (free, no key, CORS-enabled). Supports KJV, WEB, ASV, BBE, plus a few others. NIV/ESV/NLT are paywalled, so the translation dropdown will be trimmed to the free set:
+- On submit:
+  - Save progress (advance `current_day` in `user_plan_progress` so tomorrow opens the next day).
+  - **Do not** load the next day's content into view.
+  - Set a `completedToday` state and render a full-card completion view in place of the devotional.
 
-- KJV (default)
-- WEB (World English Bible — modern readable)
-- ASV
-- BBE (Bible in Basic English)
+- Completion view contents:
+  - Large serif headline: **"Done. Come back tomorrow."**
+  - Subline: "Day {currentDay} of {totalDays} complete."
+  - A rotating **encouragement verse** card (verse text + reference) — picked randomly from a local array of ~15 short, public-domain verses (e.g. Joshua 1:9, Phil 4:13, Isaiah 40:31, Lam 3:22-23, Psalm 1:2-3, etc.). Different verse each time the user lands on this state.
+  - A single secondary button: "Back to Devotionals" → navigates to `/devotional` (hub).
+  - No "Next Day" button. No preview of tomorrow's chapter.
 
-In `Devotional.tsx`:
-- When `dayContent.chapter` loads (e.g. "Proverbs 27"), fetch `https://bible-api.com/proverbs+27?translation=kjv` and render the verses in a new "Scripture" card above the Context section.
-- Refetch when translation changes.
-- Show loading + graceful error state.
-- Note above the dropdown: "Free public-domain translations."
+- If it was the final day of the plan, show a celebratory variant instead: "Plan complete." with the same encouragement verse pattern and a CTA to `/plans`.
 
-## 2. Declutter Devotionals hub (`DevotionalHub.tsx`)
+## 3. Lock tomorrow's devotional until tomorrow
 
-Current: 4 equally-weighted card blocks, each with accent bar, streak, progress, tagline, and full-width button — visually heavy.
+Today we let users keep submitting back-to-back days. New behavior:
 
-New layout:
-- **Personal Plan card (hero, top, prominent):** larger, full design treatment — title, today's chapter, day X/Y, progress bar, primary "Continue Reading" button. Pulls from `user_plan_progress` (same query as Home).
-- **Other plans (compact rows):** Community Plan, Me & My Discipler, Me & My Family, The Forge. Each is a slim row: small accent dot, name, subtitle ("Day 5 of 7" placeholder), tap opens a small toast "Coming soon — this is a preview." No streak chips, no progress bars, no big tagline, no full-width buttons.
-- Remove the "4.2K completed today / Marcus finished / 2 of 4 done" example taglines.
-- Add a subtle **drag handle** on the four non-personal rows (using `@dnd-kit/core` already common, or a lighter `react-beautiful-dnd`-free approach with HTML5 drag). Personal Plan is fixed at top and not draggable.
-- Persist order in `localStorage` (`ironsharp.devotional_order`) — no DB schema change needed since these are placeholders.
+- Track `last_completed_at` so we know whether today's day is already done. Two options for storing this — recommended is option **A** since it avoids a schema change:
+  - **A (chosen):** Persist `ironsharp.last_completed:{planId}` = ISO date string in `localStorage` on submit. On mount, if today's date matches, the devotional renders the "Done. Come back tomorrow." view instead of the form.
+  - B (alternative, requires migration): Add `last_completed_at timestamptz` to `user_plan_progress`. Skip unless you want server-side enforcement.
 
-If no active personal plan exists, the hero card shows a "Choose a plan" CTA linking to `/plans`.
+- On the Devotional page load:
+  - If `last_completed:{planId}` === today (local date), short-circuit to the completion view (same UI as #2) using the **just-completed** day number.
+  - Otherwise, render the normal devotional form for `current_day`.
 
-## 3. Declutter Groups page (`Groups.tsx`)
-
-Same philosophy:
-- Collapse each group card to a compact row by default: accent dot, name, subtitle ("Family · Psalm 23"), chevron.
-- Remove the always-visible avatars, progress bar, streak, "Open Devotional" button, and "Start a New Group" dashed CTA from the default view.
-- Tapping a row expands inline to show member list + Invite/Settings buttons (reuse existing expanded panel code).
-- Keep "Start a New Group" but move it to a small text link at the bottom rather than a large dashed block.
+- The Devotional Hub's "Continue Reading" button still routes here; the page itself decides whether to show the form or the locked/done state. No surprise preview of tomorrow's content anywhere.
 
 ## 4. Files touched
 
-- `src/components/devotional/DevotionalHub.tsx` — rewrite layout (hero + compact rows + reorder).
-- `src/pages/Devotional.tsx` — add Scripture fetch from bible-api.com, trim translation list to free options.
-- `src/pages/Groups.tsx` — collapse default row, slim footer CTA.
+- `src/pages/Groups.tsx` — add drag-to-reorder + handle + localStorage persistence.
+- `src/pages/Devotional.tsx` — rework `handleSubmit`, add completion view + encouragement-verse rotation, add today-lock check on mount.
 
-No database migrations. No new dependencies (drag handled with a tiny native-drag implementation; falls back to up/down arrow buttons if needed).
-
----
+No database migrations. No new dependencies.
 
 ## Open question
 
-For the four non-personal cards on the Devotionals hub — should tapping them do **nothing** (just show "Coming soon"), or open a read-only mock view? You said "not necessarily have them be functioning," so I'm defaulting to a toast + no navigation. Let me know if you'd prefer otherwise after you see it.
+For the encouragement verses on the completion screen — do you want them pulled from the same `bible-api.com` integration (live, current translation) or hardcoded as a small curated list (faster, always works offline)? Defaulting to **hardcoded curated list** for reliability; easy to swap later.

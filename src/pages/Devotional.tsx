@@ -19,6 +19,28 @@ const translations = [
   { id: "bbe", label: "BBE" },
 ];
 
+// Curated short, public-domain encouragement verses (KJV) shown after a daily devotional is completed.
+const encouragementVerses: { ref: string; text: string }[] = [
+  { ref: "Joshua 1:9", text: "Be strong and of a good courage; be not afraid, neither be thou dismayed: for the Lord thy God is with thee whithersoever thou goest." },
+  { ref: "Philippians 4:13", text: "I can do all things through Christ which strengtheneth me." },
+  { ref: "Isaiah 40:31", text: "They that wait upon the Lord shall renew their strength; they shall mount up with wings as eagles." },
+  { ref: "Lamentations 3:22-23", text: "His compassions fail not. They are new every morning: great is thy faithfulness." },
+  { ref: "Psalm 1:2-3", text: "His delight is in the law of the Lord… and he shall be like a tree planted by the rivers of water." },
+  { ref: "Proverbs 3:5-6", text: "Trust in the Lord with all thine heart; and lean not unto thine own understanding." },
+  { ref: "Romans 8:28", text: "All things work together for good to them that love God, to them who are the called according to his purpose." },
+  { ref: "2 Timothy 1:7", text: "God hath not given us the spirit of fear; but of power, and of love, and of a sound mind." },
+  { ref: "Psalm 46:10", text: "Be still, and know that I am God." },
+  { ref: "Matthew 11:28", text: "Come unto me, all ye that labour and are heavy laden, and I will give you rest." },
+  { ref: "Hebrews 12:1", text: "Let us run with patience the race that is set before us." },
+  { ref: "1 Corinthians 16:13", text: "Watch ye, stand fast in the faith, quit you like men, be strong." },
+  { ref: "Psalm 23:1", text: "The Lord is my shepherd; I shall not want." },
+  { ref: "Galatians 6:9", text: "Let us not be weary in well doing: for in due season we shall reap, if we faint not." },
+  { ref: "Zephaniah 3:17", text: "The Lord thy God in the midst of thee is mighty; he will save, he will rejoice over thee with joy." },
+];
+
+const todayKey = () => new Date().toISOString().slice(0, 10);
+const lockKey = (planId: string) => `ironsharp.last_completed:${planId}`;
+
 interface DayContent {
   chapter: string;
   theme: string | null;
@@ -51,6 +73,9 @@ const Devotional = () => {
   const [dayContent, setDayContent] = useState<DayContent | null>(null);
   const [planInfo, setPlanInfo] = useState<PlanInfo | null>(null);
   const [currentDay, setCurrentDay] = useState(1);
+  const [completedToday, setCompletedToday] = useState(false);
+  const [completedDay, setCompletedDay] = useState<number | null>(null);
+  const [encouragement, setEncouragement] = useState(() => encouragementVerses[Math.floor(Math.random() * encouragementVerses.length)]);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
@@ -81,8 +106,20 @@ const Devotional = () => {
     if (!activePlanId) {
       setDayContent(null);
       setPlanInfo(null);
+      setCompletedToday(false);
       return;
     }
+
+    // Check today-lock: if user already submitted today for this plan, show completion view
+    try {
+      const last = localStorage.getItem(lockKey(activePlanId));
+      if (last === todayKey()) {
+        setCompletedToday(true);
+        setEncouragement(encouragementVerses[Math.floor(Math.random() * encouragementVerses.length)]);
+      } else {
+        setCompletedToday(false);
+      }
+    } catch {}
 
     const loadContent = async () => {
       // Get plan info
@@ -123,6 +160,10 @@ const Devotional = () => {
         .eq("day_number", day)
         .single();
       if (dayData) setDayContent(dayData);
+      // The day shown for "Day X complete" if locked is the previous (just-finished) day
+      if (localStorage.getItem(lockKey(activePlanId)) === todayKey()) {
+        setCompletedDay(Math.max(1, day - 1));
+      }
     };
 
     loadContent();
@@ -173,46 +214,43 @@ const Devotional = () => {
 
   const handleSubmit = () => {
     setSubmitted(true);
-    toast({ title: "Devotional submitted! 🙏" });
+    toast({ title: "Devotional submitted 🙏" });
 
-    // Advance day if not at end
-    if (user && activePlanId && planInfo && currentDay < planInfo.total_days) {
-      const nextDay = currentDay + 1;
+    // Lock today for this plan
+    if (activePlanId) {
+      try { localStorage.setItem(lockKey(activePlanId), todayKey()); } catch {}
+    }
+
+    // Pick a fresh encouragement verse for the completion screen
+    setEncouragement(encouragementVerses[Math.floor(Math.random() * encouragementVerses.length)]);
+    setCompletedDay(currentDay);
+
+    const isFinalDay = !!(planInfo && currentDay >= planInfo.total_days);
+
+    if (user && activePlanId && !isFinalDay) {
+      // Advance the stored current_day so tomorrow opens the next day — but DO NOT load it now.
       supabase
         .from("user_plan_progress")
-        .update({ current_day: nextDay })
+        .update({ current_day: currentDay + 1 })
         .eq("user_id", user.id)
         .eq("plan_id", activePlanId)
         .then(() => {
-          setCurrentDay(nextDay);
-          // Load next day's content
-          supabase
-            .from("devotional_days")
-            .select("*")
-            .eq("plan_id", activePlanId)
-            .eq("day_number", nextDay)
-            .single()
-            .then(({ data }) => {
-              if (data) setDayContent(data);
-              setSubmitted(false);
-              setResponse1("");
-              setResponse2("");
-              setPrayer("");
-            });
+          setCompletedToday(true);
+          setSubmitted(false);
         });
-    } else if (user && activePlanId) {
-      // Mark completed
+    } else if (user && activePlanId && isFinalDay) {
       supabase
         .from("user_plan_progress")
         .update({ completed_at: new Date().toISOString() })
         .eq("user_id", user.id)
         .eq("plan_id", activePlanId)
         .then(() => {
-          toast({ title: "Plan completed! 🎉" });
-          navigate("/waiting");
+          setCompletedToday(true);
+          setSubmitted(false);
         });
     } else {
-      navigate("/waiting");
+      setCompletedToday(true);
+      setSubmitted(false);
     }
   };
 
@@ -221,6 +259,62 @@ const Devotional = () => {
     return (
       <AppLayout>
         <DevotionalHub onOpenPlan={(id) => setActivePlanId(id)} />
+      </AppLayout>
+    );
+  }
+
+  // Completion / locked view — shown after submit OR if today was already completed
+  if (completedToday) {
+    const isFinalDay = !!(planInfo && (completedDay ?? currentDay) >= planInfo.total_days);
+    return (
+      <AppLayout>
+        <div className="mx-auto max-w-lg px-6 py-10">
+          <button
+            onClick={() => { setActivePlanId(null); navigate("/devotional", { replace: true }); }}
+            className="mb-8 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          >
+            <ChevronLeft className="h-4 w-4" /> Back
+          </button>
+
+          <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">
+              {isFinalDay ? "Plan Complete" : "Today's Reading"}
+            </p>
+            <h1 className="mt-2 font-serif text-3xl font-bold leading-tight">
+              {isFinalDay ? "Plan complete." : "Done. Come back tomorrow."}
+            </h1>
+            {planInfo && (
+              <p className="mt-2 text-sm text-muted-foreground">
+                Day {completedDay ?? currentDay} of {planInfo.total_days} complete.
+              </p>
+            )}
+
+            <div className="mt-8 rounded-xl bg-background/60 p-5 text-left">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                A word for today
+              </p>
+              <p className="mt-2 font-serif text-base italic leading-relaxed">
+                "{encouragement.text}"
+              </p>
+              <p className="mt-2 text-xs font-semibold text-primary">— {encouragement.ref}</p>
+            </div>
+
+            <Button
+              variant="outline"
+              className="mt-8 h-11 w-full rounded-xl"
+              onClick={() => {
+                if (isFinalDay) {
+                  navigate("/plans");
+                } else {
+                  setActivePlanId(null);
+                  navigate("/devotional", { replace: true });
+                }
+              }}
+            >
+              {isFinalDay ? "Browse Plans" : "Back to Devotionals"}
+            </Button>
+          </div>
+        </div>
       </AppLayout>
     );
   }
