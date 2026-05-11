@@ -338,7 +338,17 @@ const Devotional = () => {
       <div className="mx-auto max-w-lg px-6 py-6">
         {/* Top bar */}
         <div className="mb-4 flex items-center justify-between">
-          <button onClick={() => { setActivePlanId(null); navigate("/devotional", { replace: true }); }} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+          <button
+            onClick={() => {
+              if (reviewMode && activePlanId) {
+                navigate(`/plans/completed/${activePlanId}`);
+              } else {
+                setActivePlanId(null);
+                navigate("/devotional", { replace: true });
+              }
+            }}
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          >
             <ChevronLeft className="h-4 w-4" /> Back
           </button>
           <Select value={translation} onValueChange={setTranslation}>
@@ -447,6 +457,19 @@ const Devotional = () => {
           />
         )}
 
+        {reviewMode && (
+          <div className="mb-6 rounded-xl border border-accent/40 bg-accent/5 px-4 py-3 text-center">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-accent">
+              Review mode · read-only
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              You've already completed this plan. Reflections aren't editable here.
+            </p>
+          </div>
+        )}
+
+        {!reviewMode && (
+          <>
         {/* Questions */}
         <div className="mb-6 space-y-5">
           <div>
@@ -543,6 +566,8 @@ const Devotional = () => {
         >
           {submitted ? "Submitted ✓" : "Submit"}
         </Button>
+          </>
+        )}
       </div>
     </AppLayout>
   );
