@@ -1,6 +1,6 @@
 import { useState } from "react";
 import AppLayout from "@/components/AppLayout";
-import { ChevronDown, ChevronUp, UserPlus, Settings, Plus, Check, Minus } from "lucide-react";
+import { ChevronDown, ChevronUp, UserPlus, Settings, Plus, Check, Minus, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
@@ -83,6 +83,42 @@ const mockGroups: GroupData[] = [
 const Groups = () => {
   const { toast } = useToast();
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const ORDER_KEY = "ironsharp.groups_order";
+  const [order, setOrder] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(ORDER_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as string[];
+        // Ensure any new groups not in saved order are appended
+        const ids = mockGroups.map((g) => g.id);
+        const merged = [...parsed.filter((id) => ids.includes(id)), ...ids.filter((id) => !parsed.includes(id))];
+        return merged;
+      }
+    } catch {}
+    return mockGroups.map((g) => g.id);
+  });
+  const [dragId, setDragId] = useState<string | null>(null);
+
+  const persistOrder = (next: string[]) => {
+    setOrder(next);
+    try { localStorage.setItem(ORDER_KEY, JSON.stringify(next)); } catch {}
+  };
+
+  const handleDrop = (targetId: string) => {
+    if (!dragId || dragId === targetId) return;
+    const next = [...order];
+    const from = next.indexOf(dragId);
+    const to = next.indexOf(targetId);
+    if (from < 0 || to < 0) return;
+    next.splice(from, 1);
+    next.splice(to, 0, dragId);
+    persistOrder(next);
+    setDragId(null);
+  };
+
+  const orderedGroups = order
+    .map((id) => mockGroups.find((g) => g.id === id))
+    .filter(Boolean) as GroupData[];
 
   return (
     <AppLayout>
@@ -90,10 +126,13 @@ const Groups = () => {
         <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           Your Relationships
         </p>
-        <h1 className="mb-6 font-serif text-2xl font-bold">Groups</h1>
+        <h1 className="font-serif text-2xl font-bold">Groups</h1>
+        <p className="mb-4 mt-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+          Drag to reorder
+        </p>
 
         <div className="space-y-2">
-          {mockGroups.map((group) => {
+          {orderedGroups.map((group) => {
             const accent = typeColors[group.type];
             const expanded = expandedId === group.id;
             const doneCount = group.members.filter((m) => m.doneToday).length;
@@ -101,13 +140,21 @@ const Groups = () => {
             return (
               <div
                 key={group.id}
-                className="overflow-hidden rounded-xl border border-border bg-card"
+                draggable={!expanded}
+                onDragStart={() => setDragId(group.id)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => handleDrop(group.id)}
+                onDragEnd={() => setDragId(null)}
+                className={`overflow-hidden rounded-xl border border-border bg-card transition-opacity ${
+                  dragId === group.id ? "opacity-50" : ""
+                }`}
               >
                 {/* Compact row */}
                 <button
                   onClick={() => setExpandedId(expanded ? null : group.id)}
                   className="flex w-full items-center gap-3 px-3 py-3 text-left"
                 >
+                  <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground" />
                   <div
                     className="h-8 w-1 shrink-0 rounded-full"
                     style={{ backgroundColor: accent }}
