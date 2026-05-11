@@ -357,13 +357,6 @@ const Devotional = () => {
           </button>
         </div>
 
-        {/* Theme */}
-        {dayContent?.theme && (
-        <div className="mb-6 rounded-xl bg-card p-5">
-          <p className="font-serif text-base italic leading-relaxed text-muted-foreground">{dayContent.theme}</p>
-        </div>
-        )}
-
         {/* Scripture */}
         <div className="mb-6">
           <div className="mb-2 flex items-center justify-between">
@@ -390,11 +383,53 @@ const Devotional = () => {
           </div>
         </div>
 
-        {/* Commentary */}
-        <div className="mb-6">
-          <h3 className="mb-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Context</h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">{dayContent?.commentary || ""}</p>
-        </div>
+        {/* Context Drawer */}
+        {dayContent?.commentary && (
+          <div className="mb-6">
+            <button
+              onClick={() => setContextOpen((o) => !o)}
+              aria-expanded={contextOpen}
+              className={`flex w-full items-center justify-between border border-border bg-[hsl(var(--card-deep))] px-4 py-3 transition-colors hover:bg-[hsl(var(--card-deep))]/80 ${
+                contextOpen ? "rounded-t-xl" : "rounded-xl"
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
+                <span
+                  className="font-serif text-[11px] uppercase text-muted-foreground"
+                  style={{ letterSpacing: "0.5px" }}
+                >
+                  Open Context
+                </span>
+              </span>
+              <ChevronDown
+                className={`h-4 w-4 text-muted-foreground/70 transition-transform duration-200 ${
+                  contextOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            <div
+              className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
+                contextOpen ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
+              }`}
+            >
+              <div className="rounded-b-xl border border-t-0 border-border bg-[hsl(var(--card))]/60 px-4 py-4">
+                <p
+                  className="mb-3 text-[9px] font-semibold uppercase text-muted-foreground/70"
+                  style={{ letterSpacing: "2px" }}
+                >
+                  Context · {dayContent.chapter}
+                </p>
+                <p
+                  className="font-serif text-[12px] text-muted-foreground"
+                  style={{ lineHeight: 1.7 }}
+                >
+                  {dayContent.commentary}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Study Notes Drawer */}
         {activePlanId && dayContent && (
