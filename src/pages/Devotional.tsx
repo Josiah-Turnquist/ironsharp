@@ -86,6 +86,8 @@ const Devotional = () => {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { user } = useAuth();
+  const reviewMode = searchParams.get("review") === "1";
+  const reviewDayParam = parseInt(searchParams.get("day") || "", 10);
 
   // If navigated from Plans page with a category, load the first plan in that category
   useEffect(() => {
@@ -117,7 +119,10 @@ const Devotional = () => {
     }
 
     // Check today-lock: if user already submitted today for this plan, show completion view
-    try {
+    // Skip in review mode — reviewing past plans should always render the chapter.
+    if (reviewMode) {
+      setCompletedToday(false);
+    } else try {
       const last = localStorage.getItem(lockKey(activePlanId));
       if (last === todayKey()) {
         setCompletedToday(true);
@@ -138,7 +143,9 @@ const Devotional = () => {
 
       // Check user progress
       let day = 1;
-      if (user) {
+      if (reviewMode && !Number.isNaN(reviewDayParam) && reviewDayParam > 0) {
+        day = reviewDayParam;
+      } else if (user) {
         const { data: progress } = await supabase
           .from("user_plan_progress")
           .select("current_day")
@@ -167,13 +174,13 @@ const Devotional = () => {
         .single();
       if (dayData) setDayContent(dayData);
       // The day shown for "Day X complete" if locked is the previous (just-finished) day
-      if (localStorage.getItem(lockKey(activePlanId)) === todayKey()) {
+      if (!reviewMode && localStorage.getItem(lockKey(activePlanId)) === todayKey()) {
         setCompletedDay(Math.max(1, day - 1));
       }
     };
 
     loadContent();
-  }, [activePlanId, user]);
+  }, [activePlanId, user, reviewMode, reviewDayParam]);
 
   // Fetch scripture text from free Bible API whenever chapter or translation changes
   useEffect(() => {
