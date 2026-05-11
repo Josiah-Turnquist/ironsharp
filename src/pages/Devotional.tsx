@@ -5,7 +5,7 @@ import StudyNotesDrawer from "@/components/devotional/StudyNotesDrawer";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Headphones, ChevronLeft, Mic, Square, Play, Shield } from "lucide-react";
+import { Headphones, ChevronLeft, Mic, Square, Play, Shield, BookOpen, ChevronDown } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
