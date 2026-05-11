@@ -98,40 +98,40 @@ const Plans = () => {
         </p>
         <h1 className="mb-6 font-serif text-2xl font-bold">Plans</h1>
 
-        {/* Pinned Completed tile — matches category tile look */}
-        <button
-          onClick={() => {
-            if (completedCount > 0) navigate("/plans/completed");
-          }}
-          disabled={completedCount === 0}
-          className="group relative mb-3 block w-full overflow-hidden rounded-2xl text-left disabled:cursor-default disabled:opacity-70"
-          style={{ aspectRatio: "16/9" }}
-        >
-          <img
-            src={completedImg}
-            alt="Completed plans"
-            loading="lazy"
-            width={1024}
-            height={576}
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-          <div className="absolute right-2 top-2">
-            <span className="rounded-md bg-black/50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
-              {completedCount > 0 ? `${completedCount} Done` : "Empty"}
-            </span>
-          </div>
-          <div className="absolute bottom-0 left-0 right-0 p-3">
-            <h3 className="font-serif text-base font-bold uppercase leading-tight text-white">
-              Completed
-            </h3>
-            <p className="mt-0.5 text-xs text-white/70">
-              {completedCount > 0 ? "Tap to revisit" : "Nothing yet"}
-            </p>
-          </div>
-        </button>
-
         <div className="grid grid-cols-2 gap-3">
+          {/* Pinned Completed tile — same dimensions as category tiles */}
+          <button
+            onClick={() => {
+              if (completedCount > 0) navigate("/plans/completed");
+            }}
+            disabled={completedCount === 0}
+            className="group relative overflow-hidden rounded-2xl text-left disabled:cursor-default disabled:opacity-70"
+            style={{ aspectRatio: "4/5" }}
+          >
+            <img
+              src={completedImg}
+              alt="Completed plans"
+              loading="lazy"
+              width={512}
+              height={640}
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+            <div className="absolute right-2 top-2">
+              <span className="rounded-md bg-black/50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
+                {completedCount > 0 ? `${completedCount} Done` : "Empty"}
+              </span>
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 p-3">
+              <h3 className="font-serif text-base font-bold uppercase leading-tight text-white">
+                Completed
+              </h3>
+              <p className="mt-0.5 text-xs text-white/70">
+                {completedCount > 0 ? "Tap to revisit" : "Nothing yet"}
+              </p>
+            </div>
+          </button>
+
           {categories.map((cat) => (
             <button
               key={cat.id}
