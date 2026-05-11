@@ -24,7 +24,7 @@ interface PlaceholderPlan {
 const defaultPlaceholders: PlaceholderPlan[] = [
   { id: "community", type: "community", name: "Community Plan", subtitle: "Proverbs 27 · Day 14/30" },
   { id: "partner", type: "partner", name: "Me & My Discipler", subtitle: "James 1 · Day 5/7" },
-  { id: "family", type: "family", name: "Me & My Family", subtitle: "Psalm 23 · Day 3/14" },
+  { id: "family", type: "family", name: "Aguilar Family", subtitle: "Psalm 23 · Day 3/14" },
   { id: "group", type: "group", name: "The Forge", subtitle: "Romans 8 · Day 10/30" },
 ];
 
