@@ -1,35 +1,36 @@
-# Fix drag-to-reorder on mobile
+# Updated IronSharp Overview Deck (v2)
 
-## Why it's broken
+Refresh the existing overview presentation with current product state, fold in the pricing one-pager, and add a slide on additional revenue streams (excluding podcast).
 
-Both reorder lists use the browser's **native HTML5 drag-and-drop** (`draggable`, `onDragStart`, `onDrop`):
+## Deck structure (12 slides)
 
-- `src/components/devotional/DevotionalHub.tsx` — Shared Plans list
-- `src/pages/Groups.tsx` — Groups list
+1. **Title** — IronSharp · "Sharpen each other. Every day." · Proverbs 27:17
+2. **The Problem** — Solo devotional apps; no accountability, no community, no depth
+3. **The Solution** — Read together → Reflect honestly → Wait & compare → Stay accountable
+4. **The Daily Flow** — Read · Reflect · Record · Submit · Compare
+5. **Key Features** — Scripture reading, streaks, roles, voice memos, group progress, blind submissions
+6. **Roles & Relationships** — Discipler · Disciple · Accountability Partner
+7. **Now in the App** *(updated)* — Devotional Hub with up to 3 active plans, Plan Library shelves (7/14/30-day), completion celebration, 5 themes (Vesper/Parchment/Sage/Dusk/Slate), Google + email auth
+8. **Plans & Pricing** *(new)* — Four tiers in a card grid: Free · Connect $18/yr · Sharpen $40/yr (most popular) · Family $55/yr
+9. **Pricing At a Glance** *(new)* — Compact feature comparison table
+10. **Beyond Subscriptions** *(new, podcast omitted)* — Church Licensing, Plan Sponsorships, Brand-Sponsored Themed Plans (additional ideas: gift subscriptions, ministry/seminary bulk licenses, branded merch — kept brief)
+11. **On the Roadmap** *(updated, podcast removed)* — Family Plan, Community Feed, Leader Analytics, Discipler Side-Notes
+12. **Closing** — "Ready to sharpen each other?"
 
-The HTML5 drag API only fires from mouse input. iOS Safari and most mobile browsers don't translate touches into drag events, so on a phone the tiles never start dragging. This is a well-known limitation, not a bug in your code.
+## Design
 
-## The fix
+- Reuse the Vesper-inspired dark palette to match the app: deep slate background, warm parchment text, muted gold accent.
+- Playfair Display (serif) for titles/scripture, DM Sans for body — matches IronSharp brand.
+- "Most Popular" pricing card highlighted with the gold accent border.
+- No accent lines under titles; rely on color and whitespace.
 
-Replace the native drag handlers with **`@dnd-kit`** — the standard React DnD library that works seamlessly with both mouse and touch (via PointerSensor + TouchSensor with a small activation delay so taps still register as taps).
+## Process
 
-### Steps
-
-1. Install `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`.
-2. Refactor the **Shared Plans** list in `DevotionalHub.tsx`:
-   - Wrap the list in `DndContext` + `SortableContext` (vertical strategy).
-   - Make each row a `useSortable` item. Keep the `GripVertical` icon as the drag handle (attach listeners only to the handle so the rest of the card stays tappable for the "Coming soon" toast).
-   - Persist the new order to `localStorage` exactly as today (`ironsharp.devotional_order`).
-3. Same refactor in `Groups.tsx`:
-   - Disable dragging when a group is `expanded` (preserve current behavior).
-   - Keep all existing click/expand/long-press behavior intact.
-4. Configure sensors so:
-   - **Touch**: small delay (~150ms) + tolerance, so scrolling the page still works and quick taps are not hijacked.
-   - **Mouse**: small distance threshold (~5px) so clicks still register normally on desktop.
-5. Manual QA on the mobile preview (440px viewport): long-press the grip handle on a Shared Plan and on a Group, drag, release — order persists after reload.
+1. Generate deck with `pptxgenjs` to `/mnt/documents/IronSharp_Overview_v2.pptx`.
+2. Render every slide to JPG and visually QA each one for overflow, contrast, and alignment; fix and re-render until clean.
+3. Deliver via `<presentation-artifact>` tag.
 
 ## Out of scope
 
-- No visual redesign of the rows.
-- No backend or data-model changes.
-- No changes to tap/expand behavior beyond what's needed to coexist with the drag handle.
+- Podcast slide and podcast sponsorship row (per your instruction).
+- No code or app changes.
