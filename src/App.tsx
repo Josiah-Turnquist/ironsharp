@@ -35,6 +35,7 @@ import Plans from "./pages/Plans";
 import PlanList from "./pages/PlanList";
 import CompletedPlans from "./pages/CompletedPlans";
 import CompletedPlanReview from "./pages/CompletedPlanReview";
+import HelpCenter from "./pages/HelpCenter";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -70,6 +71,7 @@ const App = () => (
               <Route path="/themes" element={<ThemePicker />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/help" element={<HelpCenter />} />
               <Route path="/community" element={<CommunityFeed />} />
               <Route path="/discipler-notes" element={<DisciplerNotes />} />
               <Route path="/family" element={<FamilyDashboard />} />
