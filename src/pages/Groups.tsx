@@ -1,7 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import AppLayout from "@/components/AppLayout";
-import { ChevronDown, ChevronUp, UserPlus, Settings, Plus, Check, Minus, GripVertical, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, UserPlus, Settings, Plus, Check, Minus, GripVertical, Loader2, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -63,9 +67,19 @@ const Groups = () => {
   const [order, setOrder] = useState<string[]>([]);
   const [dragId, setDragId] = useState<string | null>(null);
 
-  useEffect(() => {
+  // Dialog state
+  const [createOpen, setCreateOpen] = useState(false);
+  const [joinOpen, setJoinOpen] = useState(false);
+  const [editGroup, setEditGroup] = useState<GroupData | null>(null);
+  const [newName, setNewName] = useState("");
+  const [newType, setNewType] = useState<"one-on-one" | "family" | "small-group">("small-group");
+  const [joinCode, setJoinCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [editName, setEditName] = useState("");
+
+  const loadGroups = useCallback(async () => {
     if (!user) return;
-    (async () => {
+    setLoading(true);
       // 1. Groups the user is a member of
       const { data: gms } = await supabase
         .from("group_members")
@@ -152,8 +166,82 @@ const Groups = () => {
         setOrder(built.map((g) => g.id));
       }
       setLoading(false);
-    })();
   }, [user]);
+
+  useEffect(() => { loadGroups(); }, [loadGroups]);
+
+  const handleCreate = async () => {
+    if (!user || !newName.trim()) return;
+    setBusy(true);
+    const { data: g, error } = await supabase
+      .from("groups")
+      .insert({ name: newName.trim(), group_type: newType, created_by: user.id })
+      .select("id")
+      .single();
+    if (error || !g) {
+      setBusy(false);
+      toast({ title: "Could not create group", description: error?.message, variant: "destructive" });
+      return;
+    }
+    const { error: memErr } = await supabase
+      .from("group_members")
+      .insert({ group_id: g.id, user_id: user.id, member_role: "owner" });
+    setBusy(false);
+    if (memErr) {
+      toast({ title: "Group created but join failed", description: memErr.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Group created", description: newName.trim() });
+    setNewName(""); setCreateOpen(false);
+    loadGroups();
+  };
+
+  const handleJoin = async () => {
+    if (!user || !joinCode.trim()) return;
+    setBusy(true);
+    const code = joinCode.trim().toUpperCase();
+    const { data: g } = await supabase
+      .from("groups")
+      .select("id, name")
+      .eq("invite_code", code)
+      .maybeSingle();
+    if (!g) {
+      setBusy(false);
+      toast({ title: "Invite code not found", variant: "destructive" });
+      return;
+    }
+    const { error } = await supabase
+      .from("group_members")
+      .insert({ group_id: g.id, user_id: user.id, member_role: "member" });
+    setBusy(false);
+    if (error) {
+      toast({ title: "Could not join", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Joined group", description: g.name });
+    setJoinCode(""); setJoinOpen(false);
+    loadGroups();
+  };
+
+  const handleRename = async () => {
+    if (!editGroup || !editName.trim()) return;
+    setBusy(true);
+    const { error } = await supabase.from("groups").update({ name: editName.trim() }).eq("id", editGroup.id);
+    setBusy(false);
+    if (error) { toast({ title: "Rename failed", description: error.message, variant: "destructive" }); return; }
+    toast({ title: "Group renamed" });
+    setEditGroup(null);
+    loadGroups();
+  };
+
+  const handleLeave = async (groupId: string) => {
+    if (!user) return;
+    const { error } = await supabase.from("group_members").delete().eq("group_id", groupId).eq("user_id", user.id);
+    if (error) { toast({ title: "Could not leave", description: error.message, variant: "destructive" }); return; }
+    toast({ title: "Left group" });
+    setEditGroup(null);
+    loadGroups();
+  };
 
   const persistOrder = (next: string[]) => {
     setOrder(next);
@@ -273,11 +361,12 @@ const Groups = () => {
                         className="flex-1 rounded-xl text-xs"
                         onClick={(e) => {
                           e.stopPropagation();
-                          toast({ title: "Settings coming soon" });
+                          setEditName(group.name);
+                          setEditGroup(group);
                         }}
                       >
-                        <Settings className="mr-1 h-3.5 w-3.5" />
-                        Settings
+                        <Pencil className="mr-1 h-3.5 w-3.5" />
+                        Edit
                       </Button>
                     </div>
                   </div>
@@ -289,13 +378,80 @@ const Groups = () => {
           </SortableContext>
         </DndContext>
 
-        <button
-          onClick={() => toast({ title: "New group flow coming soon" })}
-          className="mt-6 flex w-full items-center justify-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Start a new group
-        </button>
+        <div className="mt-6 flex flex-col gap-2">
+          <Button onClick={() => setCreateOpen(true)} className="h-11 w-full rounded-xl">
+            <Plus className="mr-1.5 h-4 w-4" /> Start a new group
+          </Button>
+          <Button variant="outline" onClick={() => setJoinOpen(true)} className="h-11 w-full rounded-xl">
+            <UserPlus className="mr-1.5 h-4 w-4" /> Join with invite code
+          </Button>
+        </div>
+
+        {/* Create group dialog */}
+        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Start a new group</DialogTitle>
+              <DialogDescription>Pick a name and type. You can invite others after.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="g-name">Group name</Label>
+                <Input id="g-name" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. The Forge" className="mt-1" />
+              </div>
+              <div>
+                <Label>Type</Label>
+                <Select value={newType} onValueChange={(v) => setNewType(v as any)}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="one-on-one">One-on-One</SelectItem>
+                    <SelectItem value="family">Family</SelectItem>
+                    <SelectItem value="small-group">Small Group</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setCreateOpen(false)} disabled={busy}>Cancel</Button>
+              <Button onClick={handleCreate} disabled={busy || !newName.trim()}>{busy ? "Creating..." : "Create"}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Join group dialog */}
+        <Dialog open={joinOpen} onOpenChange={setJoinOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Join a group</DialogTitle>
+              <DialogDescription>Enter the invite code shared with you.</DialogDescription>
+            </DialogHeader>
+            <Input value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase())} placeholder="ABC12345" className="font-mono tracking-widest" />
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setJoinOpen(false)} disabled={busy}>Cancel</Button>
+              <Button onClick={handleJoin} disabled={busy || !joinCode.trim()}>{busy ? "Joining..." : "Join"}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit group dialog */}
+        <Dialog open={!!editGroup} onOpenChange={(o) => { if (!o) setEditGroup(null); }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit group</DialogTitle>
+              <DialogDescription>Rename or leave this group.</DialogDescription>
+            </DialogHeader>
+            <div>
+              <Label htmlFor="edit-name">Group name</Label>
+              <Input id="edit-name" value={editName} onChange={(e) => setEditName(e.target.value)} className="mt-1" />
+            </div>
+            <DialogFooter className="flex-col-reverse sm:flex-row">
+              <Button variant="ghost" onClick={() => editGroup && handleLeave(editGroup.id)} className="text-destructive hover:text-destructive">
+                <Trash2 className="mr-1.5 h-4 w-4" /> Leave group
+              </Button>
+              <Button onClick={handleRename} disabled={busy || !editName.trim()}>{busy ? "Saving..." : "Save"}</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </AppLayout>
   );

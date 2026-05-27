@@ -5,6 +5,7 @@ import { Flame, BookOpen, Globe, Sun, Headphones } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface ActiveDevotional {
   planTitle: string;
@@ -17,6 +18,7 @@ interface ActiveDevotional {
 
 const Home = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { displayName, user } = useAuth();
   const firstName = displayName.split(" ")[0];
   const hour = new Date().getHours();
@@ -131,7 +133,7 @@ const Home = () => {
             </div>
           </button>
           <button
-            onClick={() => {}}
+            onClick={() => toast({ title: "Podcast coming soon" })}
             className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 hover:shadow-md transition-shadow"
           >
             <Headphones className="h-5 w-5 text-primary" />
