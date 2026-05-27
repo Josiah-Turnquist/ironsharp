@@ -17,7 +17,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({ user: null, session: null, loading: true, isDemo: false, displayName: "", signOut: async () => {} });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(DEMO_MODE ? DEMO_USER : null);
+  const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(DEMO_MODE ? false : true);
 
