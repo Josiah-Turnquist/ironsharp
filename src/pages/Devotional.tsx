@@ -236,7 +236,6 @@ const Devotional = () => {
 
   const handleSubmit = () => {
     setSubmitted(true);
-    toast({ title: "Devotional submitted 🙏" });
 
     // Lock today for this plan
     if (activePlanId) {
@@ -248,6 +247,37 @@ const Devotional = () => {
     setCompletedDay(currentDay);
 
     const isFinalDay = !!(planInfo && currentDay >= planInfo.total_days);
+
+    // Persist the submission
+    if (user && activePlanId) {
+      supabase
+        .from("devotional_submissions")
+        .upsert(
+          {
+            user_id: user.id,
+            plan_id: activePlanId,
+            day_number: currentDay,
+            response1,
+            response2,
+            prayer: prayer || null,
+            q1_private: q1Private,
+            q2_private: q2Private,
+            prayer_private: prayerPrivate,
+            voice_memo_private: voiceMemoPrivate,
+            submission_source: "typed",
+          },
+          { onConflict: "user_id,plan_id,day_number" }
+        )
+        .then(({ error }) => {
+          if (error) {
+            toast({ title: "Couldn't save", description: error.message, variant: "destructive" });
+          } else {
+            toast({ title: "Devotional submitted 🙏" });
+          }
+        });
+    } else {
+      toast({ title: "Devotional submitted 🙏" });
+    }
 
     if (user && activePlanId && !isFinalDay) {
       // Advance the stored current_day so tomorrow opens the next day — but DO NOT load it now.
