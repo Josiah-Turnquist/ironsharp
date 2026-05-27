@@ -97,6 +97,245 @@ export type Database = {
         }
         Relationships: []
       }
+      devotional_submissions: {
+        Row: {
+          day_number: number
+          id: string
+          plan_id: string
+          prayer: string | null
+          prayer_private: boolean
+          q1_private: boolean
+          q2_private: boolean
+          response1: string | null
+          response2: string | null
+          submission_source: string
+          submitted_at: string
+          updated_at: string
+          user_id: string
+          voice_memo_private: boolean
+          voice_memo_url: string | null
+        }
+        Insert: {
+          day_number: number
+          id?: string
+          plan_id: string
+          prayer?: string | null
+          prayer_private?: boolean
+          q1_private?: boolean
+          q2_private?: boolean
+          response1?: string | null
+          response2?: string | null
+          submission_source?: string
+          submitted_at?: string
+          updated_at?: string
+          user_id: string
+          voice_memo_private?: boolean
+          voice_memo_url?: string | null
+        }
+        Update: {
+          day_number?: number
+          id?: string
+          plan_id?: string
+          prayer?: string | null
+          prayer_private?: boolean
+          q1_private?: boolean
+          q2_private?: boolean
+          response1?: string | null
+          response2?: string | null
+          submission_source?: string
+          submitted_at?: string
+          updated_at?: string
+          user_id?: string
+          voice_memo_private?: boolean
+          voice_memo_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "devotional_submissions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "devotional_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      disciple_relationships: {
+        Row: {
+          created_at: string
+          disciple_id: string
+          discipler_id: string
+          id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          disciple_id: string
+          discipler_id: string
+          id?: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          disciple_id?: string
+          discipler_id?: string
+          id?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      discipler_notes: {
+        Row: {
+          created_at: string
+          from_user_id: string
+          id: string
+          note: string
+          related_submission_id: string | null
+          to_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          from_user_id: string
+          id?: string
+          note: string
+          related_submission_id?: string | null
+          to_user_id: string
+        }
+        Update: {
+          created_at?: string
+          from_user_id?: string
+          id?: string
+          note?: string
+          related_submission_id?: string | null
+          to_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discipler_notes_related_submission_id_fkey"
+            columns: ["related_submission_id"]
+            isOneToOne: false
+            referencedRelation: "devotional_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_members: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string
+          member_role: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string
+          member_role?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string
+          member_role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      groups: {
+        Row: {
+          created_at: string
+          created_by: string
+          current_day: number
+          current_plan_id: string | null
+          group_type: string
+          id: string
+          invite_code: string
+          name: string
+          streak_count: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          current_day?: number
+          current_plan_id?: string | null
+          group_type: string
+          id?: string
+          invite_code?: string
+          name: string
+          streak_count?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          current_day?: number
+          current_plan_id?: string | null
+          group_type?: string
+          id?: string
+          invite_code?: string
+          name?: string
+          streak_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "groups_current_plan_id_fkey"
+            columns: ["current_plan_id"]
+            isOneToOne: false
+            referencedRelation: "devotional_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          church_name: string | null
+          created_at: string
+          display_name: string
+          id: string
+          primary_role: string
+          streak_count: number
+          total_completed: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          church_name?: string | null
+          created_at?: string
+          display_name: string
+          id?: string
+          primary_role?: string
+          streak_count?: number
+          total_completed?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          church_name?: string | null
+          created_at?: string
+          display_name?: string
+          id?: string
+          primary_role?: string
+          streak_count?: number
+          total_completed?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       study_notes: {
         Row: {
           created_at: string
@@ -138,6 +377,38 @@ export type Database = {
           },
         ]
       }
+      submission_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          reaction_type: string
+          submission_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reaction_type: string
+          submission_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reaction_type?: string
+          submission_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submission_reactions_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "devotional_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_plan_progress: {
         Row: {
           completed_at: string | null
@@ -175,10 +446,32 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      submission_analytics: {
+        Row: {
+          commute_count: number | null
+          last_submission_at: string | null
+          plans_engaged: number | null
+          total_submissions: number | null
+          typed_count: number | null
+          user_id: string | null
+          voice_memo_count: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      is_discipler_of: {
+        Args: { _disciple: string; _discipler: string }
+        Returns: boolean
+      }
+      is_group_member: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
+      shares_group: {
+        Args: { _user_a: string; _user_b: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
