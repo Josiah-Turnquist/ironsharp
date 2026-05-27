@@ -144,9 +144,30 @@ const CommuteMode = () => {
     navigate("/devotional", { state: { commute: { q1: q1Text, q2: q2Text } } });
   };
 
-  const submit = () => {
-    toast({ title: "Devotional submitted 🙏", description: "Recorded via Commute Mode" });
+  const submit = async () => {
     cancel(); stopSTT();
+    if (planId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      const uid = user?.id || "00000000-0000-0000-0000-000000000001";
+      const { error } = await supabase
+        .from("devotional_submissions")
+        .upsert(
+          {
+            user_id: uid,
+            plan_id: planId,
+            day_number: dayParam,
+            response1: q1Text || null,
+            response2: q2Text || null,
+            submission_source: "commute",
+          },
+          { onConflict: "user_id,plan_id,day_number" }
+        );
+      if (error) {
+        toast({ title: "Couldn't save", description: error.message, variant: "destructive" });
+        return;
+      }
+    }
+    toast({ title: "Devotional submitted 🙏", description: "Recorded via Commute Mode" });
     navigate("/devotional");
   };
 
