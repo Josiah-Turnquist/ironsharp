@@ -2,49 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { BookOpen, GripVertical } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { BookOpen, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  arrayMove,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-
-const typeColors: Record<string, string> = {
-  community: "#89B4C9",
-  partner: "#A89070",
-  family: "#7FAF8A",
-  group: "#B8A86A",
-};
-
-interface PlaceholderPlan {
-  id: string;
-  type: keyof typeof typeColors;
-  name: string;
-  subtitle: string;
-}
-
-const defaultPlaceholders: PlaceholderPlan[] = [
-  { id: "community", type: "community", name: "Community Plan", subtitle: "Proverbs 27 · Day 14/30" },
-  { id: "partner", type: "partner", name: "Me & My Discipler", subtitle: "James 1 · Day 5/7" },
-  { id: "family", type: "family", name: "Aguilar Family", subtitle: "Psalm 23 · Day 3/14" },
-  { id: "group", type: "group", name: "The Forge", subtitle: "Romans 8 · Day 10/30" },
-];
-
-const ORDER_KEY = "ironsharp.devotional_order";
 
 interface PersonalPlan {
   planId: string;
@@ -61,22 +21,9 @@ interface Props {
 
 const DevotionalHub = ({ onOpenPlan }: Props) => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { user } = useAuth();
   const [personal, setPersonal] = useState<PersonalPlan | null>(null);
   const [loading, setLoading] = useState(true);
-  const [order, setOrder] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem(ORDER_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return defaultPlaceholders.map((p) => p.id);
-  });
-  const [dragId, setDragId] = useState<string | null>(null);
-
-  useEffect(() => {
-    localStorage.setItem(ORDER_KEY, JSON.stringify(order));
-  }, [order]);
 
   useEffect(() => {
     if (!user) {
@@ -122,25 +69,6 @@ const DevotionalHub = ({ onOpenPlan }: Props) => {
     load();
   }, [user]);
 
-  const orderedPlaceholders = order
-    .map((id) => defaultPlaceholders.find((p) => p.id === id))
-    .filter(Boolean) as PlaceholderPlan[];
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
-  );
-
-  const handleDragEnd = (e: DragEndEvent) => {
-    const { active, over } = e;
-    setDragId(null);
-    if (!over || active.id === over.id) return;
-    const from = order.indexOf(String(active.id));
-    const to = order.indexOf(String(over.id));
-    if (from < 0 || to < 0) return;
-    setOrder(arrayMove(order, from, to));
-  };
-
   return (
     <div className="mx-auto max-w-lg px-6 py-8">
       <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -148,7 +76,6 @@ const DevotionalHub = ({ onOpenPlan }: Props) => {
       </p>
       <h1 className="mb-6 font-serif text-2xl font-bold">Devotionals</h1>
 
-      {/* Personal Plan — Hero */}
       {loading ? (
         <div className="mb-6 h-48 animate-pulse rounded-2xl bg-card" />
       ) : personal ? (
@@ -196,91 +123,25 @@ const DevotionalHub = ({ onOpenPlan }: Props) => {
         </div>
       )}
 
-      {/* Other plans — compact, reorderable */}
       <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-        Shared Plans · Drag to reorder
+        Shared Plans
       </p>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragStart={(e) => setDragId(String(e.active.id))}
-        onDragEnd={handleDragEnd}
-        onDragCancel={() => setDragId(null)}
-      >
-        <SortableContext items={order} strategy={verticalListSortingStrategy}>
-          <div className="space-y-2">
-            {orderedPlaceholders.map((p) => (
-              <SortablePlanRow
-                key={p.id}
-                plan={p}
-                accent={typeColors[p.type]}
-                isDragging={dragId === p.id}
-                onTap={() =>
-                  toast({
-                    title: "Coming soon",
-                    description: `${p.name} is a preview — shared plans launch soon.`,
-                  })
-                }
-              />
-            ))}
-          </div>
-        </SortableContext>
-      </DndContext>
+      <div className="rounded-2xl border border-dashed border-border bg-card p-6 text-center">
+        <p className="font-serif text-base font-semibold">No active shared plans</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Join a group or pair with a discipler to start a shared plan.
+        </p>
+        <Button
+          variant="outline"
+          className="mt-4 rounded-xl"
+          onClick={() => navigate("/groups")}
+        >
+          <Users className="mr-2 h-4 w-4" />
+          Find a Group →
+        </Button>
+      </div>
     </div>
   );
 };
 
 export default DevotionalHub;
-
-interface SortablePlanRowProps {
-  plan: PlaceholderPlan;
-  accent: string;
-  isDragging: boolean;
-  onTap: () => void;
-}
-
-const SortablePlanRow = ({ plan, accent, isDragging, onTap }: SortablePlanRowProps) => {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
-    id: plan.id,
-  });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-3 ${
-        isDragging ? "opacity-50" : ""
-      }`}
-    >
-      <button
-        type="button"
-        aria-label="Drag to reorder"
-        className="touch-none -m-1 cursor-grab p-1 text-muted-foreground active:cursor-grabbing"
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical className="h-4 w-4" />
-      </button>
-      <button
-        type="button"
-        onClick={onTap}
-        className="flex min-w-0 flex-1 items-center gap-3 text-left"
-      >
-        <div
-          className="h-8 w-1 shrink-0 rounded-full"
-          style={{ backgroundColor: accent }}
-        />
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-serif text-sm font-semibold">{plan.name}</p>
-          <p className="truncate text-[11px] text-muted-foreground">{plan.subtitle}</p>
-        </div>
-        <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-          Preview
-        </span>
-      </button>
-    </div>
-  );
-};
