@@ -1,24 +1,29 @@
-import { createAuthClient } from "better-auth/react";
-import { expoClient } from "@better-auth/expo/client";
-import * as SecureStore from "expo-secure-store";
+import { createInternalNeonAuth } from "@neondatabase/auth";
 
-const baseURL = process.env.EXPO_PUBLIC_API_URL;
-if (!baseURL) {
-  // Surfaces a clear error instead of a confusing network failure.
+const url = process.env.EXPO_PUBLIC_NEON_AUTH_URL;
+if (!url) {
   console.warn(
-    "[auth] EXPO_PUBLIC_API_URL is not set. Copy apps/mobile/.env.example to .env."
+    "[auth] EXPO_PUBLIC_NEON_AUTH_URL is not set. Copy apps/mobile/.env.example " +
+      "to .env and paste your Neon Auth URL."
   );
 }
 
-export const authClient = createAuthClient({
-  baseURL,
-  plugins: [
-    expoClient({
-      scheme: "ironsharp",
-      storagePrefix: "ironsharp",
-      storage: SecureStore,
-    }),
-  ],
-});
+// Neon Auth is a managed Better Auth server. This wrapper exposes both the
+// Better Auth client (sign in/up/out, sessions) and a helper to mint the JWT we
+// forward to our own Railway API.
+const neon = createInternalNeonAuth(url ?? "");
 
-export const { useSession, signIn, signUp, signOut } = authClient;
+/** Better Auth client: authClient.signIn.email / signUp.email / getSession / signOut / signIn.social */
+export const authClient = neon.adapter;
+
+/**
+ * The JWT to send to the IronSharp API as `Authorization: Bearer …`.
+ * The server verifies it against Neon Auth's JWKS.
+ */
+export async function getAuthToken(): Promise<string | null> {
+  try {
+    return await neon.getJWTToken();
+  } catch {
+    return null;
+  }
+}

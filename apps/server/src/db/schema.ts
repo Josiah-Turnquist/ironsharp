@@ -11,60 +11,15 @@ import {
 } from "drizzle-orm/pg-core";
 
 /* ============================================================
- * BETTER AUTH CORE TABLES
- * These four tables are owned/managed by Better Auth. Their shape
- * matches Better Auth's default schema. Keep field names as-is.
+ * AUTH
+ * Authentication is handled by **Neon Auth** (managed Better Auth).
+ * It owns the `neon_auth` schema (neon_auth.user / session / account / …) in
+ * this same database — we do NOT define or migrate those tables here.
+ *
+ * Everywhere below, `user_id` (and creator/relationship ids) hold the Neon Auth
+ * user id — the `sub` claim from the verified JWT. We keep them as plain `text`
+ * (no cross-schema foreign key) so the managed auth schema stays decoupled.
  * ============================================================ */
-
-export const user = pgTable("user", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  email: text("email").notNull().unique(),
-  emailVerified: boolean("email_verified").notNull().default(false),
-  image: text("image"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
-export const session = pgTable("session", {
-  id: text("id").primaryKey(),
-  expiresAt: timestamp("expires_at").notNull(),
-  token: text("token").notNull().unique(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-  ipAddress: text("ip_address"),
-  userAgent: text("user_agent"),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-});
-
-export const account = pgTable("account", {
-  id: text("id").primaryKey(),
-  accountId: text("account_id").notNull(),
-  providerId: text("provider_id").notNull(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  accessToken: text("access_token"),
-  refreshToken: text("refresh_token"),
-  idToken: text("id_token"),
-  accessTokenExpiresAt: timestamp("access_token_expires_at"),
-  refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
-  scope: text("scope"),
-  password: text("password"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
-
-export const verification = pgTable("verification", {
-  id: text("id").primaryKey(),
-  identifier: text("identifier").notNull(),
-  value: text("value").notNull(),
-  expiresAt: timestamp("expires_at").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
 
 /* ============================================================
  * PUBLIC DEVOTIONAL CONTENT (no per-user data)
@@ -124,15 +79,12 @@ export const studyNotes = pgTable(
 );
 
 /* ============================================================
- * PER-USER DATA
+ * PER-USER DATA  (user_id = Neon Auth user id / JWT sub)
  * ============================================================ */
 
 export const profiles = pgTable("profiles", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: text("user_id")
-    .notNull()
-    .unique()
-    .references(() => user.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().unique(),
   displayName: text("display_name").notNull(),
   avatarUrl: text("avatar_url"),
   primaryRole: text("primary_role").notNull().default("disciple"), // discipler | disciple | partner
@@ -163,9 +115,7 @@ export const userPlanProgress = pgTable(
   "user_plan_progress",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(),
     planId: uuid("plan_id")
       .notNull()
       .references(() => devotionalPlans.id, { onDelete: "cascade" }),
@@ -188,9 +138,7 @@ export const groups = pgTable("groups", {
   currentDay: integer("current_day").notNull().default(1),
   streakCount: integer("streak_count").notNull().default(0),
   inviteCode: text("invite_code").notNull().unique(),
-  createdBy: text("created_by")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+  createdBy: text("created_by").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -202,9 +150,7 @@ export const groupMembers = pgTable(
     groupId: uuid("group_id")
       .notNull()
       .references(() => groups.id, { onDelete: "cascade" }),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(),
     memberRole: text("member_role").notNull().default("member"),
     joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -217,12 +163,8 @@ export const discipleRelationships = pgTable(
   "disciple_relationships",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    disciplerId: text("discipler_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
-    discipleId: text("disciple_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+    disciplerId: text("discipler_id").notNull(),
+    discipleId: text("disciple_id").notNull(),
     status: text("status").notNull().default("active"), // pending | active | ended
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -235,9 +177,7 @@ export const devotionalSubmissions = pgTable(
   "devotional_submissions",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(),
     planId: uuid("plan_id")
       .notNull()
       .references(() => devotionalPlans.id, { onDelete: "cascade" }),
@@ -272,9 +212,7 @@ export const submissionReactions = pgTable(
     submissionId: uuid("submission_id")
       .notNull()
       .references(() => devotionalSubmissions.id, { onDelete: "cascade" }),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(),
     reactionType: text("reaction_type").notNull(), // amen | hit_me | fire
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -291,12 +229,8 @@ export const disciplerNotes = pgTable(
   "discipler_notes",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    fromUserId: text("from_user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
-    toUserId: text("to_user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+    fromUserId: text("from_user_id").notNull(),
+    toUserId: text("to_user_id").notNull(),
     note: text("note").notNull(),
     relatedSubmissionId: uuid("related_submission_id").references(
       () => devotionalSubmissions.id,
@@ -314,10 +248,6 @@ export const disciplerNotes = pgTable(
 );
 
 export const schema = {
-  user,
-  session,
-  account,
-  verification,
   devotionalPlans,
   devotionalDays,
   studyNotes,

@@ -6,6 +6,7 @@ import { Screen } from "@/components/Screen";
 import { useThemeColor } from "@/components/useThemeColor";
 import { useProfile } from "@/lib/queries";
 import { authClient } from "@/lib/auth-client";
+import { useSession } from "@/lib/session";
 
 const ROLE_LABELS: Record<string, string> = {
   discipler: "Discipler",
@@ -23,6 +24,7 @@ const TIER_LABELS: Record<string, string> = {
 export default function ProfileScreen() {
   const router = useRouter();
   const qc = useQueryClient();
+  const { refresh } = useSession();
   const profile = useProfile();
   const primary = useThemeColor("primary");
   const muted = useThemeColor("muted-foreground");
@@ -44,6 +46,7 @@ export default function ProfileScreen() {
         style: "destructive",
         onPress: async () => {
           await authClient.signOut();
+          await refresh();
           qc.clear();
           router.replace("/(auth)/welcome");
         },

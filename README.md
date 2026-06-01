@@ -14,17 +14,22 @@ proper mobile app with its own backend.
 | ------------ | -------------------------------------------------------------- |
 | **Mobile**   | React Native · Expo (Router) · TypeScript · NativeWind         |
 | **API**      | Hono · TypeScript — deploys to **Railway**                     |
-| **Auth**     | Better Auth (email/password + optional Google/Apple)           |
+| **Auth**     | **Neon Auth** (managed Better Auth) — email/password + social   |
 | **Database** | **Neon** Postgres via Drizzle ORM                              |
 
 ```
-📱 Expo app  ──HTTPS──▶  🚂 Hono API (Railway)  ──▶  🐘 Neon Postgres
-   apps/mobile             apps/server
+📱 Expo app
+   ├─ auth →  Neon Auth URL  (managed Better Auth; writes the neon_auth schema)
+   └─ data →  🚂 Hono API on Railway  (Authorization: Bearer <Neon JWT>)
+                 └─ verifies the JWT via Neon's JWKS, scopes queries to the user
+                                        ⮑ everything lives in one 🐘 Neon database
 ```
 
-The app never talks to the database directly. The API server holds the Neon
-credentials, runs Better Auth, and scopes every query to the logged-in user
-(this replaces the row-level-security the Supabase prototype relied on).
+Auth is handled by **Neon Auth** — a managed Better Auth service tied to the
+database; the app signs in directly against its Auth URL and there's no auth
+server or secret to run. The app never touches the database directly: the Hono
+API holds the Neon credentials, verifies the Neon-issued JWT on each request,
+and scopes every query to that user (replacing the Supabase prototype's RLS).
 
 ## Repo layout
 
@@ -42,16 +47,16 @@ ironsharp/
 
 ```bash
 cd apps/server
-cp .env.example .env          # then fill in DATABASE_URL + BETTER_AUTH_SECRET
+cp .env.example .env          # then fill in DATABASE_URL + NEON_AUTH_URL
 npm install
-npm run db:push               # create tables in Neon
+npm run db:push               # create the app's tables in Neon
 npm run db:seed               # load the 3 starter devotional plans (21 days)
 npm run dev                   # http://localhost:8787
 ```
 
 - `DATABASE_URL` — your Neon connection string (use the **pooled** one).
-- `BETTER_AUTH_SECRET` — `openssl rand -base64 32`.
-- Google/Apple sign-in stay hidden until you add their keys to `.env`.
+- `NEON_AUTH_URL` — your Neon Auth URL (enable Auth in the Neon Console). The
+  server uses it to verify tokens; there's no auth secret to manage.
 
 ### 2. Mobile (`apps/mobile`)
 
@@ -67,12 +72,14 @@ npm start                     # open in Expo Go / a simulator
 
 ## Deploying
 
-- **Database (Neon):** create a project, copy the pooled connection string into
-  the server's `DATABASE_URL`. Run `npm run db:push` once to provision tables.
-- **API (Railway):** new service from this repo, root directory `apps/server`,
-  build `npm install && npm run build`, start `npm run start`. Set the same env
-  vars; point `BETTER_AUTH_URL` at the Railway URL.
-- **Mobile:** set `EXPO_PUBLIC_API_URL` to the Railway URL and build with EAS.
+See **[DEPLOY.md](./DEPLOY.md)** for the full walkthrough. In short:
+
+- **Neon:** create a project, enable **Auth**. Grab the pooled `DATABASE_URL`
+  and the **Auth URL**.
+- **API (Railway):** new service from this repo, root directory `apps/server`.
+  Set `DATABASE_URL` + `NEON_AUTH_URL`. Run `db:push` + `db:seed` once.
+- **Mobile:** set `EXPO_PUBLIC_API_URL` (Railway) and `EXPO_PUBLIC_NEON_AUTH_URL`
+  (Neon Auth), then build with EAS.
 
 ## What's in this foundation
 
@@ -80,7 +87,7 @@ This is the first milestone of the rewrite — the infrastructure plus the core
 daily flow, all themed identically to the original (5 palettes, Playfair Display
 + DM Sans):
 
-- ✅ Auth: sign up / log in / sign out (Better Auth) + auto-created profiles
+- ✅ Auth: sign up / log in / sign out via Neon Auth + auto-created profiles
 - ✅ Onboarding: profile → role → starter plan → welcome
 - ✅ Home, Devotional hub, daily **reading + reflection + prayer** with progress
 - ✅ Plans browser by category, start/continue/complete, completed list

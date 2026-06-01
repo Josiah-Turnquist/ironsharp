@@ -3,8 +3,6 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import { auth } from "./auth.js";
-import { getTrustedOrigins } from "./config.js";
 import { plans } from "./routes/plans.js";
 import { profile } from "./routes/profile.js";
 import { progress } from "./routes/progress.js";
@@ -12,34 +10,17 @@ import { submissions } from "./routes/submissions.js";
 
 const app = new Hono();
 
-const trustedOrigins = getTrustedOrigins();
-
 app.use("*", logger());
-app.use(
-  "*",
-  cors({
-    // Mobile clients send an Origin like `ironsharp://` or `exp://...`.
-    origin: (origin) => {
-      if (!origin) return origin; // native fetch may omit Origin — allow it
-      return trustedOrigins.some((t) => origin.startsWith(t.replace(/\/$/, "")))
-        ? origin
-        : trustedOrigins[0] ?? origin;
-    },
-    allowHeaders: ["Content-Type", "Authorization"],
-    allowMethods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
-    exposeHeaders: ["Set-Cookie"],
-    credentials: true,
-  })
-);
+// The API is consumed by the mobile app with a Bearer token (no cookies), so
+// CORS can be permissive — auth is enforced by JWT verification, not origin.
+app.use("*", cors({ allowHeaders: ["Content-Type", "Authorization"] }));
 
 // Health check (Railway pings this).
 app.get("/", (c) => c.json({ ok: true, service: "ironsharp-api" }));
 app.get("/health", (c) => c.json({ ok: true }));
 
-// Better Auth handles everything under /api/auth/*.
-app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
-
-// Application data routes.
+// Application data routes. Auth (sign up / in / out, sessions) is handled by the
+// managed Neon Auth service directly from the client — not here.
 app.route("/api/profile", profile);
 app.route("/api/plans", plans);
 app.route("/api/progress", progress);

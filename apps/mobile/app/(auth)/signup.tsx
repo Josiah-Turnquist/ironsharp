@@ -6,9 +6,11 @@ import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
 import { SocialButtons } from "@/components/SocialButtons";
 import { authClient } from "@/lib/auth-client";
+import { useSession } from "@/lib/session";
 
 export default function Signup() {
   const router = useRouter();
+  const { refresh } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -31,12 +33,14 @@ export default function Signup() {
       password,
       name: email.split("@")[0] ?? "Friend",
     });
-    setLoading(false);
     if (error) {
+      setLoading(false);
       Alert.alert("Sign up failed", error.message ?? "Please try again.");
       return;
     }
-    // autoSignIn is on, so a session exists — head into onboarding via the gate.
+    // A session is created on sign up — head into onboarding via the gate.
+    await refresh();
+    setLoading(false);
     router.replace("/");
   };
 

@@ -8,15 +8,34 @@ export const profile = new Hono<AppEnv>();
 
 profile.use("*", requireAuth);
 
-// GET /api/profile  → the current user's profile (created on signup)
+// GET /api/profile  → the current user's profile, created on first access.
+// (Neon Auth owns the user record; we lazily materialize the app-side profile
+// here instead of via a signup trigger.)
 profile.get("/", async (c) => {
-  const userId = c.var.user.id;
+  const { id: userId, email, name } = c.var.user;
+
+  const [existing] = await db
+    .select()
+    .from(profiles)
+    .where(eq(profiles.userId, userId))
+    .limit(1);
+  if (existing) return c.json({ profile: existing });
+
+  const displayName = name?.trim() || email?.split("@")[0] || "Friend";
+  const [created] = await db
+    .insert(profiles)
+    .values({ userId, displayName, primaryRole: "disciple" })
+    .onConflictDoNothing()
+    .returning();
+
+  if (created) return c.json({ profile: created });
+
+  // Lost a race — fetch the row the other request created.
   const [row] = await db
     .select()
     .from(profiles)
     .where(eq(profiles.userId, userId))
     .limit(1);
-  if (!row) return c.json({ error: "Profile not found" }, 404);
   return c.json({ profile: row });
 });
 

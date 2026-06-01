@@ -3,24 +3,32 @@
 This walks through standing up the database (Neon) and the API server (Railway),
 then pointing the mobile app at it. ~15 minutes.
 
-> 🔒 **Secrets:** never paste `DATABASE_URL` or `BETTER_AUTH_SECRET` into chat,
-> commits, or screenshots. They live only in Railway variables / local `.env`
-> files (both are git-ignored).
+> 🔒 **Secrets:** never paste `DATABASE_URL` into chat, commits, or screenshots.
+> It lives only in Railway variables / a local `.env` file (both git-ignored).
+> The Neon Auth URL isn't secret, but keep it in env too for tidiness.
 
 ---
 
-## 1. Neon — the database
+## 1. Neon — database + auth
 
 1. Go to <https://console.neon.tech> → **New Project**.
    - Name: `ironsharp`. Pick a region close to where Railway runs (e.g. US East).
-2. After it's created, open **Connection Details**.
-3. Copy the **pooled** connection string (the host contains `-pooler`). It looks like:
+2. **Connection Details** → copy the **pooled** connection string (host contains
+   `-pooler`). This is your `DATABASE_URL`:
    ```
    postgresql://user:password@ep-xxxx-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require
    ```
-   Keep it handy — this is your `DATABASE_URL`.
+3. In the project, open **Auth** → **Enable Neon Auth**. This provisions managed
+   authentication (Better Auth) that stores users in a `neon_auth` schema in this
+   same database — no auth server or secret to manage.
+4. Copy your **Auth URL** (looks like
+   `https://ep-xxxx.neonauth.us-east-2.aws.neon.tech/neondb/auth`). You'll use it
+   in two places: the server's `NEON_AUTH_URL` (to verify tokens) and the app's
+   `EXPO_PUBLIC_NEON_AUTH_URL` (to sign users in).
+   - While you're here, enable **Email/Password** (and any social providers you
+     want) under the Auth settings.
 
-That's all on Neon for now. Tables get created in step 3.
+Tables for the app's own data get created in step 3.
 
 ---
 
@@ -33,26 +41,18 @@ That's all on Neon for now. Tables get created in step 3.
      (this is the monorepo bit — Railway then builds only the server.)
    - Build/start are already defined in `apps/server/railway.json`, so leave
      "Custom Build/Start Command" empty.
-3. Open **Variables** and add just these:
+3. Open **Variables** and add just these two:
 
-   | Variable             | Value                                                        |
-   | -------------------- | ------------------------------------------------------------ |
-   | `DATABASE_URL`       | the pooled Neon string from step 1                           |
-   | `BETTER_AUTH_SECRET` | a long random secret (see below)                             |
-   | `BETTER_AUTH_URL`    | _leave blank for now — set in step 4_                        |
+   | Variable        | Value                                                |
+   | --------------- | ---------------------------------------------------- |
+   | `DATABASE_URL`  | the pooled Neon string from step 1                   |
+   | `NEON_AUTH_URL` | your Neon Auth URL from step 1                        |
 
-   `PORT` is injected by Railway automatically — don't set it. The app's trusted
-   origins (its `ironsharp://` / `exp://` schemes) are baked into the code, so
-   there's nothing else to configure.
-
-   `DATABASE_URL` and `BETTER_AUTH_SECRET` are the only two secrets. Generate the
-   secret with:
-   ```bash
-   openssl rand -base64 32
-   ```
-4. Let it deploy. Then **Settings → Networking → Generate Domain**. You'll get a
+   `PORT` is injected by Railway automatically — don't set it. There's **no auth
+   secret** — Neon Auth is managed, and the server only *verifies* its tokens via
+   the public JWKS. `DATABASE_URL` is the only real secret.
+4. Let it deploy, then **Settings → Networking → Generate Domain**. You'll get a
    URL like `https://ironsharp-production.up.railway.app`.
-   - Set `BETTER_AUTH_URL` to that exact URL and redeploy.
    - Visit `https://<that-domain>/health` — you should see `{"ok":true}`.
 
 ---
@@ -81,10 +81,12 @@ In `apps/mobile/.env`:
 
 ```bash
 EXPO_PUBLIC_API_URL="https://<your-railway-domain>"
+EXPO_PUBLIC_NEON_AUTH_URL="https://<your-neon-auth-url>/neondb/auth"
 ```
 
-Restart Expo (`npm start`) so it picks up the new value. Sign up — the request
-goes to Railway, Better Auth writes to Neon, and your profile is created.
+Restart Expo (`npm start`) so it picks up the new values. Sign up — the app
+authenticates directly against Neon Auth, then calls the Railway API with the
+Neon-issued token, and your profile is created on first request.
 
 > For purely local development you can instead run `apps/server` on your machine
 > (`npm run dev`) and set `EXPO_PUBLIC_API_URL` to `http://<your-LAN-IP>:8787`.
@@ -93,7 +95,6 @@ goes to Railway, Better Auth writes to Neon, and your profile is created.
 
 ## 5. (Optional) Google / Apple sign-in
 
-The social buttons stay inert until you add provider keys to the Railway
-variables: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `APPLE_CLIENT_ID`,
-`APPLE_CLIENT_SECRET`. The server detects them and enables each provider
-automatically on the next deploy.
+Social sign-in is configured in the **Neon Console → Auth** (not on the Railway
+server) — add the provider and its keys there, and the app's Google/Apple
+buttons start working. No server redeploy needed.

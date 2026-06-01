@@ -14,16 +14,17 @@ export default function ForgotPassword() {
   const handleReset = async () => {
     setLoading(true);
     try {
+      // Neon Auth sends the reset email (once an email sender is configured for
+      // your project in the Neon Console). The deep link returns to the app.
       await authClient.requestPasswordReset({
         email,
         redirectTo: "ironsharp://reset-password",
       });
       setSent(true);
     } catch {
-      // Email delivery isn't configured in the foundation build yet.
       Alert.alert(
         "Almost there",
-        "Password reset emails turn on once an email provider is configured on the server."
+        "Password reset emails turn on once email sending is configured for your Neon Auth project."
       );
     } finally {
       setLoading(false);

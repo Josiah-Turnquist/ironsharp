@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { ApiClient } from "./api";
-import { useSession } from "./auth-client";
+import { useSession } from "./session";
 
 /** Whether we have an authenticated session right now. */
 export function useAuthed() {
-  const { data, isPending } = useSession();
-  return { authed: !!data?.session, user: data?.user ?? null, isPending };
+  const { user, isPending } = useSession();
+  return { authed: !!user, user, isPending };
 }
 
 export function useProfile() {

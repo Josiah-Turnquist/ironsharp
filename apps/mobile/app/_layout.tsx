@@ -17,6 +17,7 @@ import {
   DMSans_700Bold,
 } from "@expo-google-fonts/dm-sans";
 import { ThemeProvider, useTheme } from "@/theme/ThemeProvider";
+import { SessionProvider } from "@/lib/session";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -61,7 +62,9 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
-            <RootNavigator />
+            <SessionProvider>
+              <RootNavigator />
+            </SessionProvider>
           </ThemeProvider>
         </QueryClientProvider>
       </SafeAreaProvider>

@@ -1,4 +1,4 @@
-import { authClient } from "./auth-client";
+import { getAuthToken } from "./auth-client";
 
 const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? "";
 
@@ -12,15 +12,15 @@ export class ApiError extends Error {
 
 /**
  * Thin wrapper around fetch that targets the IronSharp API and attaches the
- * Better Auth session cookie (the Expo plugin stores it in SecureStore).
+ * Neon Auth JWT as a Bearer token (the server verifies it against Neon's JWKS).
  */
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const cookie = authClient.getCookie();
+  const token = await getAuthToken();
   const res = await fetch(`${BASE_URL}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
-      ...(cookie ? { Cookie: cookie } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(init.headers ?? {}),
     },
   });

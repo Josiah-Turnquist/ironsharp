@@ -6,9 +6,11 @@ import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
 import { SocialButtons } from "@/components/SocialButtons";
 import { authClient } from "@/lib/auth-client";
+import { useSession } from "@/lib/session";
 
 export default function Login() {
   const router = useRouter();
+  const { refresh } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -16,11 +18,13 @@ export default function Login() {
   const handleLogin = async () => {
     setLoading(true);
     const { error } = await authClient.signIn.email({ email, password });
-    setLoading(false);
     if (error) {
+      setLoading(false);
       Alert.alert("Login failed", error.message ?? "Check your email and password.");
       return;
     }
+    await refresh();
+    setLoading(false);
     router.replace("/");
   };
 
