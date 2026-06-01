@@ -33,18 +33,20 @@ That's all on Neon for now. Tables get created in step 3.
      (this is the monorepo bit — Railway then builds only the server.)
    - Build/start are already defined in `apps/server/railway.json`, so leave
      "Custom Build/Start Command" empty.
-3. Open **Variables** and add:
+3. Open **Variables** and add just these:
 
    | Variable             | Value                                                        |
    | -------------------- | ------------------------------------------------------------ |
    | `DATABASE_URL`       | the pooled Neon string from step 1                           |
    | `BETTER_AUTH_SECRET` | a long random secret (see below)                             |
    | `BETTER_AUTH_URL`    | _leave blank for now — set in step 4_                        |
-   | `TRUSTED_ORIGINS`    | `ironsharp://,exp://,http://localhost:8081`                  |
 
-   `PORT` is injected by Railway automatically — don't set it.
+   `PORT` is injected by Railway automatically — don't set it. The app's trusted
+   origins (its `ironsharp://` / `exp://` schemes) are baked into the code, so
+   there's nothing else to configure.
 
-   Generate the secret with:
+   `DATABASE_URL` and `BETTER_AUTH_SECRET` are the only two secrets. Generate the
+   secret with:
    ```bash
    openssl rand -base64 32
    ```

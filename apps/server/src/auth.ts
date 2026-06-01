@@ -4,11 +4,9 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { expo } from "@better-auth/expo";
 import { db } from "./db/index.js";
 import { schema, profiles } from "./db/schema.js";
+import { getTrustedOrigins } from "./config.js";
 
-const trustedOrigins = (process.env.TRUSTED_ORIGINS ?? "")
-  .split(",")
-  .map((o) => o.trim())
-  .filter(Boolean);
+const trustedOrigins = getTrustedOrigins();
 
 const hasGoogle = !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET;
 const hasApple = !!process.env.APPLE_CLIENT_ID && !!process.env.APPLE_CLIENT_SECRET;

@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { auth } from "./auth.js";
+import { getTrustedOrigins } from "./config.js";
 import { plans } from "./routes/plans.js";
 import { profile } from "./routes/profile.js";
 import { progress } from "./routes/progress.js";
@@ -11,10 +12,7 @@ import { submissions } from "./routes/submissions.js";
 
 const app = new Hono();
 
-const trustedOrigins = (process.env.TRUSTED_ORIGINS ?? "")
-  .split(",")
-  .map((o) => o.trim())
-  .filter(Boolean);
+const trustedOrigins = getTrustedOrigins();
 
 app.use("*", logger());
 app.use(
