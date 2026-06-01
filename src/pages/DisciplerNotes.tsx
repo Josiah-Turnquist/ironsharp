@@ -116,58 +116,62 @@ const DisciplerNotes = () => {
         </div>
 
         {/* Notes thread */}
-        <div className="mb-6 space-y-4">
-          {loading && <p className="text-sm text-muted-foreground">Loading…</p>}
-          {!loading && notes.length === 0 && (
-            <p className="text-sm italic text-muted-foreground">No notes yet — send the first one below.</p>
-          )}
-          {notes.map(note => {
-            const mine = note.from_user_id === user?.id;
-            const fromName = profiles[note.from_user_id]?.display_name || (mine ? displayName : "Unknown");
-            return (
-              <div
-                key={note.id}
-                className={`rounded-xl border p-4 ${
-                  mine
-                    ? "border-primary/30 bg-primary/5 ml-6"
-                    : "border-border bg-card mr-6"
-                }`}
-              >
-                <div className="mb-2 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-semibold">
-                      {fromName[0]}
+        {discipler ? (
+          <div className="mb-6 space-y-4">
+            {loading && <p className="text-sm text-muted-foreground">Loading…</p>}
+            {!loading && notes.length === 0 && (
+              <p className="text-sm italic text-muted-foreground">No notes yet — send the first one below.</p>
+            )}
+            {notes.map(note => {
+              const mine = note.from_user_id === user?.id;
+              const fromName = profiles[note.from_user_id]?.display_name || (mine ? displayName : "Unknown");
+              return (
+                <div
+                  key={note.id}
+                  className={`rounded-xl border p-4 ${
+                    mine
+                      ? "border-primary/30 bg-primary/5 ml-6"
+                      : "border-border bg-card mr-6"
+                  }`}
+                >
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-semibold">
+                        {fromName[0]}
+                      </div>
+                      <div>
+                        <span className="text-sm font-semibold">{fromName.split(" ")[0]}</span>
+                        <span className="ml-2 text-xs text-muted-foreground">{mine ? "You" : "Discipler"}</span>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-sm font-semibold">{fromName.split(" ")[0]}</span>
-                      <span className="ml-2 text-xs text-muted-foreground">{mine ? "You" : "Discipler"}</span>
-                    </div>
+                    <span className="text-xs text-muted-foreground">{formatDate(note.created_at)}</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">{formatDate(note.created_at)}</span>
+                  <p className="text-sm leading-relaxed">{note.note}</p>
                 </div>
-                <p className="text-sm leading-relaxed">{note.note}</p>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
 
-        {/* Reply */}
-        {discipler && (
-          <div className="rounded-xl border border-border bg-card p-4">
-            <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Reply to {discipler.display_name.split(" ")[0]}
-            </p>
-            <Textarea
-              value={newNote}
-              onChange={e => setNewNote(e.target.value)}
-              placeholder="Write a private note..."
-              className="mb-3 min-h-[80px] rounded-xl"
-              maxLength={2000}
-            />
-            <Button onClick={send} className="h-10 w-full rounded-xl" disabled={!newNote.trim() || sending}>
-              <Send className="mr-2 h-4 w-4" /> {sending ? "Sending…" : "Send Note"}
-            </Button>
+            {/* Reply */}
+            <div className="rounded-xl border border-border bg-card p-4">
+              <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Reply to {discipler.display_name.split(" ")[0]}
+              </p>
+              <Textarea
+                value={newNote}
+                onChange={e => setNewNote(e.target.value)}
+                placeholder="Write a private note..."
+                className="mb-3 min-h-[80px] rounded-xl"
+                maxLength={2000}
+              />
+              <Button onClick={send} className="h-10 w-full rounded-xl" disabled={!newNote.trim() || sending}>
+                <Send className="mr-2 h-4 w-4" /> {sending ? "Sending…" : "Send Note"}
+              </Button>
+            </div>
           </div>
+        ) : (
+          !loading && (
+            <p className="text-[13px] italic text-muted-foreground/70">No Discipler Notes</p>
+          )
         )}
       </div>
     </AppLayout>

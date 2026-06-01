@@ -16,6 +16,7 @@ import OnboardingSurvey from "./pages/onboarding/OnboardingSurvey";
 import RoleSelect from "./pages/onboarding/RoleSelect";
 import PlanSelect from "./pages/onboarding/PlanSelect";
 import GroupSetup from "./pages/onboarding/GroupSetup";
+import OnboardingWelcome from "./pages/onboarding/OnboardingWelcome";
 import Home from "./pages/Home";
 import Devotional from "./pages/Devotional";
 import CommuteMode from "./pages/CommuteMode";
@@ -25,7 +26,6 @@ import Groups from "./pages/Groups";
 import ThemePicker from "./pages/ThemePicker";
 import Profile from "./pages/Profile";
 import SettingsPage from "./pages/SettingsPage";
-import Analytics from "./pages/Analytics";
 import CommunityFeed from "./pages/CommunityFeed";
 import DisciplerNotes from "./pages/DisciplerNotes";
 import FamilyDashboard from "./pages/FamilyDashboard";
@@ -65,6 +65,7 @@ const App = () => (
               <Route path="/onboarding/role" element={<ProtectedRoute><RoleSelect /></ProtectedRoute>} />
               <Route path="/onboarding/plan" element={<ProtectedRoute><PlanSelect /></ProtectedRoute>} />
               <Route path="/onboarding/group" element={<ProtectedRoute><GroupSetup /></ProtectedRoute>} />
+              <Route path="/onboarding/welcome" element={<ProtectedRoute><OnboardingWelcome /></ProtectedRoute>} />
               <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
               <Route path="/devotional" element={<ProtectedRoute><Devotional /></ProtectedRoute>} />
               <Route path="/devotional/commute" element={<ProtectedRoute><CommuteMode /></ProtectedRoute>} />
@@ -78,7 +79,6 @@ const App = () => (
               <Route path="/themes" element={<ProtectedRoute><ThemePicker /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-              <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
               <Route path="/help" element={<ProtectedRoute><HelpCenter /></ProtectedRoute>} />
               <Route path="/pricing" element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
               <Route path="/community" element={<ProtectedRoute><CommunityFeed /></ProtectedRoute>} />

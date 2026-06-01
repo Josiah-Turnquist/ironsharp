@@ -15,19 +15,38 @@ const BottomNav = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card">
-      <div className="mx-auto flex max-w-lg items-center justify-around py-2">
+      <div className="mx-auto flex max-w-lg items-center justify-evenly py-2">
         {navItems.map(({ icon: Icon, label, path }) => {
           const active = location.pathname === path;
           return (
             <button
               key={path}
               onClick={() => navigate(path)}
-              className={`flex flex-col items-center gap-0.5 px-3 py-1 text-xs transition-colors ${
-                active ? "text-primary" : "text-muted-foreground hover:text-foreground"
-              }`}
+              className="flex flex-1 flex-col items-center gap-0.5 py-1 text-xs"
             >
-              <Icon className="h-5 w-5" />
-              <span>{label}</span>
+              {/* Icon with optional circle */}
+              <div
+                className="flex items-center justify-center transition-all duration-200 ease-in-out"
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: "50%",
+                  background: active ? "hsl(var(--primary) / 0.15)" : "transparent",
+                  transform: active ? "translateY(-2px)" : "translateY(0)",
+                }}
+              >
+                <Icon
+                  className="h-5 w-5 transition-colors duration-200"
+                  style={{ color: active ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}
+                />
+              </div>
+              {/* Label */}
+              <span
+                className="transition-colors duration-200"
+                style={{ color: active ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}
+              >
+                {label}
+              </span>
             </button>
           );
         })}

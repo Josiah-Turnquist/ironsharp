@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles } from "lucide-react";
 
+const BANNER_KEY = "ironsharp-welcome-shown";
+
 const HIGHLIGHTS = [
   "You + 2 others included",
   "All 5 color themes",
@@ -14,25 +16,30 @@ type Props = { onDismiss: () => void };
 const PostOnboardingBanner = ({ onDismiss }: Props) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [showContinue, setShowContinue] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setOpen(true), 1800);
-    return () => clearTimeout(t);
+    // Show almost immediately
+    const openTimer = setTimeout(() => setOpen(true), 300);
+    // Fade in "Continue with Free" after 3s
+    const continueTimer = setTimeout(() => setShowContinue(true), 3000);
+    return () => {
+      clearTimeout(openTimer);
+      clearTimeout(continueTimer);
+    };
   }, []);
 
   const close = () => {
     setOpen(false);
-    setTimeout(onDismiss, 350);
+    setTimeout(() => {
+      navigate("/home", { replace: true });
+      onDismiss();
+    }, 350);
   };
 
   const handleSeePlans = () => {
     setOpen(false);
     setTimeout(() => navigate("/pricing"), 200);
-  };
-
-  const handleContinueFree = () => {
-    setOpen(false);
-    setTimeout(() => navigate("/home", { replace: true }), 200);
   };
 
   return (
@@ -68,10 +75,7 @@ const PostOnboardingBanner = ({ onDismiss }: Props) => {
           </p>
         </div>
 
-        <div
-          className="mt-5 rounded-2xl p-4"
-          style={{ background: "#FAF6EF" }}
-        >
+        <div className="mt-5 rounded-2xl p-4" style={{ background: "#FAF6EF" }}>
           <ul className="space-y-2">
             {HIGHLIGHTS.map((h) => (
               <li
@@ -92,15 +96,17 @@ const PostOnboardingBanner = ({ onDismiss }: Props) => {
         <button
           onClick={handleSeePlans}
           className="mt-5 w-full rounded-xl py-3.5 text-sm font-bold text-white shadow-md transition-opacity hover:opacity-90"
-          style={{
-            background: "linear-gradient(135deg, #89B4C9 0%, #6E9CB3 100%)",
-          }}
+          style={{ background: "linear-gradient(135deg, #89B4C9 0%, #6E9CB3 100%)" }}
         >
           See All Plans →
         </button>
+
+        {/* Fades in after 3 seconds */}
         <button
-          onClick={handleContinueFree}
-          className="mt-3 w-full py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+          onClick={close}
+          disabled={!showContinue}
+          className="mt-3 w-full py-2 text-sm font-medium text-muted-foreground transition-opacity duration-700 hover:text-foreground"
+          style={{ opacity: showContinue ? 1 : 0 }}
         >
           Continue with Free
         </button>

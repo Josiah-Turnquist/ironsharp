@@ -8,7 +8,8 @@ import { useTTS } from "@/hooks/useSpeech";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Headphones, ChevronLeft, Mic, Square, Play, Shield, BookOpen, ChevronDown, Lock } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Headphones, ChevronLeft, Mic, Square, Play, Shield, BookOpen, ChevronDown, Lock, SlidersHorizontal, Home, Check } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -85,11 +86,18 @@ const Devotional = () => {
   const [q2Private, setQ2Private] = useState(false);
   const [prayerPrivate, setPrayerPrivate] = useState(true);
   const [voiceMemoPrivate, setVoiceMemoPrivate] = useState(false);
+  const [isHomeScreen, setIsHomeScreen] = useState(false);
 
   // Reset context drawer when day changes
   useEffect(() => {
     setContextOpen(false);
   }, [activePlanId, currentDay]);
+
+  // Sync home screen state with localStorage when plan changes
+  useEffect(() => {
+    if (!activePlanId) { setIsHomeScreen(false); return; }
+    try { setIsHomeScreen(localStorage.getItem("ironsharp.headline_plan_id") === activePlanId); } catch {}
+  }, [activePlanId]);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
@@ -163,13 +171,6 @@ const Devotional = () => {
           .maybeSingle();
         if (progress) {
           day = progress.current_day;
-        } else {
-          // Start the plan
-          await supabase.from("user_plan_progress").insert({
-            user_id: user.id,
-            plan_id: activePlanId,
-            current_day: 1,
-          });
         }
       }
       setCurrentDay(day);
@@ -224,11 +225,23 @@ const Devotional = () => {
     };
   }, [dayContent?.chapter, translation]);
 
+  const toggleHomeScreen = () => {
+    if (!activePlanId) return;
+    try {
+      if (isHomeScreen) {
+        localStorage.removeItem("ironsharp.headline_plan_id");
+        setIsHomeScreen(false);
+      } else {
+        localStorage.setItem("ironsharp.headline_plan_id", activePlanId);
+        setIsHomeScreen(true);
+      }
+    } catch {}
+  };
+
   const toggleRecording = () => {
     if (isRecording) {
       setIsRecording(false);
       setHasRecording(true);
-      toast({ title: "Voice memo saved 🎙️" });
     } else {
       setIsRecording(true);
     }
@@ -390,14 +403,38 @@ const Devotional = () => {
           >
             <ChevronLeft className="h-4 w-4" /> Back
           </button>
-          <Select value={translation} onValueChange={setTranslation}>
-            <SelectTrigger className="h-8 w-20 rounded-full border-border text-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {translations.map(t => <SelectItem key={t.id} value={t.id}>{t.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-1.5">
+            <Select value={translation} onValueChange={setTranslation}>
+              <SelectTrigger className="h-8 w-20 rounded-full border-border text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {translations.map(t => <SelectItem key={t.id} value={t.id}>{t.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground/50 transition-colors hover:bg-muted hover:text-muted-foreground">
+                  <SlidersHorizontal className="h-3.5 w-3.5" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuItem onClick={toggleHomeScreen} className="gap-2">
+                  {isHomeScreen ? (
+                    <>
+                      <Check className="h-4 w-4 text-primary" />
+                      <span>On Home Screen</span>
+                    </>
+                  ) : (
+                    <>
+                      <Home className="h-4 w-4" />
+                      <span>Add to Home Screen</span>
+                    </>
+                  )}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* Title */}
@@ -621,16 +658,7 @@ const Devotional = () => {
         </div>
 
         {/* Discipler Notes */}
-        <div className="mb-6 rounded-xl border border-border bg-card p-4">
-          <div className="mb-2 flex items-center gap-2">
-            <Shield className="h-4 w-4 text-primary" />
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Discipler Notes</h3>
-          </div>
-          <p className="text-sm italic text-muted-foreground">
-            "Great reflection on verse 6 — keep pressing into that tension between honesty and love. Praying for you this week."
-          </p>
-          <p className="mt-2 text-xs text-muted-foreground">— Marcus, 2 days ago</p>
-        </div>
+        <p className="mb-6 text-[13px] italic text-muted-foreground/70">No Discipler Notes</p>
 
         <PrivacySummaryBanner
           flags={{

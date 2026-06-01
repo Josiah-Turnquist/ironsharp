@@ -31,7 +31,7 @@ const AudioOptionsDropdown = ({ onListenOnly, onCommuteMode }: Props) => {
 
       {open && (
         <div
-          className="absolute right-0 bottom-12 z-50 w-56 rounded-2xl border border-border bg-card p-2 shadow-xl"
+          className="absolute right-0 top-12 z-50 w-56 rounded-2xl border border-border bg-card p-2 shadow-xl"
           style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.25)" }}
         >
           <p

@@ -4,6 +4,7 @@ import AppLayout from "@/components/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ChevronLeft, BookOpen } from "lucide-react";
+import AssignPlanModal from "@/components/AssignPlanModal";
 
 interface Plan {
   id: string;
@@ -32,6 +33,7 @@ const PlanList = () => {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const [assignPlan, setAssignPlan] = useState<{ id: string; title: string } | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -107,7 +109,14 @@ const PlanList = () => {
             {plans.map((plan) => (
               <button
                 key={plan.id}
-                onClick={() => navigate(`/devotional?plan=${plan.id}`)}
+                onClick={() => {
+                  const status = getStatusLabel(plan.id);
+                  if (status === "Start Plan") {
+                    setAssignPlan({ id: plan.id, title: plan.title });
+                  } else {
+                    navigate(`/devotional?plan=${plan.id}`);
+                  }
+                }}
                 className="group w-full rounded-xl border border-border/50 bg-card p-4 text-left transition-all hover:border-primary/30 hover:shadow-md"
               >
                 <div className="flex items-start justify-between gap-3">
@@ -136,6 +145,15 @@ const PlanList = () => {
           </div>
         )}
       </div>
+
+      {assignPlan && (
+        <AssignPlanModal
+          planId={assignPlan.id}
+          planTitle={assignPlan.title}
+          open={!!assignPlan}
+          onClose={() => setAssignPlan(null)}
+        />
+      )}
     </AppLayout>
   );
 };

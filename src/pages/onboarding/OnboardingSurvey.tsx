@@ -34,6 +34,7 @@ type Answers = {
   name: string;
   age: string;
   state: string;
+  city: string;
   education: string;
   hasChurch: string;
   churchName: string;
@@ -71,11 +72,11 @@ const OnboardingSurvey = () => {
   const [step, setStep] = useState(1); // 1..8 questions, 9 closing
   const [saving, setSaving] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
-  const [bannerShown, setBannerShown] = useState(false);
   const [a, setA] = useState<Answers>({
     name: "",
     age: "",
     state: "",
+    city: "",
     education: "",
     hasChurch: "",
     churchName: "",
@@ -89,11 +90,8 @@ const OnboardingSurvey = () => {
   }, [user, loading, navigate]);
 
   useEffect(() => {
-    if (step === 9 && !bannerShown) {
-      setShowBanner(true);
-      setBannerShown(true);
-    }
-  }, [step, bannerShown]);
+    if (step === 9) setShowBanner(true);
+  }, [step]);
 
   const canContinue = (() => {
     switch (step) {
@@ -131,9 +129,11 @@ const OnboardingSurvey = () => {
         survey_name: a.name,
         survey_age_range: a.age,
         survey_state: a.state,
+        survey_city: a.city || null,
         survey_education: a.education,
         survey_has_church: a.hasChurch === "Yes",
         survey_church_name: a.hasChurch === "Yes" ? a.churchName || null : null,
+        church_name: a.hasChurch === "Yes" ? a.churchName || null : null,
         survey_devotional_rating: a.rating,
         survey_faith_journey: a.faith,
         survey_goals: a.goals,
@@ -207,7 +207,7 @@ const OnboardingSurvey = () => {
         {step === 3 && (
           <div className="mx-auto max-w-md">
             <h1 className="mb-6 font-serif text-2xl font-bold">Where are you based?</h1>
-            <Select value={a.state} onValueChange={(v) => setA({ ...a, state: v })}>
+            <Select value={a.state} onValueChange={(v) => setA({ ...a, state: v, city: "" })}>
               <SelectTrigger className="h-12 rounded-xl text-base">
                 <SelectValue placeholder="Select your state" />
               </SelectTrigger>
@@ -217,6 +217,15 @@ const OnboardingSurvey = () => {
                 ))}
               </SelectContent>
             </Select>
+            {a.state && (
+              <Input
+                autoFocus
+                value={a.city}
+                onChange={(e) => setA({ ...a, city: e.target.value })}
+                placeholder="What city? (optional)"
+                className="mt-4 h-12 rounded-xl text-base"
+              />
+            )}
           </div>
         )}
 

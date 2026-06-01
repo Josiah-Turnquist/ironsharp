@@ -312,6 +312,7 @@ export type Database = {
           streak_count: number
           survey_age_range: string | null
           survey_church_name: string | null
+          survey_city: string | null
           survey_completed_at: string | null
           survey_devotional_rating: number | null
           survey_education: string | null
@@ -338,6 +339,7 @@ export type Database = {
           streak_count?: number
           survey_age_range?: string | null
           survey_church_name?: string | null
+          survey_city?: string | null
           survey_completed_at?: string | null
           survey_devotional_rating?: number | null
           survey_education?: string | null
@@ -364,6 +366,7 @@ export type Database = {
           streak_count?: number
           survey_age_range?: string | null
           survey_church_name?: string | null
+          survey_city?: string | null
           survey_completed_at?: string | null
           survey_devotional_rating?: number | null
           survey_education?: string | null

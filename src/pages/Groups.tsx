@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
-import { ChevronDown, ChevronUp, UserPlus, Settings, Plus, Check, Minus, GripVertical, Loader2, Pencil, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, UserPlus, Settings, Plus, Check, Minus, GripVertical, Loader2, Pencil, Trash2, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,15 +28,17 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 const typeColors: Record<string, string> = {
-  "one-on-one": "#A89070",
+  "one-on-one": "#89B4C9",
   family: "#7FAF8A",
-  "small-group": "#B8A86A",
+  "small-group": "#C49A78",
+  "large-group": "#9B8EC4",
 };
 
 const typeLabels: Record<string, string> = {
   "one-on-one": "One-on-One",
   family: "Family",
   "small-group": "Small Group",
+  "large-group": "Large Group",
 };
 
 interface Member {
@@ -48,18 +51,20 @@ interface Member {
 interface GroupData {
   id: string;
   name: string;
-  type: "one-on-one" | "family" | "small-group";
+  type: "one-on-one" | "family" | "small-group" | "large-group";
   reference: string;
   day: number;
   totalDays: number;
   streak: number;
   inviteCode: string;
   members: Member[];
+  currentPlanId: string | null;
 }
 
 const Groups = () => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [groups, setGroups] = useState<GroupData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,7 +77,7 @@ const Groups = () => {
   const [joinOpen, setJoinOpen] = useState(false);
   const [editGroup, setEditGroup] = useState<GroupData | null>(null);
   const [newName, setNewName] = useState("");
-  const [newType, setNewType] = useState<"one-on-one" | "family" | "small-group">("small-group");
+  const [newType, setNewType] = useState<"one-on-one" | "family" | "small-group" | "large-group">("small-group");
   const [joinCode, setJoinCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [editName, setEditName] = useState("");
@@ -151,6 +156,7 @@ const Groups = () => {
           streak: g.streak_count,
           inviteCode: g.invite_code,
           members: gMembers,
+          currentPlanId: g.current_plan_id ?? null,
         };
       });
 
@@ -229,7 +235,6 @@ const Groups = () => {
     const { error } = await supabase.from("groups").update({ name: editName.trim() }).eq("id", editGroup.id);
     setBusy(false);
     if (error) { toast({ title: "Rename failed", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Group renamed" });
     setEditGroup(null);
     loadGroups();
   };
@@ -238,7 +243,6 @@ const Groups = () => {
     if (!user) return;
     const { error } = await supabase.from("group_members").delete().eq("group_id", groupId).eq("user_id", user.id);
     if (error) { toast({ title: "Could not leave", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "Left group" });
     setEditGroup(null);
     loadGroups();
   };
@@ -343,31 +347,45 @@ const Groups = () => {
                         </div>
                       ))}
                     </div>
-                    <div className="mt-4 flex gap-2">
-                      <Button
-                        variant="outline"
-                        className="flex-1 rounded-xl text-xs"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigator.clipboard.writeText(group.inviteCode);
-                          toast({ title: "Invite code copied!", description: group.inviteCode });
-                        }}
-                      >
-                        <UserPlus className="mr-1 h-3.5 w-3.5" />
-                        Invite
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="flex-1 rounded-xl text-xs"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditName(group.name);
-                          setEditGroup(group);
-                        }}
-                      >
-                        <Pencil className="mr-1 h-3.5 w-3.5" />
-                        Edit
-                      </Button>
+                    <div className="mt-4 space-y-2">
+                      {group.currentPlanId && (
+                        <Button
+                          className="w-full rounded-xl text-sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/devotional?plan=${group.currentPlanId}`);
+                          }}
+                        >
+                          <BookOpen className="mr-2 h-4 w-4" />
+                          Open Devotional
+                        </Button>
+                      )}
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          className="flex-1 rounded-xl text-xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText(group.inviteCode);
+                            toast({ title: "Invite code copied!", description: group.inviteCode });
+                          }}
+                        >
+                          <UserPlus className="mr-1 h-3.5 w-3.5" />
+                          Invite
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="flex-1 rounded-xl text-xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditName(group.name);
+                            setEditGroup(group);
+                          }}
+                        >
+                          <Pencil className="mr-1 h-3.5 w-3.5" />
+                          Edit
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -407,6 +425,7 @@ const Groups = () => {
                     <SelectItem value="one-on-one">One-on-One</SelectItem>
                     <SelectItem value="family">Family</SelectItem>
                     <SelectItem value="small-group">Small Group</SelectItem>
+                    <SelectItem value="large-group">Large Group</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -20,7 +20,7 @@ const ThemeContext = createContext<ThemeContextType>({ theme: "parchment", setTh
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<ThemeName>(() => {
     const saved = localStorage.getItem("ironsharp-theme");
-    return (saved as ThemeName) || "vesper";
+    return (saved as ThemeName) || "slate";
   });
 
   useEffect(() => {
