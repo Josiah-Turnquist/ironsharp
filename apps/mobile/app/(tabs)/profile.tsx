@@ -1,7 +1,15 @@
 import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Palette, LogOut, ChevronRight, Award } from "lucide-react-native";
+import {
+  Palette,
+  LogOut,
+  ChevronRight,
+  Award,
+  UserCog,
+  Bell,
+  HelpCircle,
+} from "lucide-react-native";
 import { Screen } from "@/components/Screen";
 import { useThemeColor } from "@/components/useThemeColor";
 import { useProfile } from "@/lib/queries";
@@ -97,11 +105,35 @@ export default function ProfileScreen() {
         {/* Settings rows */}
         <View className="overflow-hidden rounded-xl border border-border bg-card">
           <Pressable
+            onPress={() => router.push("/settings/profile")}
+            className="flex-row items-center gap-3 border-b border-border p-4 active:bg-muted/40"
+          >
+            <UserCog size={20} color={primary} />
+            <Text className="flex-1 text-base text-foreground">Edit Profile</Text>
+            <ChevronRight size={18} color={muted} />
+          </Pressable>
+          <Pressable
+            onPress={() => router.push("/settings/notifications")}
+            className="flex-row items-center gap-3 border-b border-border p-4 active:bg-muted/40"
+          >
+            <Bell size={20} color={primary} />
+            <Text className="flex-1 text-base text-foreground">Notifications</Text>
+            <ChevronRight size={18} color={muted} />
+          </Pressable>
+          <Pressable
             onPress={() => router.push("/settings/theme")}
             className="flex-row items-center gap-3 border-b border-border p-4 active:bg-muted/40"
           >
             <Palette size={20} color={primary} />
             <Text className="flex-1 text-base text-foreground">Appearance</Text>
+            <ChevronRight size={18} color={muted} />
+          </Pressable>
+          <Pressable
+            onPress={() => router.push("/settings/help")}
+            className="flex-row items-center gap-3 border-b border-border p-4 active:bg-muted/40"
+          >
+            <HelpCircle size={20} color={primary} />
+            <Text className="flex-1 text-base text-foreground">Help Center</Text>
             <ChevronRight size={18} color={muted} />
           </Pressable>
           <View className="flex-row items-center gap-3 p-4">

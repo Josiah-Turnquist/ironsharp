@@ -1,4 +1,4 @@
-import { ScrollView, Text, View } from "react-native";
+import { Alert, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check } from "lucide-react-native";
@@ -20,7 +20,7 @@ const PERKS = [
 export default function OnboardingWelcome() {
   const router = useRouter();
   const qc = useQueryClient();
-  const { displayName, churchName, role, planId } = useOnboarding();
+  const { displayName, churchName, role, planId, survey } = useOnboarding();
   const { data } = usePlans();
   const checkColor = useThemeColor("primary");
 
@@ -30,6 +30,17 @@ export default function OnboardingWelcome() {
         displayName: displayName || undefined,
         churchName: churchName || undefined,
         primaryRole: role ?? "disciple",
+        // Survey answers — undefined fields are dropped by JSON.stringify so
+        // we never overwrite existing values with blanks.
+        surveyName: displayName || undefined,
+        surveyAgeRange: survey.ageRange ?? undefined,
+        surveyState: survey.state.trim() || undefined,
+        surveyEducation: survey.education ?? undefined,
+        surveyHasChurch: survey.hasChurch ?? undefined,
+        surveyChurchName: churchName || undefined,
+        surveyDevotionalRating: survey.devotionalRating ?? undefined,
+        surveyFaithJourney: survey.faithJourney ?? undefined,
+        surveyGoals: survey.goals.length ? survey.goals : undefined,
         surveyCompleted: true,
       });
       if (planId) await ApiClient.startPlan(planId);
@@ -38,6 +49,12 @@ export default function OnboardingWelcome() {
       await qc.invalidateQueries({ queryKey: ["profile"] });
       await qc.invalidateQueries({ queryKey: ["progress"] });
       router.replace("/(tabs)/home");
+    },
+    onError: (err: Error) => {
+      Alert.alert(
+        "Couldn’t finish setup",
+        err.message || "Please check your connection and try again."
+      );
     },
   });
 
