@@ -17,10 +17,12 @@ export default function CompleteProfile() {
   const [church, setChurch] = useState(churchName);
   const iconColor = useThemeColor("muted-foreground");
 
-  // Prefill the display name from the profile created at signup.
+  // Prefill from the profile we already have on the server (created at signup
+  // for first-time users, or persisted from a prior onboarding pass).
   useEffect(() => {
     if (!name && profile.data?.displayName) setName(profile.data.displayName);
-  }, [profile.data?.displayName]);
+    if (!church && profile.data?.churchName) setChurch(profile.data.churchName);
+  }, [profile.data?.displayName, profile.data?.churchName]);
 
   const onContinue = () => {
     set({ displayName: name.trim(), churchName: church.trim() });

@@ -46,6 +46,17 @@ plans.get("/:planId", async (c) => {
   return c.json({ plan });
 });
 
+// GET /api/plans/:planId/days  → every day in a plan, ordered
+plans.get("/:planId/days", async (c) => {
+  const planId = c.req.param("planId");
+  const days = await db
+    .select()
+    .from(devotionalDays)
+    .where(eq(devotionalDays.planId, planId))
+    .orderBy(asc(devotionalDays.dayNumber));
+  return c.json({ days });
+});
+
 // GET /api/plans/:planId/days/:dayNumber  → a single day's content
 plans.get("/:planId/days/:dayNumber", async (c) => {
   const planId = c.req.param("planId");

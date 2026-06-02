@@ -1,14 +1,17 @@
-import { ScrollView, Text, View } from "react-native";
-import { CheckCircle2 } from "lucide-react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { CheckCircle2, ChevronRight } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
 import { Header } from "@/components/Header";
 import { useThemeColor } from "@/components/useThemeColor";
 import { usePlans, useProgress } from "@/lib/queries";
 
 export default function CompletedPlans() {
+  const router = useRouter();
   const progress = useProgress();
   const { data: plansData } = usePlans();
   const primary = useThemeColor("primary");
+  const muted = useThemeColor("muted-foreground");
 
   const planById = new Map((plansData?.plans ?? []).map((p) => [p.id, p]));
   const completed = (progress.data ?? []).filter((p) => p.completedAt);
@@ -31,9 +34,10 @@ export default function CompletedPlans() {
           completed.map((row) => {
             const plan = planById.get(row.planId);
             return (
-              <View
+              <Pressable
                 key={row.id}
-                className="flex-row items-center gap-3 rounded-xl border border-border bg-card p-4"
+                onPress={() => router.push(`/plans/review/${row.planId}`)}
+                className="flex-row items-center gap-3 rounded-xl border border-border bg-card p-4 active:bg-muted/40"
               >
                 <CheckCircle2 size={22} color={primary} />
                 <View className="flex-1">
@@ -47,7 +51,8 @@ export default function CompletedPlans() {
                       : ""}
                   </Text>
                 </View>
-              </View>
+                <ChevronRight size={18} color={muted} />
+              </Pressable>
             );
           })
         )}

@@ -68,6 +68,16 @@ export type Profile = {
   streakCount: number;
   totalCompleted: number;
   churchName: string | null;
+  // Survey answers (collected during onboarding).
+  surveyName: string | null;
+  surveyAgeRange: string | null;
+  surveyState: string | null;
+  surveyEducation: string | null;
+  surveyHasChurch: boolean | null;
+  surveyChurchName: string | null;
+  surveyDevotionalRating: number | null;
+  surveyFaithJourney: string | null;
+  surveyGoals: string[] | null;
   surveyCompletedAt: string | null;
   membershipTier: "free" | "connect" | "sharpen" | "family";
 };
@@ -122,6 +132,8 @@ export const ApiClient = {
   getPlansByCategory: (category: string) =>
     api<{ plans: DevotionalPlan[] }>(`/api/plans/category/${category}`),
   getPlan: (planId: string) => api<{ plan: DevotionalPlan }>(`/api/plans/${planId}`),
+  getDays: (planId: string) =>
+    api<{ days: DevotionalDay[] }>(`/api/plans/${planId}/days`),
   getDay: (planId: string, dayNumber: number) =>
     api<{ day: DevotionalDay }>(`/api/plans/${planId}/days/${dayNumber}`),
 

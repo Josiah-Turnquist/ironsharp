@@ -52,3 +52,21 @@ export function useProgress() {
     enabled: authed,
   });
 }
+
+export function usePlan(planId: string | undefined) {
+  const { authed } = useAuthed();
+  return useQuery({
+    queryKey: ["plan", planId],
+    queryFn: () => ApiClient.getPlan(planId!).then((r) => r.plan),
+    enabled: authed && !!planId,
+  });
+}
+
+export function useDays(planId: string | undefined) {
+  const { authed } = useAuthed();
+  return useQuery({
+    queryKey: ["plan", planId, "days"],
+    queryFn: () => ApiClient.getDays(planId!).then((r) => r.days),
+    enabled: authed && !!planId,
+  });
+}

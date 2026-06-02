@@ -69,7 +69,7 @@ export default function RoleSelect() {
         <Button
           title="Continue"
           disabled={!role}
-          onPress={() => router.push("/onboarding/plan")}
+          onPress={() => router.push("/onboarding/survey")}
         />
       </View>
     </Screen>
