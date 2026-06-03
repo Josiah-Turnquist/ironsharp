@@ -1,6 +1,5 @@
-import { Alert, Image, Pressable, ScrollView, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import { CheckCircle2 } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
 import { useThemeColor } from "@/components/useThemeColor";
@@ -57,25 +56,14 @@ export default function PlansScreen() {
                 key={cat.id}
                 onPress={() => openCategory(cat.id, count)}
                 style={{ backgroundColor: cat.tint }}
-                className="mb-3 aspect-[4/5] w-[48%] overflow-hidden rounded-2xl"
+                className="mb-3 aspect-[4/5] w-[48%] justify-end overflow-hidden rounded-2xl p-3"
               >
-                <Image
-                  source={{ uri: cat.imageUrl }}
-                  style={{ position: "absolute", width: "100%", height: "100%" }}
-                  resizeMode="cover"
-                />
-                <LinearGradient
-                  colors={["transparent", "rgba(0,0,0,0.75)"]}
-                  style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "70%" }}
-                />
-                <View style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: 12 }}>
-                  <Text className="font-serif text-base font-bold uppercase text-white">
-                    {cat.title}
-                  </Text>
-                  <Text className="text-xs text-white/70">
-                    {count > 0 ? `${count} Plan${count > 1 ? "s" : ""}` : cat.subtitle}
-                  </Text>
-                </View>
+                <Text className="font-serif text-base font-bold uppercase text-white">
+                  {cat.title}
+                </Text>
+                <Text className="text-xs text-white/70">
+                  {count > 0 ? `${count} Plan${count > 1 ? "s" : ""}` : cat.subtitle}
+                </Text>
               </Pressable>
             );
           })}
