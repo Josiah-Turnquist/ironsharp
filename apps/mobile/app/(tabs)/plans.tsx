@@ -1,6 +1,6 @@
 import { Alert, Image, ImageSourcePropType, Pressable, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { CheckCircle2 } from "lucide-react-native";
+import { CheckCircle2, Hammer, Sparkles } from "lucide-react-native";
 
 const CATEGORY_IMAGES: Record<string, ImageSourcePropType> = {
   mens:           require("../../assets/images/categories/mens.jpg"),
@@ -12,25 +12,65 @@ const CATEGORY_IMAGES: Record<string, ImageSourcePropType> = {
   youth:          require("../../assets/images/categories/youth.jpg"),
   "new-believer": require("../../assets/images/categories/new-believer.jpg"),
   general:        require("../../assets/images/categories/general.jpg"),
+  completed:      require("../../assets/images/categories/completed.jpg"),
 };
 import { Screen } from "@/components/Screen";
 import { useThemeColor } from "@/components/useThemeColor";
-import { usePlans, useProgress } from "@/lib/queries";
+import { usePlans, useProgress, useGenerateTokens } from "@/lib/queries";
 import { CATEGORIES } from "@/lib/categories";
+
+function TokenCoins({ count }: { count: number }) {
+  return (
+    <View style={{ flexDirection: "row", gap: 5, marginTop: 6 }}>
+      {[0, 1].map((i) => {
+        const active = i < count;
+        return (
+          <View
+            key={i}
+            style={{
+              width: 22,
+              height: 22,
+              borderRadius: 11,
+              backgroundColor: active ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.18)",
+              borderWidth: active ? 0 : 1,
+              borderColor: "rgba(255,255,255,0.4)",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {active && <Hammer size={11} color="#3B2A1A" />}
+          </View>
+        );
+      })}
+    </View>
+  );
+}
 
 export default function PlansScreen() {
   const router = useRouter();
   const { data } = usePlans();
   const progress = useProgress();
+  const tokens = useGenerateTokens();
   const white = "#FFFFFF";
   const muted = useThemeColor("muted-foreground");
 
   const countByCategory = data?.countByCategory ?? {};
   const completedCount = (progress.data ?? []).filter((p) => p.completedAt).length;
+  const tokensRemaining = tokens.data?.tokensRemaining ?? 2;
+  const resetsAt = tokens.data?.resetsAt;
 
   const openCategory = (id: string, count: number) => {
     if (count > 0) router.push(`/plans/${id}`);
     else Alert.alert("Coming soon", "New plans for this category are on the way.");
+  };
+
+  const openCreate = () => {
+    if (tokensRemaining === 0 && resetsAt) {
+      const date = new Date(resetsAt).toLocaleDateString("en-US", { month: "long", day: "numeric" });
+      Alert.alert("You're all out", `Your next token is available on ${date}.`);
+      return;
+    }
+    router.push("/plans/create");
   };
 
   return (
@@ -52,13 +92,62 @@ export default function PlansScreen() {
                 ? router.push("/plans/completed")
                 : Alert.alert("Nothing yet", "Finish a plan and it'll show up here.")
             }
-            className="mb-3 aspect-[4/5] w-[48%] justify-end overflow-hidden rounded-2xl bg-card-deep p-3"
+            className="mb-3 aspect-[4/5] w-[48%] justify-end overflow-hidden rounded-2xl bg-card-deep"
           >
-            <CheckCircle2 size={22} color={muted} />
-            <Text className="mt-2 font-serif text-base font-bold uppercase text-foreground">
-              Completed
-            </Text>
-            <Text className="text-xs text-muted-foreground">Your finished plans</Text>
+            <Image
+              source={CATEGORY_IMAGES.completed}
+              style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+              resizeMode="contain"
+            />
+            <View
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: "55%",
+                backgroundColor: "rgba(0,0,0,0.45)",
+              }}
+            />
+            <View className="p-3">
+              <CheckCircle2 size={22} color={white} />
+              <Text className="mt-2 font-serif text-base font-bold uppercase text-white">
+                Completed
+              </Text>
+              <Text className="text-xs text-white/70">Your finished plans</Text>
+            </View>
+          </Pressable>
+
+          {/* Create Your Own tile (pinned second) */}
+          <Pressable
+            onPress={openCreate}
+            className="mb-3 aspect-[4/5] w-[48%] justify-end overflow-hidden rounded-2xl"
+            style={{ backgroundColor: "#1C2B3A" }}
+          >
+            {/* Subtle diagonal grain overlay */}
+            <View
+              style={{
+                position: "absolute",
+                top: 0, left: 0, right: 0, bottom: 0,
+                backgroundColor: "rgba(255,255,255,0.03)",
+              }}
+            />
+            <View
+              style={{
+                position: "absolute",
+                bottom: 0, left: 0, right: 0,
+                height: "65%",
+                backgroundColor: "rgba(0,0,0,0.35)",
+              }}
+            />
+            <View className="p-3">
+              <Sparkles size={22} color={white} />
+              <Text className="mt-2 font-serif text-base font-bold uppercase text-white">
+                Create Your Own
+              </Text>
+              <Text className="text-xs text-white/70">Build a custom plan</Text>
+              <TokenCoins count={tokensRemaining} />
+            </View>
           </Pressable>
 
           {CATEGORIES.map((cat) => {
@@ -75,7 +164,7 @@ export default function PlansScreen() {
                   <Image
                     source={img}
                     style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
-                    resizeMode="cover"
+                    resizeMode="contain"
                   />
                 )}
                 {/* Dark overlay for text legibility */}

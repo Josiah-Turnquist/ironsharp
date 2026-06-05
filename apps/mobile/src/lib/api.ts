@@ -56,6 +56,7 @@ export type DevotionalDay = {
   theme: string | null;
   reflectionQ1: string;
   reflectionQ2: string;
+  prayerPrompt: string | null;
 };
 
 export type Profile = {
@@ -78,8 +79,15 @@ export type Profile = {
   surveyDevotionalRating: number | null;
   surveyFaithJourney: string | null;
   surveyGoals: string[] | null;
+  surveyRelationshipStatus: string | null;
+  surveyHasKids: boolean | null;
   surveyCompletedAt: string | null;
+  createdAt: string;
   membershipTier: "free" | "connect" | "sharpen" | "family";
+  generatedCount: number;
+  generatedWindowStart: string | null;
+  planUnlocksCount: number;
+  planUnlocksWindowStart: string | null;
 };
 
 export type PlanProgress = {
@@ -152,11 +160,32 @@ export type Group = {
   id: string;
   name: string;
   groupType: "one-on-one" | "family" | "small-group";
+  inviteCode: string;
   currentDay: number;
   streakCount: number;
   displayOrder: number;
   plan: GroupPlan | null;
   members: GroupMember[];
+};
+
+export type UserSearchResult = {
+  userId: string;
+  displayName: string;
+  avatarUrl: string | null;
+};
+
+export type GroupDayResponse = {
+  userId: string;
+  isOwn: boolean;
+  displayName: string;
+  avatarUrl: string | null;
+  response1: string | null;
+  response2: string | null;
+  prayer: string | null;
+  q1Private: boolean;
+  q2Private: boolean;
+  prayerPrivate: boolean;
+  submittedAt: string;
 };
 
 export type Submission = {
@@ -175,6 +204,7 @@ export type Submission = {
   prayerPrivate: boolean;
   voiceMemoPrivate: boolean;
   submissionSource: string;
+  submittedAt: string;
 };
 
 /* ---------- Endpoint helpers ---------- */
@@ -185,6 +215,21 @@ export const ApiClient = {
     api<{ profile: Profile }>("/api/profile", {
       method: "PATCH",
       body: JSON.stringify(patch),
+    }),
+
+  getGenerateTokens: () =>
+    api<{ tokensRemaining: number; resetsAt: string | null }>("/api/plans/generate/tokens"),
+  generateDevotional: (body: {
+    bookOrTopic: string;
+    inputType: "book" | "topic";
+    days: number;
+    themeFocus: string;
+    who: string;
+    context?: string;
+  }) =>
+    api<{ planId: string; reused: boolean }>("/api/plans/generate", {
+      method: "POST",
+      body: JSON.stringify(body),
     }),
 
   getPlans: () =>
@@ -202,10 +247,10 @@ export const ApiClient = {
   getProgress: () => api<{ progress: PlanProgress[] }>("/api/progress"),
   getActiveDevotional: () =>
     api<{ active: ActiveDevotional | null }>("/api/progress/active"),
-  startPlan: (planId: string) =>
+  startPlan: (planId: string, forGroup = false) =>
     api<{ progress: PlanProgress }>("/api/progress", {
       method: "POST",
-      body: JSON.stringify({ planId }),
+      body: JSON.stringify({ planId, forGroup }),
     }),
   updateProgress: (
     planId: string,
@@ -241,11 +286,44 @@ export const ApiClient = {
     }),
   deleteGroup: (groupId: string) =>
     api<{ ok: boolean }>(`/api/groups/${groupId}`, { method: "DELETE" }),
+  updateGroup: (groupId: string, name: string) =>
+    api<{ group: Group }>(`/api/groups/${groupId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ name }),
+    }),
+  joinGroupByCode: (inviteCode: string) =>
+    api<{ group: { id: string; name: string } }>("/api/groups/join", {
+      method: "POST",
+      body: JSON.stringify({ inviteCode }),
+    }),
+  addGroupMember: (groupId: string, userId: string) =>
+    api<{ ok: boolean }>(`/api/groups/${groupId}/members`, {
+      method: "POST",
+      body: JSON.stringify({ userId }),
+    }),
+  removeGroupMember: (groupId: string, userId: string) =>
+    api<{ ok: boolean }>(`/api/groups/${groupId}/members/${userId}`, {
+      method: "DELETE",
+    }),
+  searchUsers: (q: string) =>
+    api<{ users: UserSearchResult[] }>(`/api/profile/search?q=${encodeURIComponent(q)}`),
+  assignPlanToGroup: (groupId: string, planId: string) =>
+    api<{ ok: boolean }>(`/api/groups/${groupId}/plan`, {
+      method: "PATCH",
+      body: JSON.stringify({ planId }),
+    }),
+
+  getGroupDayResponses: (planId: string, dayNumber: number) =>
+    api<{ responses: GroupDayResponse[] }>(
+      `/api/submissions/group/day?planId=${planId}&dayNumber=${dayNumber}`
+    ),
 
   getSubmission: (planId: string, dayNumber: number) =>
     api<{ submission: Submission | null }>(
       `/api/submissions/${planId}/${dayNumber}`
     ),
+  getPlanSubmissions: (planId: string) =>
+    api<{ submissions: Submission[] }>(`/api/submissions/plan/${planId}`),
   saveSubmission: (body: {
     planId: string;
     dayNumber: number;

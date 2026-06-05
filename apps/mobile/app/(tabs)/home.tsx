@@ -37,7 +37,7 @@ export default function HomeScreen() {
         {/* Community & Podcast */}
         <View className="mb-6 flex-row gap-3">
           <Pressable
-            onPress={() => router.push("/(tabs)/groups")}
+            onPress={() => router.push("/community")}
             className="flex-1 gap-2.5 rounded-2xl border border-border bg-card p-4"
           >
             <View className="flex-row items-center justify-between">
@@ -49,8 +49,16 @@ export default function HomeScreen() {
               </Text>
             </View>
             <View>
-              <Text className="font-sans-semibold text-sm text-foreground">Community</Text>
-              <Text className="mt-0.5 text-[11px] text-muted-foreground">— · Day — · — done</Text>
+              <Text className="font-sans-semibold text-sm text-foreground">IronSharp Community</Text>
+              <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 11, color: muted, marginTop: 2 }}>
+                Day — of —
+              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 }}>
+                <View className="rounded-full bg-primary/10 px-[7px] py-0.5">
+                  <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 11, color: primary }}>—/—</Text>
+                </View>
+                <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 11, color: muted }}>completed today</Text>
+              </View>
             </View>
           </Pressable>
 

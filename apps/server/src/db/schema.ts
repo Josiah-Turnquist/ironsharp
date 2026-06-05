@@ -4,6 +4,7 @@ import {
   integer,
   boolean,
   timestamp,
+  date,
   uuid,
   jsonb,
   unique,
@@ -60,6 +61,10 @@ export const devotionalPlans = pgTable("devotional_plans", {
   totalDays: integer("total_days").notNull().default(7),
   howToUse: text("how_to_use"),
   imageUrl: text("image_url"),
+  source: text("source").notNull().default("curated"),       // "curated" | "generated"
+  createdByUserId: text("created_by_user_id"),
+  isPublic: boolean("is_public").notNull().default(true),
+  matchKey: text("match_key"),                               // e.g. "book:romans-14" — dedup key
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -76,6 +81,7 @@ export const devotionalDays = pgTable(
     theme: text("theme"),
     reflectionQ1: text("reflection_q1").notNull(),
     reflectionQ2: text("reflection_q2").notNull(),
+    prayerPrompt: text("prayer_prompt"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => ({
@@ -112,7 +118,12 @@ export const profiles = pgTable("profiles", {
   avatarUrl: text("avatar_url"),
   primaryRole: text("primary_role").notNull().default("disciple"), // discipler | disciple | partner
   streakCount: integer("streak_count").notNull().default(0),
+  lastStreakDate: date("last_streak_date"),
   totalCompleted: integer("total_completed").notNull().default(0),
+  generatedCount: integer("generated_count").notNull().default(0),
+  generatedWindowStart: timestamp("generated_window_start", { withTimezone: true }),
+  planUnlocksCount: integer("plan_unlocks_count").notNull().default(0),
+  planUnlocksWindowStart: timestamp("plan_unlocks_window_start", { withTimezone: true }),
   churchName: text("church_name"),
   // survey
   surveyName: text("survey_name"),
@@ -125,6 +136,8 @@ export const profiles = pgTable("profiles", {
   surveyDevotionalRating: integer("survey_devotional_rating"),
   surveyFaithJourney: text("survey_faith_journey"),
   surveyGoals: text("survey_goals").array(),
+  surveyRelationshipStatus: text("survey_relationship_status"), // single | dating | engaged | married
+  surveyHasKids: boolean("survey_has_kids"),
   surveyCompletedAt: timestamp("survey_completed_at", { withTimezone: true }),
   // membership
   membershipTier: text("membership_tier").notNull().default("free"), // free | connect | sharpen | family
@@ -161,6 +174,7 @@ export const groups = pgTable("groups", {
   }),
   currentDay: integer("current_day").notNull().default(1),
   streakCount: integer("streak_count").notNull().default(0),
+  lastStreakDate: date("last_streak_date"),
   inviteCode: text("invite_code").notNull().unique(),
   createdBy: text("created_by").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

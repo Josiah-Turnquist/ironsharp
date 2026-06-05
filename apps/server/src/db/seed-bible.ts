@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { eq } from "drizzle-orm";
 import { db, pool } from "./index.js";
 import { bibleChapters } from "./schema.js";
 
@@ -25,25 +26,41 @@ const OT_COUNT = 39;
 
 type RawBook = { abbrev: string; chapters: string[][] };
 
-async function seed() {
-  console.log("📖 Fetching KJV Bible…");
-  const res = await fetch(
-    "https://raw.githubusercontent.com/thiagobodruk/bible/master/json/en_kjv.json"
-  );
-  if (!res.ok) throw new Error(`Failed to fetch Bible JSON: ${res.status}`);
-  const raw: RawBook[] = await res.json();
+const TRANSLATIONS = [
+  {
+    id: "KJV",
+    label: "King James Version",
+    url: "https://raw.githubusercontent.com/thiagobodruk/bible/master/json/en_kjv.json",
+  },
+  {
+    id: "BBE",
+    label: "Bible in Basic English",
+    url: "https://raw.githubusercontent.com/thiagobodruk/bible/master/json/en_bbe.json",
+  },
+];
 
-  if (raw.length !== 66) {
-    throw new Error(`Expected 66 books, got ${raw.length}`);
-  }
-
+async function seedTranslation(id: string, label: string, url: string) {
   const [existing] = await db
     .select({ id: bibleChapters.id })
     .from(bibleChapters)
+    .where(eq(bibleChapters.translation, id))
     .limit(1);
 
   if (existing) {
-    console.log("   • Bible already seeded — skipping.");
+    console.log(`   • ${label} (${id}) already seeded — skipping.`);
+    return;
+  }
+
+  console.log(`📖 Fetching ${label}…`);
+  const res = await fetch(url);
+  if (!res.ok) {
+    console.warn(`   ⚠ Could not fetch ${label} (${res.status}) — skipping.`);
+    return;
+  }
+
+  const raw: RawBook[] = await res.json();
+  if (raw.length !== 66) {
+    console.warn(`   ⚠ Expected 66 books, got ${raw.length} — skipping.`);
     return;
   }
 
@@ -57,7 +74,7 @@ async function seed() {
     const rawBook = raw[bookIdx]!;
 
     const rows = rawBook.chapters.map((verseArray, chapterIdx) => ({
-      translation: "KJV",
+      translation: id,
       book,
       testament,
       bookOrder,
@@ -65,7 +82,6 @@ async function seed() {
       verses: verseArray,
     }));
 
-    // Insert in batches of 50 to avoid payload limits
     for (let i = 0; i < rows.length; i += 50) {
       await db.insert(bibleChapters).values(rows.slice(i, i + 50));
     }
@@ -74,7 +90,15 @@ async function seed() {
     process.stdout.write(`\r   ${book} (${rows.length} chapters) — ${total} total`);
   }
 
-  console.log(`\n✅ KJV Bible seeded — ${total} chapters across 66 books.`);
+  console.log(`\n   ✓ ${label} — ${total} chapters across 66 books.`);
+}
+
+async function seed() {
+  console.log("🌱 Seeding Bible translations…");
+  for (const t of TRANSLATIONS) {
+    await seedTranslation(t.id, t.label, t.url);
+  }
+  console.log("✅ Bible seed complete.");
 }
 
 seed()

@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { and, eq, sql } from "drizzle-orm";
+import { and, count, eq, isNotNull, sql } from "drizzle-orm";
 import { db } from "../db/index.js";
 import {
   groups,
@@ -9,6 +9,7 @@ import {
   devotionalDays,
 } from "../db/schema.js";
 import { requireAuth, type AppEnv } from "../middleware/auth.js";
+import { TIER_LIMITS, TIER_NAMES, type MembershipTier } from "../lib/tiers.js";
 
 export const groupsRoute = new Hono<AppEnv>();
 groupsRoute.use("*", requireAuth);
@@ -51,6 +52,7 @@ groupsRoute.get("/", async (c) => {
         id: group.id,
         name: group.name,
         groupType: group.groupType,
+        inviteCode: group.inviteCode,
         currentDay: group.currentDay,
         streakCount: group.streakCount,
         displayOrder: membership.displayOrder,
@@ -118,6 +120,69 @@ groupsRoute.post("/", async (c) => {
   return c.json({ group }, 201);
 });
 
+// POST /api/groups/join — join a group by invite code
+groupsRoute.post("/join", async (c) => {
+  const userId = c.var.user.id;
+  const { inviteCode } = await c.req.json().catch(() => ({ inviteCode: undefined }));
+  if (!inviteCode) return c.json({ error: "inviteCode is required" }, 400);
+
+  const [group] = await db
+    .select()
+    .from(groups)
+    .where(eq(groups.inviteCode, String(inviteCode).toUpperCase().trim()))
+    .limit(1);
+  if (!group) return c.json({ error: "Invalid invite code" }, 404);
+
+  const [existing] = await db
+    .select({ id: groupMembers.id })
+    .from(groupMembers)
+    .where(and(eq(groupMembers.groupId, group.id), eq(groupMembers.userId, userId)))
+    .limit(1);
+  if (existing) return c.json({ error: "Already a member of this group" }, 409);
+
+  // Enforce creator's tier group size limit
+  const [creatorProfile] = await db
+    .select({ membershipTier: profiles.membershipTier })
+    .from(profiles)
+    .where(eq(profiles.userId, group.createdBy))
+    .limit(1);
+
+  const creatorTier = (creatorProfile?.membershipTier ?? "free") as MembershipTier;
+  const maxSize = TIER_LIMITS[creatorTier].maxGroupSize;
+
+  if (maxSize !== Infinity) {
+    const [sizeRow] = await db
+      .select({ count: count() })
+      .from(groupMembers)
+      .where(eq(groupMembers.groupId, group.id));
+    const currentSize = sizeRow?.count ?? 0;
+
+    if (currentSize >= maxSize) {
+      return c.json(
+        {
+          error: `This group is full. The group creator's ${TIER_NAMES[creatorTier]} plan supports up to ${maxSize} members.`,
+        },
+        403
+      );
+    }
+  }
+
+  const [maxRow] = await db
+    .select({ maxOrder: sql<number>`coalesce(max(${groupMembers.displayOrder}), -1)` })
+    .from(groupMembers)
+    .where(eq(groupMembers.userId, userId));
+  const nextOrder = (maxRow?.maxOrder ?? -1) + 1;
+
+  await db.insert(groupMembers).values({
+    groupId: group.id,
+    userId,
+    memberRole: "member",
+    displayOrder: nextOrder,
+  });
+
+  return c.json({ group: { id: group.id, name: group.name } }, 201);
+});
+
 // PATCH /api/groups/reorder — persist drag-reorder. Body: { order: [{groupId, displayOrder}] }
 groupsRoute.patch("/reorder", async (c) => {
   const userId = c.var.user.id;
@@ -143,6 +208,157 @@ groupsRoute.patch("/reorder", async (c) => {
         )
     )
   );
+
+  return c.json({ ok: true });
+});
+
+// PATCH /api/groups/:id — update group name (any member)
+groupsRoute.patch("/:id", async (c) => {
+  const userId = c.var.user.id;
+  const groupId = c.req.param("id");
+  const { name } = await c.req.json().catch(() => ({}));
+  if (!name?.trim()) return c.json({ error: "name is required" }, 400);
+
+  const [membership] = await db
+    .select({ id: groupMembers.id })
+    .from(groupMembers)
+    .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, userId)))
+    .limit(1);
+  if (!membership) return c.json({ error: "Not a member" }, 403);
+
+  const [group] = await db
+    .update(groups)
+    .set({ name: name.trim(), updatedAt: new Date() })
+    .where(eq(groups.id, groupId))
+    .returning();
+
+  return c.json({ group });
+});
+
+// POST /api/groups/:id/members — add a user by userId (any member can invite)
+groupsRoute.post("/:id/members", async (c) => {
+  const userId = c.var.user.id;
+  const groupId = c.req.param("id");
+  const { userId: targetUserId } = await c.req.json().catch(() => ({}));
+  if (!targetUserId) return c.json({ error: "userId is required" }, 400);
+
+  const [membership] = await db
+    .select({ id: groupMembers.id })
+    .from(groupMembers)
+    .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, userId)))
+    .limit(1);
+  if (!membership) return c.json({ error: "Not a member" }, 403);
+
+  // Enforce creator's tier group size limit
+  const [group] = await db
+    .select({ createdBy: groups.createdBy })
+    .from(groups)
+    .where(eq(groups.id, groupId))
+    .limit(1);
+
+  if (group) {
+    const [creatorProfile] = await db
+      .select({ membershipTier: profiles.membershipTier })
+      .from(profiles)
+      .where(eq(profiles.userId, group.createdBy))
+      .limit(1);
+
+    const creatorTier = (creatorProfile?.membershipTier ?? "free") as MembershipTier;
+    const maxSize = TIER_LIMITS[creatorTier].maxGroupSize;
+
+    if (maxSize !== Infinity) {
+      const [sizeRow] = await db
+        .select({ count: count() })
+        .from(groupMembers)
+        .where(eq(groupMembers.groupId, groupId));
+      const currentSize = sizeRow?.count ?? 0;
+
+      if (currentSize >= maxSize) {
+        return c.json(
+          {
+            error: `This group is full. The ${TIER_NAMES[creatorTier]} plan supports up to ${maxSize} members. Upgrade to add more.`,
+          },
+          403
+        );
+      }
+    }
+  }
+
+  const [maxRow] = await db
+    .select({ maxOrder: sql<number>`coalesce(max(${groupMembers.displayOrder}), -1)` })
+    .from(groupMembers)
+    .where(eq(groupMembers.groupId, groupId));
+  const nextOrder = (maxRow?.maxOrder ?? -1) + 1;
+
+  await db
+    .insert(groupMembers)
+    .values({ groupId, userId: targetUserId, memberRole: "member", displayOrder: nextOrder })
+    .onConflictDoNothing();
+
+  return c.json({ ok: true }, 201);
+});
+
+// DELETE /api/groups/:id/members/:userId — remove a member (creator only, or self-leave)
+groupsRoute.delete("/:id/members/:targetUserId", async (c) => {
+  const userId = c.var.user.id;
+  const groupId = c.req.param("id");
+  const targetUserId = c.req.param("targetUserId");
+
+  const [group] = await db
+    .select({ createdBy: groups.createdBy })
+    .from(groups)
+    .where(eq(groups.id, groupId))
+    .limit(1);
+  if (!group) return c.json({ error: "Group not found" }, 404);
+
+  const isSelf = targetUserId === userId;
+  const isCreator = group.createdBy === userId;
+  if (!isSelf && !isCreator) return c.json({ error: "Not authorized" }, 403);
+
+  await db
+    .delete(groupMembers)
+    .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, targetUserId)));
+
+  return c.json({ ok: true });
+});
+
+// PATCH /api/groups/:id/plan — assign a plan to a group (must be a member)
+groupsRoute.patch("/:id/plan", async (c) => {
+  const userId = c.var.user.id;
+  const groupId = c.req.param("id");
+  const { planId } = await c.req.json().catch(() => ({ planId: undefined }));
+  if (!planId) return c.json({ error: "planId is required" }, 400);
+
+  const [membership] = await db
+    .select({ id: groupMembers.id })
+    .from(groupMembers)
+    .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, userId)))
+    .limit(1);
+  if (!membership) return c.json({ error: "Not a member of this group" }, 403);
+
+  // Group limit: 3 active group devotionals at a time.
+  const [activeGroups] = await db
+    .select({ count: count() })
+    .from(groupMembers)
+    .innerJoin(groups, eq(groupMembers.groupId, groups.id))
+    .where(and(eq(groupMembers.userId, userId), isNotNull(groups.currentPlanId)));
+
+  if ((activeGroups?.count ?? 0) >= 3) {
+    return c.json(
+      { error: "You're already in three active group devotionals. Go deeper with the people you are already committed to before adding more." },
+      403
+    );
+  }
+
+  await db
+    .update(groups)
+    .set({ currentPlanId: planId, currentDay: 1, updatedAt: new Date() })
+    .where(eq(groups.id, groupId));
+
+  await db
+    .update(groupMembers)
+    .set({ doneToday: false })
+    .where(eq(groupMembers.groupId, groupId));
 
   return c.json({ ok: true });
 });

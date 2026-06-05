@@ -23,6 +23,13 @@
       "expo-router",
       "expo-secure-store",
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "IronSharp uses your photos to set your profile picture.",
+          "cameraPermission": "IronSharp uses your camera to take a profile photo."
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#1E2A3A",

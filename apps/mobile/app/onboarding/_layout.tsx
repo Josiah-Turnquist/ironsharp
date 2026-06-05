@@ -13,6 +13,8 @@ export type OnboardingSurvey = {
   devotionalRating: number | null;
   faithJourney: string | null;
   goals: string[];
+  relationshipStatus: string | null;
+  hasKids: boolean | null;
 };
 
 type OnboardingState = {
@@ -32,6 +34,8 @@ const DEFAULT_SURVEY: OnboardingSurvey = {
   devotionalRating: null,
   faithJourney: null,
   goals: [],
+  relationshipStatus: null,
+  hasKids: null,
 };
 
 type Ctx = OnboardingState & {

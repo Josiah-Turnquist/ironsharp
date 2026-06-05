@@ -17,7 +17,9 @@ import { Input } from "@/components/Input";
 import { useThemeColor } from "@/components/useThemeColor";
 import { useOnboarding } from "./_layout";
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 9;
+
+const RELATIONSHIP_OPTIONS = ["Single", "Dating", "Engaged", "Married"];
 
 const AGE_OPTIONS = ["Under 18", "18 - 24", "25 - 34", "35 - 44", "45 - 54", "55 and older"];
 
@@ -140,6 +142,8 @@ export default function OnboardingSurvey() {
   const [devotionalRating, setDevotionalRating] = useState<number | null>(survey.devotionalRating);
   const [faithJourney, setFaithJourney] = useState(survey.faithJourney ?? "");
   const [goals, setGoals] = useState<string[]>(survey.goals ?? []);
+  const [relationshipStatus, setRelationshipStatus] = useState(survey.relationshipStatus ?? "");
+  const [hasKids, setHasKids] = useState<boolean | null>(survey.hasKids ?? null);
 
   const canContinue =
     step === 1 ? name.trim().length > 0 :
@@ -150,6 +154,7 @@ export default function OnboardingSurvey() {
     step === 6 ? devotionalRating !== null :
     step === 7 ? !!faithJourney :
     step === 8 ? goals.length > 0 :
+    step === 9 ? (!!relationshipStatus && (relationshipStatus !== "Married" || hasKids !== null)) :
     false;
 
   const goNext = () => {
@@ -168,6 +173,8 @@ export default function OnboardingSurvey() {
         devotionalRating,
         faithJourney: faithJourney || null,
         goals,
+        relationshipStatus: relationshipStatus || null,
+        hasKids: relationshipStatus === "Married" ? hasKids : null,
       });
       router.push("/onboarding/welcome");
     }
@@ -431,6 +438,57 @@ export default function OnboardingSurvey() {
                   />
                 ))}
               </View>
+            </View>
+          )}
+
+          {/* ── Q9: Relationship status ── */}
+          {step === 9 && (
+            <View>
+              <Text className="font-serif text-2xl font-bold leading-snug text-foreground mb-6">
+                What's your relationship status?
+              </Text>
+              <View className="gap-2.5">
+                {RELATIONSHIP_OPTIONS.map((opt) => (
+                  <ListOption
+                    key={opt}
+                    label={opt}
+                    active={relationshipStatus === opt}
+                    onPress={() => {
+                      setRelationshipStatus(opt);
+                      if (opt !== "Married") setHasKids(null);
+                    }}
+                  />
+                ))}
+              </View>
+              {relationshipStatus === "Married" && (
+                <View className="mt-5">
+                  <Text className="font-serif text-lg font-bold text-foreground mb-3">
+                    Do you have kids?
+                  </Text>
+                  <View className="flex-row gap-3">
+                    <Pressable
+                      onPress={() => setHasKids(true)}
+                      className={`flex-1 items-center justify-center rounded-xl border-2 py-4 ${
+                        hasKids === true ? "border-primary bg-primary/10" : "border-border bg-card active:opacity-70"
+                      }`}
+                    >
+                      <Text className={`font-sans-semibold text-base ${hasKids === true ? "text-primary" : "text-foreground"}`}>
+                        Yes
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => setHasKids(false)}
+                      className={`flex-1 items-center justify-center rounded-xl border-2 py-4 ${
+                        hasKids === false ? "border-primary bg-primary/10" : "border-border bg-card active:opacity-70"
+                      }`}
+                    >
+                      <Text className={`font-sans-semibold text-base ${hasKids === false ? "text-primary" : "text-foreground"}`}>
+                        No
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+              )}
             </View>
           )}
 

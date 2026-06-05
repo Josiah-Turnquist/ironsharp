@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq } from "drizzle-orm";
+import { eq, ilike, ne } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { profiles } from "../db/schema.js";
 import { requireAuth, type AppEnv } from "../middleware/auth.js";
@@ -7,6 +7,25 @@ import { requireAuth, type AppEnv } from "../middleware/auth.js";
 export const profile = new Hono<AppEnv>();
 
 profile.use("*", requireAuth);
+
+// GET /api/profile/search?q= → search users by display name (excludes self)
+profile.get("/search", async (c) => {
+  const userId = c.var.user.id;
+  const q = c.req.query("q")?.trim() ?? "";
+  if (q.length < 2) return c.json({ users: [] });
+
+  const results = await db
+    .select({
+      userId: profiles.userId,
+      displayName: profiles.displayName,
+      avatarUrl: profiles.avatarUrl,
+    })
+    .from(profiles)
+    .where(ilike(profiles.displayName, `%${q}%`) && ne(profiles.userId, userId))
+    .limit(10);
+
+  return c.json({ users: results });
+});
 
 // GET /api/profile  → the current user's profile, created on first access.
 // (Neon Auth owns the user record; we lazily materialize the app-side profile
@@ -61,6 +80,8 @@ profile.patch("/", async (c) => {
     "surveyDevotionalRating",
     "surveyFaithJourney",
     "surveyGoals",
+    "surveyRelationshipStatus",
+    "surveyHasKids",
   ] as const;
   for (const key of allow) {
     if (key in body) updatable[key] = body[key];

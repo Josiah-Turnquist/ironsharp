@@ -1,8 +1,15 @@
 import { Hono } from "hono";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { db } from "../db/index.js";
-import { userPlanProgress, devotionalPlans, devotionalDays } from "../db/schema.js";
+import { userPlanProgress, devotionalPlans, devotionalDays, profiles } from "../db/schema.js";
 import { requireAuth, type AppEnv } from "../middleware/auth.js";
+import {
+  TIER_LIMITS,
+  UPGRADE_PATH,
+  TIER_NAMES,
+  THIRTY_DAYS_MS,
+  type MembershipTier,
+} from "../lib/tiers.js";
 
 export const progress = new Hono<AppEnv>();
 
@@ -62,29 +69,82 @@ progress.get("/active", async (c) => {
   });
 });
 
-// POST /api/progress  → start a plan (idempotent)
+// POST /api/progress  → start (unlock) a plan
 progress.post("/", async (c) => {
   const userId = c.var.user.id;
-  const { planId } = await c.req.json().catch(() => ({ planId: undefined }));
+  const { planId, forGroup } = await c.req.json().catch(() => ({ planId: undefined, forGroup: false }));
   if (!planId) return c.json({ error: "planId is required" }, 400);
+
+  // Already started — return existing row without consuming an unlock
+  const [existing] = await db
+    .select()
+    .from(userPlanProgress)
+    .where(and(eq(userPlanProgress.userId, userId), eq(userPlanProgress.planId, planId)))
+    .limit(1);
+
+  if (existing) return c.json({ progress: existing });
+
+  // New plan — check monthly unlock limit (group plans don't count against personal quota)
+  if (!forGroup) {
+    const [profile] = await db
+      .select({
+        membershipTier: profiles.membershipTier,
+        planUnlocksCount: profiles.planUnlocksCount,
+        planUnlocksWindowStart: profiles.planUnlocksWindowStart,
+      })
+      .from(profiles)
+      .where(eq(profiles.userId, userId))
+      .limit(1);
+
+    if (profile) {
+      const tier = (profile.membershipTier ?? "free") as MembershipTier;
+      const limit = TIER_LIMITS[tier].planUnlocksPerMonth;
+
+      if (limit !== Infinity) {
+        const now = new Date();
+        const windowStart = profile.planUnlocksWindowStart;
+        const windowExpired =
+          !windowStart ||
+          now.getTime() - new Date(windowStart).getTime() > THIRTY_DAYS_MS;
+
+        const currentCount = windowExpired ? 0 : (profile.planUnlocksCount ?? 0);
+
+        if (currentCount >= limit) {
+          const resetDate = windowStart
+            ? new Date(new Date(windowStart).getTime() + THIRTY_DAYS_MS)
+            : now;
+          const upgradeTier = UPGRADE_PATH[tier];
+          return c.json(
+            {
+              error: `You've used all ${limit} plan unlocks for this month. Your next unlock is available on ${resetDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })}.`,
+              resetsAt: resetDate.toISOString(),
+              upgradeTo: upgradeTier,
+              upgradeToName: upgradeTier ? TIER_NAMES[upgradeTier] : null,
+            },
+            403
+          );
+        }
+
+        await db
+          .update(profiles)
+          .set({
+            planUnlocksCount: windowExpired ? 1 : currentCount + 1,
+            planUnlocksWindowStart: windowExpired
+              ? now
+              : (profile.planUnlocksWindowStart ?? now),
+            updatedAt: now,
+          })
+          .where(eq(profiles.userId, userId));
+      }
+    }
+  }
 
   const [row] = await db
     .insert(userPlanProgress)
     .values({ userId, planId, currentDay: 1 })
-    .onConflictDoNothing()
     .returning();
 
-  if (row) return c.json({ progress: row }, 201);
-
-  // Already started — return the existing row.
-  const [existing] = await db
-    .select()
-    .from(userPlanProgress)
-    .where(
-      and(eq(userPlanProgress.userId, userId), eq(userPlanProgress.planId, planId))
-    )
-    .limit(1);
-  return c.json({ progress: existing });
+  return c.json({ progress: row }, 201);
 });
 
 // PATCH /api/progress/:planId  → advance the day / mark complete

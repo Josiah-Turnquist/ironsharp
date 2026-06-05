@@ -19,6 +19,7 @@
     "db:seed-bible": "tsx src/db/seed-bible.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.100.1",
     "@hono/node-server": "^1.13.7",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.38.3",

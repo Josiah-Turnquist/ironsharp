@@ -4,6 +4,9 @@ import { BookOpen, Users, Home, Library, User, type LucideIcon } from "lucide-re
 import { Screen } from "@/components/Screen";
 import { useThemeColor } from "@/components/useThemeColor";
 import { useAuthed, useProfile } from "@/lib/queries";
+import { useUpgradePrompt } from "@/lib/useUpgradePrompt";
+import { UpgradePromptModal } from "@/components/UpgradePromptModal";
+import type { MembershipTier } from "@/lib/tiers";
 
 function TabIcon({ Icon, focused }: { Icon: LucideIcon; focused: boolean }) {
   const active = useThemeColor("primary");
@@ -23,6 +26,7 @@ function TabIcon({ Icon, focused }: { Icon: LucideIcon; focused: boolean }) {
 export default function TabsLayout() {
   const { authed, isPending } = useAuthed();
   const profile = useProfile();
+  const upgradePrompt = useUpgradePrompt(profile.data);
   const active = useThemeColor("primary");
   const inactive = useThemeColor("muted-foreground");
   const card = useThemeColor("card");
@@ -39,6 +43,12 @@ export default function TabsLayout() {
   if (!profile.data?.surveyCompletedAt) return <Redirect href="/onboarding/role" />;
 
   return (
+    <>
+    <UpgradePromptModal
+      visible={upgradePrompt.visible}
+      currentTier={(profile.data?.membershipTier ?? "free") as MembershipTier}
+      onDismiss={upgradePrompt.dismiss}
+    />
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -89,5 +99,6 @@ export default function TabsLayout() {
         }}
       />
     </Tabs>
+    </>
   );
 }

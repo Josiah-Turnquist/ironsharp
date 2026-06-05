@@ -70,3 +70,31 @@ export function useDays(planId: string | undefined) {
     enabled: authed && !!planId,
   });
 }
+
+export function useGenerateTokens() {
+  const { authed } = useAuthed();
+  return useQuery({
+    queryKey: ["generate", "tokens"],
+    queryFn: () => ApiClient.getGenerateTokens(),
+    enabled: authed,
+  });
+}
+
+export function useGroups() {
+  const { authed } = useAuthed();
+  return useQuery({
+    queryKey: ["groups"],
+    queryFn: () => ApiClient.getGroups().then((r) => r.groups),
+    enabled: authed,
+  });
+}
+
+export function useGroupDayResponses(planId: string, dayNumber: number, enabled: boolean) {
+  const { authed } = useAuthed();
+  return useQuery({
+    queryKey: ["group-day-responses", planId, dayNumber],
+    queryFn: () => ApiClient.getGroupDayResponses(planId, dayNumber).then((r) => r.responses),
+    enabled: authed && enabled && !!planId && dayNumber > 0,
+    staleTime: 60_000,
+  });
+}

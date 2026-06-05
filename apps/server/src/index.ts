@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { plans } from "./routes/plans.js";
+import { generate } from "./routes/generate.js";
 import { notes } from "./routes/notes.js";
 import { bible } from "./routes/bible.js";
 import { profile } from "./routes/profile.js";
@@ -25,6 +26,7 @@ app.get("/health", (c) => c.json({ ok: true }));
 // Application data routes. Auth (sign up / in / out, sessions) is handled by the
 // managed Neon Auth service directly from the client — not here.
 app.route("/api/profile", profile);
+app.route("/api/plans/generate", generate);
 app.route("/api/plans", plans);
 app.route("/api/notes", notes);
 app.route("/api/bible", bible);
