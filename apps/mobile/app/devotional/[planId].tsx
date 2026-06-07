@@ -41,7 +41,7 @@ function parseFocusVerses(ref: string): string | null {
   const match = ref.match(/:(.+)$/);
   return match ? match[1].trim() : null;
 }
-import { useProgress, useGroupDayResponses } from "@/lib/queries";
+import { useProgress, useGroupDayResponses, useGroups } from "@/lib/queries";
 import type { GroupDayResponse } from "@/lib/api";
 
 // ─── Skeleton loading lines ───────────────────────────────────────────────────
@@ -356,7 +356,6 @@ function BiblePassageCard({ passageRef, onPageChange }: { passageRef: string; on
   const [showPicker, setShowPicker] = useState(false);
 
   const parsed = parsePassageRef(passageRef);
-  const focusVerses = parseFocusVerses(passageRef);
 
   useEffect(() => {
     import("@react-native-async-storage/async-storage").then(({ default: AsyncStorage }) => {
@@ -385,30 +384,38 @@ function BiblePassageCard({ passageRef, onPageChange }: { passageRef: string; on
     });
   };
 
-  const verses = (data?.chapter?.verses ?? []) as string[];
-  const totalPages = Math.max(1, Math.ceil(verses.length / VERSES_PER_PAGE));
+  const allVerses = (data?.chapter?.verses ?? []) as string[];
+
+  const verseRange = (() => {
+    const match = passageRef.match(/:(.+)$/);
+    if (!match) return null;
+    const range = match[1]!.trim().replace(/[–—]/g, "-");
+    const [fromStr, toStr] = range.split("-");
+    const from = parseInt(fromStr ?? "");
+    const to = parseInt(toStr ?? fromStr ?? "");
+    if (isNaN(from)) return null;
+    return { from, to: isNaN(to) ? from : to };
+  })();
+
+  const displayVerses = verseRange
+    ? allVerses.slice(verseRange.from - 1, verseRange.to)
+    : allVerses;
+  const startVerseNum = verseRange ? verseRange.from : 1;
+
+  const totalPages = Math.max(1, Math.ceil(displayVerses.length / VERSES_PER_PAGE));
   const startIndex = page * VERSES_PER_PAGE;
-  const pageVerses = verses.slice(startIndex, startIndex + VERSES_PER_PAGE);
+  const pageVerses = displayVerses.slice(startIndex, startIndex + VERSES_PER_PAGE);
 
   return (
     <>
       <View style={{ backgroundColor: cardBg, borderRadius: 16, borderWidth: 1, borderColor, overflow: "hidden" }}>
-
-        {/* Focus footnote — top */}
-        {focusVerses && (
-          <View style={{ backgroundColor: mutedBg }} className="px-4 py-2">
-            <Text className="font-serif-italic text-center" style={{ color: mutedFg, fontSize: 10 }}>
-              Today's focus: verses {focusVerses}
-            </Text>
-          </View>
-        )}
 
         {/* Header row */}
         <View className="flex-row items-center justify-between px-4 pt-3 pb-2">
           <View className="flex-row items-center gap-2">
             <BookOpen size={13} color={mutedFg} />
             <Text style={{ fontSize: 9, letterSpacing: 2, color: mutedFg, textTransform: "uppercase", fontFamily: "DMSans_400Regular" }}>
-              {parsed ? `${parsed.book} Chapter ${parsed.chapter}` : passageRef}
+              {verseRange ? passageRef : parsed ? `${parsed.book} Chapter ${parsed.chapter}` : passageRef}
             </Text>
           </View>
           <Pressable
@@ -425,11 +432,11 @@ function BiblePassageCard({ passageRef, onPageChange }: { passageRef: string; on
         <View className="px-4 pb-3">
           {isLoading ? (
             <SkeletonLines count={6} />
-          ) : verses.length > 0 ? (
+          ) : displayVerses.length > 0 ? (
             pageVerses.map((verseText, i) => (
               <View key={startIndex + i} className="mb-3 flex-row gap-2">
                 <Text style={{ fontSize: 9, color: accent, fontFamily: "DMSans_700Bold", minWidth: 16, paddingTop: 2 }}>
-                  {startIndex + i + 1}
+                  {startVerseNum + startIndex + i}
                 </Text>
                 <Text className="font-serif flex-1" style={{ color: fgColor, fontSize: 13, lineHeight: 22 }}>
                   {verseText}
@@ -637,8 +644,9 @@ function GroupResponseCard({
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
 export default function DevotionalReader() {
-  const { planId: planIdParam } = useLocalSearchParams<{ planId: string }>();
+  const { planId: planIdParam, groupId: groupIdParam } = useLocalSearchParams<{ planId: string; groupId?: string }>();
   const planId = String(planIdParam);
+  const groupId = groupIdParam ?? null;
   const router = useRouter();
   const qc = useQueryClient();
 
@@ -656,15 +664,22 @@ export default function DevotionalReader() {
 
   const progress = useProgress();
   const progressRow = (progress.data ?? []).find((p) => p.planId === planId);
-  const currentDay = progressRow?.currentDay ?? 1;
 
+  // In group context use the group's shared day, not the user's personal day.
+  const groups = useGroups();
+  const activeGroup = groupId ? (groups.data ?? []).find((g) => g.id === groupId) : null;
+  const currentDay = groupId ? (activeGroup?.currentDay ?? 1) : (progressRow?.currentDay ?? 1);
+
+  // Scope the day lock so personal and group runs don't interfere.
   const [lockedUntilTomorrow, setLockedUntilTomorrow] = useState(false);
-  const lockKey = `@ironsharp/devotional_locked_until_${planId}`;
+  const lockKey = groupId
+    ? `@ironsharp/devotional_locked_until_${planId}_${groupId}`
+    : `@ironsharp/devotional_locked_until_${planId}`;
 
   useEffect(() => {
     import("@react-native-async-storage/async-storage").then(({ default: AsyncStorage }) => {
       AsyncStorage.getItem(lockKey).then((val) => {
-        if (val && Date.now() < Number(val)) setLockedUntilTomorrow(true);
+        setLockedUntilTomorrow(!!(val && Date.now() < Number(val)));
       });
     });
   }, [lockKey]);
@@ -727,13 +742,16 @@ export default function DevotionalReader() {
         prayerPrivate,
         submissionSource: "typed",
       });
-      if (progressRow) {
+      if (groupId) {
+        await ApiClient.updateGroupProgress(groupId, {
+          nextDay: isLastDay ? undefined : currentDay + 1,
+          completed: isLastDay,
+        });
+      } else if (progressRow) {
         if (isLastDay)
           await ApiClient.updateProgress(planId, { completed: true });
         else
-          await ApiClient.updateProgress(planId, {
-            currentDay: currentDay + 1,
-          });
+          await ApiClient.updateProgress(planId, { currentDay: currentDay + 1 });
       }
     },
     onSuccess: async () => {
@@ -744,6 +762,9 @@ export default function DevotionalReader() {
       await AsyncStorage.setItem(lockKey, String(midnight.getTime()));
       await qc.invalidateQueries({ queryKey: ["progress"] });
       await qc.invalidateQueries({ queryKey: ["progress", "active"] });
+      if (groupId) await qc.invalidateQueries({ queryKey: ["groups"] });
+      // Streak is updated server-side after submission — refresh profile so counts are current.
+      await qc.invalidateQueries({ queryKey: ["profile"] });
       setDone(true);
     },
   });
@@ -883,27 +904,7 @@ export default function DevotionalReader() {
                 </View>
               </Pressable>
 
-              <View style={{ height: 1, backgroundColor: borderColor }} />
-
-              <Pressable
-                onPress={() => {
-                  setShowPlayMenu(false);
-                  router.push(`/commute/${planId}?day=${currentDay}`);
-                }}
-                className="flex-row items-start gap-3 rounded-b-2xl bg-primary/8 px-4 py-3.5 active:opacity-80"
-              >
-                <View className="mt-0.5 h-8 w-8 items-center justify-center rounded-lg bg-primary/20">
-                  <Car size={16} color={primary} />
-                </View>
-                <View className="flex-1">
-                  <Text className="font-sans-semibold text-sm text-foreground">
-                    Commute Mode
-                  </Text>
-                  <Text className="mt-0.5 text-xs text-muted-foreground">
-                    Hands-free — reads and records
-                  </Text>
-                </View>
-              </Pressable>
+              {/* Commute Mode — hidden until dev build is ready */}
             </View>
           </Pressable>
         </Modal>
@@ -1009,13 +1010,8 @@ export default function DevotionalReader() {
           {/* Prayer */}
           <View className="gap-2">
             <Text className="font-sans-semibold text-base text-foreground">
-              Prayer / Praise
+              Prayer & Praise
             </Text>
-            {day?.prayerPrompt ? (
-              <Text className="text-sm leading-relaxed text-muted-foreground">
-                {day.prayerPrompt}
-              </Text>
-            ) : null}
             <TextInput
               value={prayer}
               onChangeText={setPrayer}
@@ -1044,7 +1040,7 @@ export default function DevotionalReader() {
             onPress={() => scrollRef.current?.scrollTo({ y: 0, animated: true })}
             style={{
               position: "absolute",
-              bottom: 24,
+              bottom: 88,
               right: 20,
               width: 56,
               height: 56,

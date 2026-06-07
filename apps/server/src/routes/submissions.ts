@@ -272,7 +272,7 @@ async function updateGroupStreaks(userId: string, planId: string, dayNumber: num
 
     const total = totals?.total ?? 0;
     const done = totals?.done ?? 0;
-    if (total === 0 || done <= total / 2) continue;
+    if (total === 0 || done < total) continue; // all members must complete
 
     // Majority reached — increment or reset group streak.
     const newStreak =

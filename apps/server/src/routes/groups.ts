@@ -363,6 +363,53 @@ groupsRoute.patch("/:id/plan", async (c) => {
   return c.json({ ok: true });
 });
 
+// PATCH /api/groups/:id/day — mark the calling user done; advance group day when everyone's finished
+groupsRoute.patch("/:id/day", async (c) => {
+  const userId = c.var.user.id;
+  const groupId = c.req.param("id");
+  const body = await c.req.json().catch(() => ({}));
+  const { nextDay, completed } = body as { nextDay?: number; completed?: boolean };
+
+  const [membership] = await db
+    .select({ id: groupMembers.id })
+    .from(groupMembers)
+    .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, userId)))
+    .limit(1);
+  if (!membership) return c.json({ error: "Not a member" }, 403);
+
+  await db
+    .update(groupMembers)
+    .set({ doneToday: true })
+    .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, userId)));
+
+  const allMembers = await db
+    .select({ doneToday: groupMembers.doneToday, userId: groupMembers.userId })
+    .from(groupMembers)
+    .where(eq(groupMembers.groupId, groupId));
+
+  const allDone = allMembers.every((m) => m.doneToday || m.userId === userId);
+
+  if (allDone) {
+    if (completed) {
+      await db
+        .update(groups)
+        .set({ currentPlanId: null, currentDay: 1, updatedAt: new Date() })
+        .where(eq(groups.id, groupId));
+    } else if (nextDay !== undefined) {
+      await db
+        .update(groups)
+        .set({ currentDay: nextDay, updatedAt: new Date() })
+        .where(eq(groups.id, groupId));
+    }
+    await db
+      .update(groupMembers)
+      .set({ doneToday: false })
+      .where(eq(groupMembers.groupId, groupId));
+  }
+
+  return c.json({ ok: true, allDone });
+});
+
 // DELETE /api/groups/:id — creator deletes the group; member leaves it
 groupsRoute.delete("/:id", async (c) => {
   const userId = c.var.user.id;

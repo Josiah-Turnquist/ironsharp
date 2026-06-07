@@ -9,7 +9,6 @@ type DaySeed = {
   theme?: string;
   reflectionQ1: string;
   reflectionQ2: string;
-  prayerPrompt?: string;
 };
 
 type PlanSeed = {
@@ -22,6 +21,79 @@ type PlanSeed = {
 };
 
 const PLANS: PlanSeed[] = [
+  {
+    title: "Built Together — 7 Days Through Ephesians",
+    subtitle: "What God's design for the home actually looks like.",
+    category: "marriage",
+    totalDays: 7,
+    description:
+      "Seven days through Paul's vision of what it looks like when the gospel actually reshapes a home — the way you see each other, speak to each other, lead each other, and forgive each other. This is not easy devotional content. It is for families who want to be built on something that lasts.",
+    days: [
+      {
+        dayNumber: 1,
+        chapter: "Ephesians 1:3–6",
+        theme: "Before you were born, you were chosen",
+        reflectionQ1:
+          "If you are honest about the way you see yourself on your worst day — do you actually live as though God chose you in love before the world existed, or do you treat your worth as something you have to keep earning?",
+        reflectionQ2:
+          "Who in your home needs to hear today that you are glad they are there?",
+      },
+      {
+        dayNumber: 2,
+        chapter: "Ephesians 1:15–19",
+        theme: "Pray for the people God has given you",
+        reflectionQ1:
+          "When did you last pray specifically — by name, with a real request — for each person in your home, and if you cannot remember, what has been taking the place of that intercession in your life?",
+        reflectionQ2:
+          "Before you close this, pray through each person in your household by name.",
+      },
+      {
+        dayNumber: 3,
+        chapter: "Ephesians 2:4–9",
+        theme: "You did not earn your way in",
+        reflectionQ1:
+          "Where in your home are you functioning more like a judge than someone who has been shown mercy — and what does the way you respond to your family's failures reveal about whether you have actually understood verse 8?",
+        reflectionQ2:
+          "Who in your home have you been hardest on this week — what is one thing you can do for them before this day is over?",
+      },
+      {
+        dayNumber: 4,
+        chapter: "Ephesians 2:19–22",
+        theme: "Your home is a temple under construction",
+        reflectionQ1:
+          "What is actually being built in your home right now — and if someone outside could see the spiritual atmosphere in your house over the past week, would they see a household being built on Christ or one running on something else?",
+        reflectionQ2:
+          "Name one thing in your home that is not building anything — what is one decision you can make about it right now?",
+      },
+      {
+        dayNumber: 5,
+        chapter: "Ephesians 4:29–32",
+        theme: "Your words are either building material or demolition tools",
+        reflectionQ1:
+          "Think back over the last week — what is the ratio between words in your home that built someone up and words that tore them down, and what does that ratio say about the atmosphere your family is actually living in?",
+        reflectionQ2:
+          "What is one thing you said this week in your home that you wish you could take back — and what would you say instead?",
+      },
+      {
+        dayNumber: 6,
+        chapter: "Ephesians 6:1–4",
+        theme: "God put authority in the home for a reason",
+        reflectionQ1:
+          "If you are honest about how you exercise authority in your home — are you leading with instruction and purpose the way verse 4 describes, or have you been demanding obedience without modeling what you are asking your children to become?",
+        reflectionQ2:
+          "What is one quality you want your children to grow in — how will you show it to them today?",
+      },
+      {
+        dayNumber: 7,
+        chapter: "Ephesians 6:10–17",
+        theme: "Your home is in a fight whether you know it or not",
+        reflectionQ1:
+          "Where in your home are you fighting flesh-and-blood battles — taking out on your family what is actually a spiritual attack — and what would it look like to start fighting the actual enemy instead of each other?",
+        reflectionQ2:
+          "What is one spiritual habit your home is missing — when and where will it happen?",
+      },
+    ],
+  },
   {
     title: "Formed — 14 Days of Spiritual Discipline",
     subtitle: "Train yourself for godliness.",
@@ -37,9 +109,7 @@ const PLANS: PlanSeed[] = [
         reflectionQ1:
           "Where in your life right now are you going through the motions of prayer without actually expecting God to respond?",
         reflectionQ2:
-          "Set a timer for 10 minutes today — no requests, no lists — just sit with God using the structure of verses 9–13 and see what comes up.",
-        prayerPrompt:
-          "Pray through each line of the Lord's Prayer slowly — not as a recitation, but as a real conversation. Where do you get stuck? Tell God about that.",
+          "Set a timer for 10 minutes right now and pray through each line of the Lord's Prayer slowly — not as a recitation, but as an actual conversation.",
       },
       {
         dayNumber: 2,
@@ -48,9 +118,7 @@ const PLANS: PlanSeed[] = [
         reflectionQ1:
           "If you are honest about your relationship with Scripture right now — are you reading it to check a box or actually expecting it to say something to you?",
         reflectionQ2:
-          "Pick one verse from this passage and carry it with you today — write it somewhere you will see it three times, and ask what it means for one specific decision you are facing this week.",
-        prayerPrompt:
-          "Ask God to make one verse from today's passage land differently than it ever has before. Then sit in silence long enough to hear if He answers.",
+          "Pick one verse from today's passage and write it somewhere you will see it before this day is over.",
       },
       {
         dayNumber: 3,
@@ -59,9 +127,7 @@ const PLANS: PlanSeed[] = [
         reflectionQ1:
           "What is the thing you reach for first when you feel anxious, bored, or stressed — and what would it reveal about your actual god if you went without it for a day?",
         reflectionQ2:
-          "Fast from something for 24 hours this week — food, social media, coffee, or whatever you would miss most — and when the craving hits, turn it into a prayer instead of giving in.",
-        prayerPrompt:
-          "Tell God specifically what you are hungry for today — not spiritually vague, but actually honest — and ask Him to be enough in that exact place.",
+          "What is the one thing you reach for when you are stressed — can you go without it today?",
       },
       {
         dayNumber: 4,
@@ -70,9 +136,7 @@ const PLANS: PlanSeed[] = [
         reflectionQ1:
           "What does your worship look like when no one is watching — when there is no music, no crowd, no service — and does that private version match what you perform on Sunday?",
         reflectionQ2:
-          "Before your next church service or worship time, spend five minutes beforehand being honest with God about exactly where you are — not where you want to appear to be.",
-        prayerPrompt:
-          "Worship God right now for one thing about His character that has nothing to do with what He has done for you lately — praise Him for who He is, not what He has given.",
+          "Before your next moment of worship, spend five minutes being honest with God about exactly where you are right now.",
       },
       {
         dayNumber: 5,
@@ -81,9 +145,7 @@ const PLANS: PlanSeed[] = [
         reflectionQ1:
           "Where in your schedule is there space for God to actually speak to you — or has your life become so full that the only time you are quiet is when you are asleep?",
         reflectionQ2:
-          "Wake up 20 minutes earlier tomorrow and sit in silence before your phone — no podcast, no news, no plan — just be with God and see what he surfaces.",
-        prayerPrompt:
-          "Give God your schedule for today — not asking Him to bless it, but actually asking Him what He would change about it and being willing to hear the answer.",
+          "Can you give God 20 minutes tomorrow morning before your phone — what would have to change tonight to make that happen?",
       },
       {
         dayNumber: 6,
@@ -92,9 +154,7 @@ const PLANS: PlanSeed[] = [
         reflectionQ1:
           "What are you afraid would surface if you actually stopped the noise and sat in silence — and what does that fear tell you about what you are using activity to avoid?",
         reflectionQ2:
-          "Identify one recurring source of noise in your life — a habit, a screen, a background sound — and remove it for the rest of today, paying attention to what comes up in the quiet.",
-        prayerPrompt:
-          "Sit in silence for two minutes before you pray anything. Just let God be God. Then tell Him what surfaced in that silence.",
+          "Identify one source of noise in your life and remove it for the rest of today.",
       },
       {
         dayNumber: 7,
@@ -103,9 +163,7 @@ const PLANS: PlanSeed[] = [
         reflectionQ1:
           "When was the last time you truly rested — not scrolled, not caught up, not been productive — and what does your inability to stop tell you about where you actually put your trust?",
         reflectionQ2:
-          "Choose one day this week to practice sabbath — define what rest means for you, protect it from intrusion, and notice what it feels like to stop and trust God with what does not get done.",
-        prayerPrompt:
-          "Thank God for one thing today that got done without you — something He sustained while you slept, something He held while you were distracted. Praise Him for it.",
+          "What is one thing on your schedule today that God can handle without you — can you actually let it go?",
       },
       {
         dayNumber: 8,
@@ -114,9 +172,7 @@ const PLANS: PlanSeed[] = [
         reflectionQ1:
           "What is the thing you would be most ashamed for God to see clearly right now — and does the fact that it is still in the dark suggest you do not actually believe 1 John 1:9?",
         reflectionQ2:
-          "Confess one specific thing today — not a category, not 'I have been struggling' — but an actual thing, by name, to God, and then sit with verse 9 until you believe it.",
-        prayerPrompt:
-          "Bring the one thing into the light right now — say it out loud to God by name — and then receive verse 9 as a promise spoken directly to you.",
+          "Confess one specific thing right now — not a category, the actual thing by name — and sit with verse 9 until you believe it.",
       },
       {
         dayNumber: 9,
@@ -125,9 +181,7 @@ const PLANS: PlanSeed[] = [
         reflectionQ1:
           "Where in your relationships right now are you waiting to be served, recognized, or appreciated — and what would it look like to flip that expectation this week?",
         reflectionQ2:
-          "Identify one person in your life who could use help this week and do something for them without telling anyone about it — and pay attention to how that feels.",
-        prayerPrompt:
-          "Ask God to show you one person He has placed in your life specifically so you can serve them — and ask Him to make you willing to do it without needing credit.",
+          "Who in your life could use help today — what is one thing you can do for them without telling anyone?",
       },
       {
         dayNumber: 10,
@@ -136,9 +190,7 @@ const PLANS: PlanSeed[] = [
         reflectionQ1:
           "If you are honest about your giving right now — is it generous or is it what you can spare after everything else — and what does that ratio say about where your security actually is?",
         reflectionQ2:
-          "Give something this week that costs you something — money, time, or a specific act of service — and do it before you feel ready or comfortable, because the discipline is in the act, not the feeling.",
-        prayerPrompt:
-          "Thank God for one specific way He has been generous to you that you did not deserve — and ask Him to make that generosity the reason you give, not obligation.",
+          "What is one thing you can give today that will actually cost you something?",
       },
       {
         dayNumber: 11,
@@ -147,9 +199,7 @@ const PLANS: PlanSeed[] = [
         reflectionQ1:
           "Do you have the kind of Christian community described in Acts 2 — people who know your actual life and not just your Sunday version — and if not, what has kept you from pursuing it?",
         reflectionQ2:
-          "Reach out this week to one person from your church or faith community and make a plan to actually be together — not to talk about being together, but to do it.",
-        prayerPrompt:
-          "Ask God to put one name on your heart right now — someone you are supposed to be walking with — and tell Him honestly what has stopped you from going deeper with that person.",
+          "Who is one person from your church or faith community you have been meaning to connect with — reach out to them today.",
       },
       {
         dayNumber: 12,
@@ -158,9 +208,7 @@ const PLANS: PlanSeed[] = [
         reflectionQ1:
           "Where in your life right now are you serving money instead of God — not dramatically, but in the small decisions about what you buy, what you keep, and what you will not give up?",
         reflectionQ2:
-          "Identify one thing you own or spend money on that has more control over you than it should — and make a decision about it this week, even if that decision is just to be honest about it with someone.",
-        prayerPrompt:
-          "Tell God honestly what you are holding onto too tightly — and ask Him to loosen your grip, even if that scares you.",
+          "What is one thing you own or spend money on that has more control over you than it should — name it.",
       },
       {
         dayNumber: 13,
@@ -169,9 +217,7 @@ const PLANS: PlanSeed[] = [
         reflectionQ1:
           "Where in your life right now are you running your own kingdom instead of submitting to God's — what decision, relationship, or habit are you keeping out of his reach?",
         reflectionQ2:
-          "Identify one area where you have been operating independently from God and bring it to him in prayer today — not asking him to bless your plan, but genuinely asking what his plan is.",
-        prayerPrompt:
-          "Surrender one specific thing to God right now — say it plainly — and ask Him to do whatever He needs to do in that area, even if it is not what you want.",
+          "What is one decision you are currently making without God — bring it to Him right now and ask what He would do.",
       },
       {
         dayNumber: 14,
@@ -180,9 +226,7 @@ const PLANS: PlanSeed[] = [
         reflectionQ1:
           "What has God given you — gifts, opportunities, relationships, resources — that you have buried because you were afraid, comfortable, or waiting for better conditions?",
         reflectionQ2:
-          "Name one thing God has entrusted to you that you have not been faithful with, and take one concrete step toward faithfulness in that area this week — not a plan, an actual step.",
-        prayerPrompt:
-          "Thank God for what He has put in your hands — and ask Him to make you faithful with it, not impressive, just faithful.",
+          "What is one thing God has put in your hands that you have not been faithful with — what is one step you can take today?",
       },
     ],
   },
@@ -228,7 +272,7 @@ async function seed() {
         theme: d.theme,
         reflectionQ1: d.reflectionQ1,
         reflectionQ2: d.reflectionQ2,
-        prayerPrompt: d.prayerPrompt,
+        prayerPrompt: null,
       }))
     );
 

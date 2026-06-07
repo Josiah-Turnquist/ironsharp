@@ -58,6 +58,29 @@ profile.get("/", async (c) => {
   return c.json({ profile: row });
 });
 
+// POST /api/profile/redeem-promo → validate a promo code and upgrade membership
+const PROMO_CODES: Record<string, string> = {
+  IRONSHARP: "family",
+  FOUNDING:  "family",
+  SHARPEN:   "sharpen",
+};
+
+profile.post("/redeem-promo", async (c) => {
+  const userId = c.var.user.id;
+  const { code } = await c.req.json().catch(() => ({ code: "" }));
+  const normalized = (code as string).trim().toUpperCase();
+  const tier = PROMO_CODES[normalized];
+  if (!tier) return c.json({ error: "Invalid promo code." }, 400);
+
+  const [row] = await db
+    .update(profiles)
+    .set({ membershipTier: tier, updatedAt: new Date() })
+    .where(eq(profiles.userId, userId))
+    .returning();
+
+  return c.json({ profile: row, tier });
+});
+
 // PATCH /api/profile  → update editable profile fields
 profile.patch("/", async (c) => {
   const userId = c.var.user.id;

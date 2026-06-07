@@ -10,10 +10,15 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.ironsharp.app"
+      "bundleIdentifier": "com.ironsharp.app",
+      "infoPlist": {
+        "NSSpeechRecognitionUsageDescription": "IronSharp uses speech recognition to transcribe your devotional responses in Commute Mode.",
+        "NSMicrophoneUsageDescription": "IronSharp uses your microphone to capture your spoken reflections in Commute Mode."
+      }
     },
     "android": {
-      "package": "com.ironsharp.app"
+      "package": "com.ironsharp.app",
+      "permissions": ["android.permission.RECORD_AUDIO"]
     },
     "web": {
       "bundler": "metro",

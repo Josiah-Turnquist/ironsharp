@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, ChevronDown, ChevronUp, Circle, GripVertical } from "lucide-react-native";
+import { CheckCircle2, ChevronDown, ChevronUp, Circle } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
 import { useThemeColor } from "@/components/useThemeColor";
 import { useActiveDevotional, useGroups } from "@/lib/queries";
@@ -132,7 +132,6 @@ export default function DevotionalHub() {
                     onPress={() => setExpanded(isOpen ? null : group.id)}
                     className="flex-row items-center gap-3 px-3 py-4 active:opacity-70"
                   >
-                    <GripVertical size={18} color={muted} />
                     <View style={{ width: 3, height: 36, borderRadius: 2, backgroundColor: config.color }} />
                     <View className="flex-1">
                       <Text className="font-serif text-base font-bold text-foreground">
@@ -207,7 +206,7 @@ export default function DevotionalHub() {
 
                       <View style={{ borderTopWidth: 1, borderTopColor: border, padding: 12 }}>
                         <Pressable
-                          onPress={() => router.push(`/devotional/${group.plan!.id}`)}
+                          onPress={() => router.push(`/devotional/${group.plan!.id}?groupId=${group.id}`)}
                           style={{ backgroundColor: config.color }}
                           className="h-10 items-center justify-center rounded-lg"
                         >

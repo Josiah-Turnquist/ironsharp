@@ -4,12 +4,12 @@ import Anthropic from "@anthropic-ai/sdk";
 import { db } from "../db/index.js";
 import { devotionalPlans, devotionalDays, profiles } from "../db/schema.js";
 import { requireAuth, type AppEnv } from "../middleware/auth.js";
+import { TIER_LIMITS, type MembershipTier } from "../lib/tiers.js";
 
 export const generate = new Hono<AppEnv>();
 
 generate.use("*", requireAuth);
 
-const TOKEN_LIMIT = 2;
 const WINDOW_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 // ─── System prompt (cached by Anthropic — static across all generations) ───────
@@ -115,6 +115,38 @@ Subtitle register: "Train yourself for godliness." — tight, direct.
 Chapter: always specific ("Romans 1:1–17" not "Romans 1"). Choose the most impactful verses for that day's theme.
 Days must flow as a complete journey — each day builds on the previous. Not loosely connected topics joined by a book name.`;
 
+// ─── Bible book validation ────────────────────────────────────────────────────
+
+const VALID_BIBLE_BOOKS = new Set([
+  "genesis","exodus","leviticus","numbers","deuteronomy","joshua","judges","ruth",
+  "1 samuel","2 samuel","1 kings","2 kings","1 chronicles","2 chronicles",
+  "ezra","nehemiah","esther","job","psalms","proverbs","ecclesiastes","song of solomon",
+  "isaiah","jeremiah","lamentations","ezekiel","daniel","hosea","joel","amos",
+  "obadiah","jonah","micah","nahum","habakkuk","zephaniah","haggai","zechariah","malachi",
+  "matthew","mark","luke","john","acts","romans",
+  "1 corinthians","2 corinthians","galatians","ephesians","philippians","colossians",
+  "1 thessalonians","2 thessalonians","1 timothy","2 timothy","titus","philemon",
+  "hebrews","james","1 peter","2 peter","1 john","2 john","3 john","jude","revelation",
+]);
+
+function isValidBibleBook(raw: string): boolean {
+  const normalized = raw
+    .toLowerCase()
+    .trim()
+    .replace(/^(the book of |book of |the )/i, "")
+    .replace(/\bfirst\b/i, "1")
+    .replace(/\bsecond\b/i, "2")
+    .replace(/\bthird\b/i, "3")
+    .replace(/\bpsalm\b/, "psalms")
+    .replace(/\bsong of songs\b/, "song of solomon")
+    .replace(/\bsong of sol\b/, "song of solomon")
+    .replace(/\bsongs\b/, "song of solomon")
+    .replace(/\bcanticles?\b/, "song of solomon")
+    .replace(/\brevelations\b/, "revelation")
+    .trim();
+  return VALID_BIBLE_BOOKS.has(normalized);
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function normalizeKey(value: string): string {
@@ -136,22 +168,24 @@ generate.get("/tokens", async (c) => {
   const userId = c.var.user.id;
 
   const [p] = await db
-    .select({ generatedCount: profiles.generatedCount, generatedWindowStart: profiles.generatedWindowStart })
+    .select({ generatedCount: profiles.generatedCount, generatedWindowStart: profiles.generatedWindowStart, membershipTier: profiles.membershipTier })
     .from(profiles)
     .where(eq(profiles.userId, userId))
     .limit(1);
 
+  const tier = (p?.membershipTier ?? "free") as MembershipTier;
+  const tierLimit = TIER_LIMITS[tier].aiTokensPerMonth;
   const now = Date.now();
   const windowStart = p?.generatedWindowStart ? new Date(p.generatedWindowStart).getTime() : null;
   const windowExpired = !windowStart || now - windowStart > WINDOW_MS;
   const count = windowExpired ? 0 : (p?.generatedCount ?? 0);
-  const tokensRemaining = Math.max(0, TOKEN_LIMIT - count);
+  const tokensRemaining = Math.max(0, tierLimit - count);
   const resetsAt =
-    !windowExpired && windowStart
+    !windowExpired && windowStart && tierLimit > 0
       ? new Date(windowStart + WINDOW_MS).toISOString()
       : null;
 
-  return c.json({ tokensRemaining, resetsAt });
+  return c.json({ tokensRemaining, resetsAt, tierLimit });
 });
 
 // ─── POST /generate ──────────────────────────────────────────────────────────
@@ -173,15 +207,25 @@ generate.post("/", async (c) => {
     return c.json({ error: "Missing required fields" }, 400);
   }
 
+  if (inputType === "book" && !isValidBibleBook(bookOrTopic)) {
+    return c.json({ error: "Please enter a single book of the Bible (e.g. Romans, Psalms, 1 Corinthians)." }, 400);
+  }
+
   // ── Token check ────────────────────────────────────────────────────────────
   const [p] = await db.select().from(profiles).where(eq(profiles.userId, userId)).limit(1);
+  const tier = (p?.membershipTier ?? "free") as MembershipTier;
+  const tierLimit = TIER_LIMITS[tier].aiTokensPerMonth;
   const now = Date.now();
   const windowStart = p?.generatedWindowStart ? new Date(p.generatedWindowStart).getTime() : null;
   const windowExpired = !windowStart || now - windowStart > WINDOW_MS;
   const count = windowExpired ? 0 : (p?.generatedCount ?? 0);
   const activeWindowStart = windowExpired ? now : windowStart!;
 
-  if (count >= TOKEN_LIMIT) {
+  if (tierLimit === 0) {
+    return c.json({ error: "AI-generated plans require a Connect membership or higher." }, 403);
+  }
+
+  if (count >= tierLimit) {
     const resetsAt = new Date(activeWindowStart + WINDOW_MS);
     return c.json(
       {

@@ -12,7 +12,11 @@ import {
   View,
 } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 import {
+  ArrowDown,
+  ArrowUp,
+  BookOpen,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
@@ -47,14 +51,12 @@ function InviteCodeRow({
   muted,
   border,
   card,
-  fg,
 }: {
   inviteCode: string;
   accent: string;
   muted: string;
   border: string;
   card: string;
-  fg: string;
 }) {
   const shareCode = () =>
     Share.share({
@@ -258,6 +260,7 @@ function MemberSearch({
 export default function GroupsScreen() {
   const groups = useGroups();
   const qc = useQueryClient();
+  const router = useRouter();
   const primary = useThemeColor("primary");
   const muted = useThemeColor("muted-foreground");
   const border = useThemeColor("border");
@@ -366,157 +369,221 @@ export default function GroupsScreen() {
     ]);
   };
 
+  const handleMove = async (groupId: string, direction: "up" | "down") => {
+    const list = groups.data ?? [];
+    const idx = list.findIndex((g) => g.id === groupId);
+    if (direction === "up" && idx === 0) return;
+    if (direction === "down" && idx === list.length - 1) return;
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    const newOrder = list.map((g, i) => {
+      if (i === idx) return { groupId: g.id, displayOrder: list[swapIdx]!.displayOrder };
+      if (i === swapIdx) return { groupId: g.id, displayOrder: list[idx]!.displayOrder };
+      return { groupId: g.id, displayOrder: g.displayOrder };
+    });
+    await ApiClient.reorderGroups(newOrder);
+    await qc.invalidateQueries({ queryKey: ["groups"] });
+  };
+
+  const groupList = groups.data ?? [];
+
   return (
     <Screen edges={["top"]}>
-      <ScrollView
-        contentContainerClassName="mx-auto w-full max-w-lg px-4 py-8"
-        showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={primary} />}
-      >
-        <Text className="text-xs uppercase tracking-wider text-muted-foreground">
-          Your Relationships
-        </Text>
-        <Text className="mb-5 font-serif text-2xl font-bold text-foreground">Groups</Text>
-
-        {groups.isLoading ? (
-          <ActivityIndicator color={primary} className="mt-8" />
-        ) : (groups.data ?? []).length === 0 ? (
-          <View
-            style={{ borderStyle: "dashed", borderWidth: 1.5, borderColor: border, borderRadius: 16 }}
-            className="mb-6 items-center px-6 py-8"
-          >
-            <Text className="mb-1 font-serif text-base font-bold text-foreground">
-              No groups yet
-            </Text>
-            <Text className="mb-5 text-center text-sm text-muted-foreground">
-              Walk through the Word with others — start a group or join one.
-            </Text>
-            <View className="flex-row gap-3">
-              <Pressable
-                onPress={() => setShowCreate(true)}
-                className="h-11 items-center justify-center rounded-xl bg-primary px-6"
-              >
-                <Text className="text-sm font-semibold text-primary-foreground">Create</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => setShowJoin(true)}
-                style={{ borderWidth: 1, borderColor: border }}
-                className="h-11 items-center justify-center rounded-xl px-6"
-              >
-                <Text style={{ color: fg }} className="text-sm font-semibold">Join with Code</Text>
-              </Pressable>
-            </View>
+      {groups.isLoading ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color={primary} />
+        </View>
+      ) : groupList.length === 0 ? (
+        <View className="flex-1 items-center justify-center px-8">
+          <Text className="mb-1 font-serif text-xl font-bold text-foreground">No groups yet</Text>
+          <Text className="mb-6 text-center text-sm text-muted-foreground">
+            Walk through the Word with others — start a group or join one.
+          </Text>
+          <View className="flex-row gap-3">
+            <Pressable
+              onPress={() => setShowCreate(true)}
+              className="h-11 items-center justify-center rounded-xl bg-primary px-6"
+            >
+              <Text className="text-sm font-semibold text-primary-foreground">Create</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setShowJoin(true)}
+              style={{ borderWidth: 1, borderColor: border }}
+              className="h-11 items-center justify-center rounded-xl px-6"
+            >
+              <Text style={{ color: fg }} className="text-sm font-semibold">Join with Code</Text>
+            </Pressable>
           </View>
-        ) : (
-          <>
-            <View className="gap-2">
-              {(groups.data ?? []).map((group) => {
-                const config = GROUP_TYPE_CONFIG[group.groupType] ?? { label: group.groupType, color: primary };
-                const doneCount = group.members.filter((m) => m.doneToday).length;
-                const isOpen = expanded === group.id;
+        </View>
+      ) : (
+        <ScrollView
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingTop: 32,
+            paddingBottom: 32,
+            maxWidth: 512,
+            alignSelf: "center",
+            width: "100%",
+          }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={primary} />
+          }
+        >
+          <View style={{ marginBottom: 20 }}>
+            <Text className="text-xs uppercase tracking-wider text-muted-foreground">
+              Your Relationships
+            </Text>
+            <Text className="font-serif text-2xl font-bold text-foreground">Groups</Text>
+          </View>
 
-                return (
-                  <View key={group.id} className="overflow-hidden rounded-xl border border-border bg-card">
-                    {/* Collapsed row */}
+          {groupList.map((group, idx) => {
+            const config = GROUP_TYPE_CONFIG[group.groupType] ?? { label: group.groupType, color: primary };
+            const doneCount = group.members.filter((m) => m.doneToday).length;
+            const isOpen = expanded === group.id;
+            const isFirst = idx === 0;
+            const isLast = idx === groupList.length - 1;
+
+            return (
+              <View
+                key={group.id}
+                style={{
+                  marginBottom: 8,
+                  borderRadius: 12,
+                  overflow: "hidden",
+                  borderWidth: 1,
+                  borderColor: border,
+                  backgroundColor: card,
+                }}
+              >
+                {/* Collapsed row */}
+                <View className="flex-row items-center gap-3 px-3 py-4">
+                  {/* Up / Down order buttons */}
+                  <View style={{ gap: 2 }}>
                     <Pressable
-                      onPress={() => toggle(group.id)}
-                      className="flex-row items-center gap-3 px-3 py-4"
+                      onPress={(e) => { e.stopPropagation?.(); handleMove(group.id, "up"); }}
+                      hitSlop={6}
+                      disabled={isFirst}
+                      style={{ opacity: isFirst ? 0.2 : 1 }}
                     >
-                      <GripVertical size={18} color={muted} />
-                      <View style={{ width: 3, height: 36, borderRadius: 2, backgroundColor: config.color }} />
-                      <View className="flex-1">
-                        <Text className="font-serif text-base font-bold text-foreground">
-                          {group.name}
-                        </Text>
-                        <Text className="mt-0.5 text-xs text-muted-foreground">
-                          {config.label}
-                          {group.plan?.chapter ? ` · ${group.plan.chapter}` : ""}
-                          {` · ${doneCount}/${group.members.length} today`}
-                        </Text>
-                      </View>
-                      {isOpen ? <ChevronUp size={18} color={muted} /> : <ChevronDown size={18} color={muted} />}
+                      <ArrowUp size={14} color={muted} />
                     </Pressable>
-
-                    {/* Expanded */}
-                    {isOpen && (
-                      <View style={{ borderTopWidth: 1, borderTopColor: border }} className="px-4 py-3 gap-4">
-                        {/* Members */}
-                        <View className="gap-2">
-                          {/* Column headers */}
-                          <View className="flex-row items-center justify-between mb-1">
-                            <Text style={{ fontFamily: "DMSans_600SemiBold", fontSize: 10, color: muted, letterSpacing: 1, textTransform: "uppercase" }}>
-                              Members
-                            </Text>
-                            <Text style={{ fontFamily: "DMSans_600SemiBold", fontSize: 10, color: muted, letterSpacing: 1, textTransform: "uppercase" }}>
-                              Completed
-                            </Text>
-                          </View>
-                          {group.members.length === 0 ? (
-                            <Text className="text-xs text-muted-foreground">No members yet.</Text>
-                          ) : (
-                            group.members.map((member) => (
-                              <View key={member.id} className="flex-row items-center justify-between">
-                                <Text className="text-sm text-foreground">{member.displayName}</Text>
-                                <View className="flex-row items-center gap-3">
-                                  {member.doneToday
-                                    ? <CheckCircle2 size={16} color={config.color} />
-                                    : <Circle size={16} color={muted} />
-                                  }
-                                  <Pressable
-                                    hitSlop={8}
-                                    onPress={() => handleRemoveMember(group.id, member.userId, member.displayName)}
-                                  >
-                                    <X size={13} color={muted} />
-                                  </Pressable>
-                                </View>
-                              </View>
-                            ))
-                          )}
-                        </View>
-
-                        {/* Actions row */}
-                        <View className="flex-row gap-3">
-                          <Pressable
-                            onPress={() => {
-                              setEditGroup(group);
-                              setEditName(group.name);
-                            }}
-                            style={{ borderWidth: 1, borderColor: border, borderRadius: 8 }}
-                            className="flex-row items-center gap-1.5 px-3 py-2"
-                          >
-                            <Pencil size={13} color={muted} />
-                            <Text style={{ color: muted, fontFamily: "DMSans_500Medium", fontSize: 12 }}>
-                              Edit group
-                            </Text>
-                          </Pressable>
-                        </View>
-                      </View>
-                    )}
+                    <Pressable
+                      onPress={(e) => { e.stopPropagation?.(); handleMove(group.id, "down"); }}
+                      hitSlop={6}
+                      disabled={isLast}
+                      style={{ opacity: isLast ? 0.2 : 1 }}
+                    >
+                      <ArrowDown size={14} color={muted} />
+                    </Pressable>
                   </View>
-                );
-              })}
-            </View>
 
-            <View className="mt-4 flex-row items-center justify-center gap-5">
-              <Pressable
-                onPress={() => setShowCreate(true)}
-                className="flex-row items-center gap-1.5 py-3"
-              >
-                <Plus size={15} color={primary} />
-                <Text style={{ color: primary }} className="text-sm font-semibold">New group</Text>
-              </Pressable>
-              <Text style={{ color: border }}>·</Text>
-              <Pressable
-                onPress={() => setShowJoin(true)}
-                className="flex-row items-center gap-1.5 py-3"
-              >
-                <Link size={15} color={primary} />
-                <Text style={{ color: primary }} className="text-sm font-semibold">Join with code</Text>
-              </Pressable>
-            </View>
-          </>
-        )}
-      </ScrollView>
+                  <View style={{ width: 3, height: 36, borderRadius: 2, backgroundColor: config.color }} />
+
+                  <Pressable
+                    onPress={() => toggle(group.id)}
+                    className="flex-1 flex-row items-center"
+                  >
+                    <View className="flex-1">
+                      <Text className="font-serif text-base font-bold text-foreground">
+                        {group.name}
+                      </Text>
+                      <Text className="mt-0.5 text-xs text-muted-foreground">
+                        {config.label}
+                        {group.plan?.chapter ? ` · ${group.plan.chapter}` : ""}
+                        {` · ${doneCount}/${group.members.length} today`}
+                      </Text>
+                    </View>
+                    {isOpen ? <ChevronUp size={18} color={muted} /> : <ChevronDown size={18} color={muted} />}
+                  </Pressable>
+                </View>
+
+                {/* Expanded */}
+                {isOpen && (
+                  <View style={{ borderTopWidth: 1, borderTopColor: border }} className="px-4 py-3 gap-4">
+                    {/* Members */}
+                    <View className="gap-2">
+                      <View className="flex-row items-center justify-between mb-1">
+                        <Text style={{ fontFamily: "DMSans_600SemiBold", fontSize: 10, color: muted, letterSpacing: 1, textTransform: "uppercase" }}>
+                          Members
+                        </Text>
+                        <Text style={{ fontFamily: "DMSans_600SemiBold", fontSize: 10, color: muted, letterSpacing: 1, textTransform: "uppercase" }}>
+                          Completed
+                        </Text>
+                      </View>
+                      {group.members.length === 0 ? (
+                        <Text className="text-xs text-muted-foreground">No members yet.</Text>
+                      ) : (
+                        group.members.map((member) => (
+                          <View key={member.id} className="flex-row items-center justify-between">
+                            <Text className="text-sm text-foreground">{member.displayName}</Text>
+                            <View className="flex-row items-center gap-3">
+                              {member.doneToday
+                                ? <CheckCircle2 size={16} color={config.color} />
+                                : <Circle size={16} color={muted} />
+                              }
+                              <Pressable
+                                hitSlop={8}
+                                onPress={() => handleRemoveMember(group.id, member.userId, member.displayName)}
+                              >
+                                <X size={13} color={muted} />
+                              </Pressable>
+                            </View>
+                          </View>
+                        ))
+                      )}
+                    </View>
+
+                    {/* Actions row */}
+                    <View className="flex-row gap-3">
+                      {group.plan && (
+                        <Pressable
+                          onPress={() => router.push(`/devotional/${group.plan!.id}?groupId=${group.id}`)}
+                          style={{ borderWidth: 1, borderColor: config.color, borderRadius: 8, backgroundColor: config.color + "15" }}
+                          className="flex-row items-center gap-1.5 px-3 py-2"
+                        >
+                          <BookOpen size={13} color={config.color} />
+                          <Text style={{ color: config.color, fontFamily: "DMSans_500Medium", fontSize: 12 }}>
+                            Open Devotional
+                          </Text>
+                        </Pressable>
+                      )}
+                      <Pressable
+                        onPress={() => { setEditGroup(group); setEditName(group.name); }}
+                        style={{ borderWidth: 1, borderColor: border, borderRadius: 8 }}
+                        className="flex-row items-center gap-1.5 px-3 py-2"
+                      >
+                        <Pencil size={13} color={muted} />
+                        <Text style={{ color: muted, fontFamily: "DMSans_500Medium", fontSize: 12 }}>
+                          Edit group
+                        </Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                )}
+              </View>
+            );
+          })}
+
+          {/* Footer actions */}
+          <View style={{ marginTop: 8, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 20 }}>
+            <Pressable
+              onPress={() => setShowCreate(true)}
+              className="flex-row items-center gap-1.5 py-3"
+            >
+              <Plus size={15} color={primary} />
+              <Text style={{ color: primary }} className="text-sm font-semibold">New group</Text>
+            </Pressable>
+            <Text style={{ color: border }}>·</Text>
+            <Pressable
+              onPress={() => setShowJoin(true)}
+              className="flex-row items-center gap-1.5 py-3"
+            >
+              <Link size={15} color={primary} />
+              <Text style={{ color: primary }} className="text-sm font-semibold">Join with code</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      )}
 
       {/* ── Create group modal ─────────────────────────────────────────────── */}
       <Modal
@@ -594,15 +661,13 @@ export default function GroupsScreen() {
                 <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 14, color: muted, marginBottom: 20 }}>
                   Your group is ready. Share the invite code or add people directly.
                 </Text>
-
                 <View style={{ marginBottom: 24 }}>
                   <InviteCodeRow
                     inviteCode={createdGroup.inviteCode}
                     accent={GROUP_TYPE_CONFIG[createdGroup.groupType]?.color ?? primary}
-                    muted={muted} border={border} card={card} fg={fg}
+                    muted={muted} border={border} card={card}
                   />
                 </View>
-
                 <View style={{ marginBottom: 24 }}>
                   <MemberSearch
                     groupId={createdGroup.id}
@@ -612,7 +677,6 @@ export default function GroupsScreen() {
                     onAdded={() => qc.invalidateQueries({ queryKey: ["groups"] })}
                   />
                 </View>
-
                 <Pressable
                   onPress={closeCreate}
                   className="h-12 items-center justify-center rounded-xl bg-primary"
@@ -642,7 +706,6 @@ export default function GroupsScreen() {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-              {/* Name */}
               <Text className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Group Name</Text>
               <TextInput
                 value={editName}
@@ -667,20 +730,18 @@ export default function GroupsScreen() {
 
               <View style={{ height: 1, backgroundColor: border, marginBottom: 24 }} />
 
-              {/* Invite code */}
               {editGroup && (
                 <View style={{ marginBottom: 24 }}>
                   <InviteCodeRow
                     inviteCode={editGroup.inviteCode}
                     accent={GROUP_TYPE_CONFIG[editGroup.groupType]?.color ?? primary}
-                    muted={muted} border={border} card={card} fg={fg}
+                    muted={muted} border={border} card={card}
                   />
                 </View>
               )}
 
               <View style={{ height: 1, backgroundColor: border, marginBottom: 24 }} />
 
-              {/* Add members */}
               {editGroup && (
                 <MemberSearch
                   groupId={editGroup.id}

@@ -1,9 +1,12 @@
-import { ScrollView, Text, View } from "react-native";
-import { Check } from "lucide-react-native";
+import { useState } from "react";
+import { ActivityIndicator, Modal, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Check, Tag } from "lucide-react-native";
+import { useQueryClient } from "@tanstack/react-query";
 import { Screen } from "@/components/Screen";
 import { Header } from "@/components/Header";
 import { useProfile } from "@/lib/queries";
 import { useThemeColor } from "@/components/useThemeColor";
+import { ApiClient, ApiError } from "@/lib/api";
 import {
   TIER_DISPLAY,
   TIER_ORDER,
@@ -14,15 +17,38 @@ import {
 
 export default function MembershipScreen() {
   const profile = useProfile();
+  const qc = useQueryClient();
   const border = useThemeColor("border");
   const card = useThemeColor("card");
   const fg = useThemeColor("foreground");
   const muted = useThemeColor("muted-foreground");
   const bg = useThemeColor("background");
+  const primary = useThemeColor("primary");
 
   const currentTier = (profile.data?.membershipTier ?? "free") as MembershipTier;
   const planUnlocksCount = profile.data?.planUnlocksCount ?? 0;
   const planUnlocksWindowStart = profile.data?.planUnlocksWindowStart ?? null;
+
+  const [showPromo, setShowPromo] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
+  const [redeeming, setRedeeming] = useState(false);
+  const [promoError, setPromoError] = useState("");
+
+  const handleRedeem = async () => {
+    if (!promoCode.trim()) return;
+    setRedeeming(true);
+    setPromoError("");
+    try {
+      await ApiClient.redeemPromo(promoCode.trim());
+      await qc.invalidateQueries({ queryKey: ["profile"] });
+      setShowPromo(false);
+      setPromoCode("");
+    } catch (err) {
+      setPromoError(err instanceof ApiError ? err.message : "Something went wrong.");
+    } finally {
+      setRedeeming(false);
+    }
+  };
 
   return (
     <Screen edges={["top"]}>
@@ -149,7 +175,81 @@ export default function MembershipScreen() {
         <Text className="mt-2 text-center text-xs text-muted-foreground px-4">
           Upgrades and billing coming soon. Your plan is managed here.
         </Text>
+
+        {/* Promo code */}
+        <Pressable
+          onPress={() => { setShowPromo(true); setPromoError(""); }}
+          className="flex-row items-center justify-center gap-2 py-4"
+        >
+          <Tag size={14} color={muted} />
+          <Text style={{ color: muted }} className="text-sm">
+            Have a promo code?
+          </Text>
+        </Pressable>
       </ScrollView>
+
+      {/* ── Promo code modal ──────────────────────────────────────────────── */}
+      <Modal
+        visible={showPromo}
+        animationType="slide"
+        transparent
+        onRequestClose={() => !redeeming && setShowPromo(false)}
+      >
+        <Pressable
+          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}
+          onPress={() => !redeeming && setShowPromo(false)}
+        >
+          <Pressable
+            onPress={() => {}}
+            style={{
+              backgroundColor: bg,
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              padding: 24,
+              paddingBottom: 44,
+              gap: 16,
+            }}
+          >
+            <Text className="font-serif text-xl font-bold text-foreground">Promo Code</Text>
+            <TextInput
+              value={promoCode}
+              onChangeText={(t) => { setPromoCode(t.toUpperCase()); setPromoError(""); }}
+              placeholder="Enter code"
+              placeholderTextColor={muted}
+              autoCapitalize="characters"
+              autoCorrect={false}
+              style={{
+                borderWidth: 1,
+                borderColor: promoError ? "#E57373" : border,
+                borderRadius: 12,
+                padding: 14,
+                fontSize: 20,
+                fontFamily: "DMSans_700Bold",
+                letterSpacing: 3,
+                textAlign: "center",
+                color: fg,
+                backgroundColor: card,
+              }}
+            />
+            {!!promoError && (
+              <Text style={{ color: "#E57373", fontSize: 13, textAlign: "center", marginTop: -8 }}>
+                {promoError}
+              </Text>
+            )}
+            <Pressable
+              onPress={handleRedeem}
+              disabled={!promoCode.trim() || redeeming}
+              style={{ opacity: !promoCode.trim() || redeeming ? 0.5 : 1 }}
+              className="h-12 items-center justify-center rounded-xl bg-primary"
+            >
+              {redeeming
+                ? <ActivityIndicator color="#fff" />
+                : <Text className="font-semibold text-primary-foreground">Redeem</Text>
+              }
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </Screen>
   );
 }

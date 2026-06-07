@@ -54,7 +54,9 @@ export default function PlanList() {
 
   const handlePlanTap = (planId: string) => {
     const prog = progressByPlan.get(planId);
-    if (prog) {
+    // If the user already has personal progress but is in groups, still show
+    // the modal so they can open the plan in a group context instead.
+    if (prog && myGroups.length === 0) {
       router.push(`/devotional/${planId}`);
     } else {
       setPendingPlanId(planId);
@@ -65,41 +67,58 @@ export default function PlanList() {
     if (!pendingPlanId) return;
 
     // Client-side pre-checks using already-loaded data.
+    const existingGroup = groupId ? (groups.data ?? []).find((g) => g.id === groupId) : null;
+    const groupAlreadyHasPlan = existingGroup?.plan?.id === pendingPlanId;
+
     if (groupId) {
-      const activeGroupCount = (groups.data ?? []).filter((g) => g.plan !== null).length;
-      if (activeGroupCount >= 3) {
-        Alert.alert(
-          "You're at your limit.",
-          "You're already in three active group devotionals. Go deeper with the people you are already committed to before adding more."
-        );
-        return;
+      if (!groupAlreadyHasPlan) {
+        const activeGroupCount = (groups.data ?? []).filter((g) => g.plan !== null).length;
+        if (activeGroupCount >= 3) {
+          Alert.alert(
+            "You're at your limit.",
+            "You're already in three active group devotionals. Go deeper with the people you are already committed to before adding more."
+          );
+          return;
+        }
       }
     } else {
-      const groupPlanIds = new Set(
-        (groups.data ?? []).map((g) => g.plan?.id).filter(Boolean)
-      );
-      const activePersonalCount = (progress.data ?? []).filter(
-        (p) => !p.completedAt && !groupPlanIds.has(p.planId)
-      ).length;
-      if (activePersonalCount >= 1) {
-        Alert.alert(
-          "One at a time.",
-          "You already have an active personal devotional. Finish what is in front of you — depth with one thing beats scattered attention across many."
+      // Skip the personal limit check if the user already has progress for this
+      // plan — they're just re-opening it, not starting a new one.
+      const alreadyStarted = !!progressByPlan.get(pendingPlanId);
+      if (!alreadyStarted) {
+        const groupPlanIds = new Set(
+          (groups.data ?? []).map((g) => g.plan?.id).filter(Boolean)
         );
-        return;
+        const activePersonalCount = (progress.data ?? []).filter(
+          (p) => !p.completedAt && !groupPlanIds.has(p.planId)
+        ).length;
+        if (activePersonalCount >= 1) {
+          Alert.alert(
+            "One at a time.",
+            "You already have an active personal devotional. Finish what is in front of you — depth with one thing beats scattered attention across many."
+          );
+          return;
+        }
       }
     }
 
     setAssigning(true);
     try {
-      await ApiClient.startPlan(pendingPlanId, !!groupId);
       if (groupId) {
-        await ApiClient.assignPlanToGroup(groupId, pendingPlanId);
+        if (!groupAlreadyHasPlan) {
+          await ApiClient.assignPlanToGroup(groupId, pendingPlanId);
+        }
         await qc.invalidateQueries({ queryKey: ["groups"] });
+      } else {
+        await ApiClient.startPlan(pendingPlanId, false);
+        await qc.invalidateQueries({ queryKey: ["progress"] });
       }
-      await qc.invalidateQueries({ queryKey: ["progress"] });
       setPendingPlanId(null);
-      router.push(`/devotional/${pendingPlanId}`);
+      if (groupId) {
+        router.push(`/devotional/${pendingPlanId}?groupId=${groupId}`);
+      } else {
+        router.push(`/devotional/${pendingPlanId}`);
+      }
     } catch (err) {
       if (err instanceof ApiError && err.status === 403) {
         upgradePrompt.show();
@@ -140,11 +159,14 @@ export default function PlanList() {
         ) : (
           (plans ?? []).map((plan) => {
             const prog = progressByPlan.get(plan.id);
-            const status = !prog
-              ? "Start Plan"
-              : prog.completedAt
-                ? "Completed ✓"
-                : `Continue · Day ${prog.currentDay}`;
+            const groupForPlan = (groups.data ?? []).find((g) => g.plan?.id === plan.id);
+            const status = groupForPlan
+              ? `Group Plan · Day ${groupForPlan.currentDay}`
+              : !prog
+                ? "Start Plan"
+                : prog.completedAt
+                  ? "Completed ✓"
+                  : `Continue · Day ${prog.currentDay}`;
             return (
               <Pressable
                 key={plan.id}

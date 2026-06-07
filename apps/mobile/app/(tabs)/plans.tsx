@@ -19,10 +19,11 @@ import { useThemeColor } from "@/components/useThemeColor";
 import { usePlans, useProgress, useGenerateTokens } from "@/lib/queries";
 import { CATEGORIES } from "@/lib/categories";
 
-function TokenCoins({ count }: { count: number }) {
+function TokenCoins({ count, limit }: { count: number; limit: number }) {
+  if (limit === 0) return null;
   return (
     <View style={{ flexDirection: "row", gap: 5, marginTop: 6 }}>
-      {[0, 1].map((i) => {
+      {Array.from({ length: limit }, (_, i) => {
         const active = i < count;
         return (
           <View
@@ -56,7 +57,8 @@ export default function PlansScreen() {
 
   const countByCategory = data?.countByCategory ?? {};
   const completedCount = (progress.data ?? []).filter((p) => p.completedAt).length;
-  const tokensRemaining = tokens.data?.tokensRemaining ?? 2;
+  const tokensRemaining = tokens.data?.tokensRemaining ?? 0;
+  const tierLimit = tokens.data?.tierLimit ?? 0;
   const resetsAt = tokens.data?.resetsAt;
 
   const openCategory = (id: string, count: number) => {
@@ -65,9 +67,15 @@ export default function PlansScreen() {
   };
 
   const openCreate = () => {
-    if (tokensRemaining === 0 && resetsAt) {
-      const date = new Date(resetsAt).toLocaleDateString("en-US", { month: "long", day: "numeric" });
-      Alert.alert("You're all out", `Your next token is available on ${date}.`);
+    if (tierLimit === 0) {
+      Alert.alert("Upgrade required", "AI-generated plans are available on Connect and above.");
+      return;
+    }
+    if (tokensRemaining === 0) {
+      const date = resetsAt
+        ? new Date(resetsAt).toLocaleDateString("en-US", { month: "long", day: "numeric" })
+        : null;
+      Alert.alert("You're all out", date ? `Your next token is available on ${date}.` : "You have no tokens remaining.");
       return;
     }
     router.push("/plans/create");
@@ -97,7 +105,7 @@ export default function PlansScreen() {
             <Image
               source={CATEGORY_IMAGES.completed}
               style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
-              resizeMode="contain"
+              resizeMode="cover"
             />
             <View
               style={{
@@ -146,7 +154,7 @@ export default function PlansScreen() {
                 Create Your Own
               </Text>
               <Text className="text-xs text-white/70">Build a custom plan</Text>
-              <TokenCoins count={tokensRemaining} />
+              <TokenCoins count={tokensRemaining} limit={tierLimit} />
             </View>
           </Pressable>
 
@@ -164,7 +172,7 @@ export default function PlansScreen() {
                   <Image
                     source={img}
                     style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
-                    resizeMode="contain"
+                    resizeMode="cover"
                   />
                 )}
                 {/* Dark overlay for text legibility */}

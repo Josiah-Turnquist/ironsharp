@@ -1,8 +1,10 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   Platform,
   Pressable,
   ScrollView,
@@ -16,6 +18,57 @@ import { BookOpen, MessageSquare, ChevronLeft, Sparkles } from "lucide-react-nat
 import { Screen } from "@/components/Screen";
 import { useThemeColor } from "@/components/useThemeColor";
 import { ApiClient, ApiError } from "@/lib/api";
+
+// ─── Bible book validation ────────────────────────────────────────────────────
+
+const VALID_BIBLE_BOOKS = new Set([
+  "genesis","exodus","leviticus","numbers","deuteronomy","joshua","judges","ruth",
+  "1 samuel","2 samuel","1 kings","2 kings","1 chronicles","2 chronicles",
+  "ezra","nehemiah","esther","job","psalms","proverbs","ecclesiastes","song of solomon",
+  "isaiah","jeremiah","lamentations","ezekiel","daniel","hosea","joel","amos",
+  "obadiah","jonah","micah","nahum","habakkuk","zephaniah","haggai","zechariah","malachi",
+  "matthew","mark","luke","john","acts","romans",
+  "1 corinthians","2 corinthians","galatians","ephesians","philippians","colossians",
+  "1 thessalonians","2 thessalonians","1 timothy","2 timothy","titus","philemon",
+  "hebrews","james","1 peter","2 peter","1 john","2 john","3 john","jude","revelation",
+]);
+
+function normalizeBibleBookInput(raw: string): string {
+  return raw
+    .toLowerCase()
+    .trim()
+    .replace(/^(the book of |book of |the )/i, "")
+    .replace(/\bfirst\b/i, "1")
+    .replace(/\bsecond\b/i, "2")
+    .replace(/\bthird\b/i, "3")
+    .replace(/\bpsalm\b/, "psalms")
+    .replace(/\bsong of songs\b/, "song of solomon")
+    .replace(/\bsong of sol\b/, "song of solomon")
+    .replace(/\bsongs\b/, "song of solomon")
+    .replace(/\bcanticles?\b/, "song of solomon")
+    .replace(/\brevelations\b/, "revelation")
+    .trim();
+}
+
+function isValidBibleBook(input: string): boolean {
+  return VALID_BIBLE_BOOKS.has(normalizeBibleBookInput(input));
+}
+
+// ─── Bible book list (canonical order, for scroll picker) ─────────────────────
+
+const BIBLE_BOOKS_ORDERED = [
+  // Old Testament
+  "Genesis","Exodus","Leviticus","Numbers","Deuteronomy","Joshua","Judges","Ruth",
+  "1 Samuel","2 Samuel","1 Kings","2 Kings","1 Chronicles","2 Chronicles",
+  "Ezra","Nehemiah","Esther","Job","Psalms","Proverbs","Ecclesiastes","Song of Solomon",
+  "Isaiah","Jeremiah","Lamentations","Ezekiel","Daniel","Hosea","Joel","Amos",
+  "Obadiah","Jonah","Micah","Nahum","Habakkuk","Zephaniah","Haggai","Zechariah","Malachi",
+  // New Testament
+  "Matthew","Mark","Luke","John","Acts","Romans",
+  "1 Corinthians","2 Corinthians","Galatians","Ephesians","Philippians","Colossians",
+  "1 Thessalonians","2 Thessalonians","1 Timothy","2 Timothy","Titus","Philemon",
+  "Hebrews","James","1 Peter","2 Peter","1 John","2 John","3 John","Jude","Revelation",
+];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -70,7 +123,10 @@ export default function CreatePlan() {
 
   const canAdvance = () => {
     if (step === 0) return form.inputType !== null;
-    if (step === 1) return form.bookOrTopic.trim().length >= 2;
+    if (step === 1) {
+      if (form.inputType === "book") return form.bookOrTopic.length > 0;
+      return form.bookOrTopic.trim().length >= 2;
+    }
     if (step === 2) return form.days !== null;
     if (step === 3) return form.themeFocus.trim().length >= 3;
     if (step === 4) return form.who !== null;
@@ -308,7 +364,7 @@ function StepContent({
             label="A book of the Bible"
             sub="Walk through Genesis, James, Romans…"
             selected={form.inputType === "book"}
-            onPress={() => setForm((f) => ({ ...f, inputType: "book" }))}
+            onPress={() => setForm((f) => ({ ...f, inputType: "book", bookOrTopic: f.inputType === "book" ? f.bookOrTopic : "Genesis" }))}
             primary={primary}
             muted={muted}
             fg={fg}
@@ -320,7 +376,7 @@ function StepContent({
             label="A specific topic"
             sub="Anxiety, leadership, marriage, prayer…"
             selected={form.inputType === "topic"}
-            onPress={() => setForm((f) => ({ ...f, inputType: "topic" }))}
+            onPress={() => setForm((f) => ({ ...f, inputType: "topic", bookOrTopic: f.inputType === "topic" ? f.bookOrTopic : "" }))}
             primary={primary}
             muted={muted}
             fg={fg}
@@ -333,23 +389,31 @@ function StepContent({
   }
 
   if (step === 1) {
+    if (form.inputType === "book") {
+      return (
+        <View>
+          <StepLabel text="Which book?" />
+          <StepSub text="Scroll to pick a book of the Bible." />
+          <DrumRollPicker
+            items={BIBLE_BOOKS_ORDERED}
+            selectedValue={form.bookOrTopic || "Genesis"}
+            onValueChange={(v) => setForm((f) => ({ ...f, bookOrTopic: v }))}
+          />
+        </View>
+      );
+    }
+
     return (
       <View>
-        <StepLabel text={form.inputType === "book" ? "Which book?" : "What topic?"} />
-        <StepSub
-          text={
-            form.inputType === "book"
-              ? "Name the book — Romans, James, Proverbs, Psalms…"
-              : "Name the topic — anxiety, identity, forgiveness, purpose…"
-          }
-        />
+        <StepLabel text="What topic?" />
+        <StepSub text="Name the topic — anxiety, identity, forgiveness, purpose…" />
         <TextInput
           value={form.bookOrTopic}
           onChangeText={(v) => setForm((f) => ({ ...f, bookOrTopic: v }))}
-          placeholder={form.inputType === "book" ? "e.g. Romans" : "e.g. anxiety"}
+          placeholder="e.g. anxiety"
           placeholderTextColor={muted}
           autoFocus
-          autoCapitalize={form.inputType === "book" ? "words" : "none"}
+          autoCapitalize="none"
           style={{
             marginTop: 16,
             backgroundColor: card,
@@ -488,6 +552,109 @@ function StepContent({
 }
 
 // ─── Shared sub-components ────────────────────────────────────────────────────
+
+// ─── Drum roll book picker ────────────────────────────────────────────────────
+
+const DRUM_ITEM_HEIGHT = 52;
+const DRUM_VISIBLE = 5;
+
+function DrumRollPicker({
+  items,
+  selectedValue,
+  onValueChange,
+}: {
+  items: string[];
+  selectedValue: string;
+  onValueChange: (v: string) => void;
+}) {
+  const scrollRef = useRef<ScrollView>(null);
+  const primary = useThemeColor("primary");
+  const muted = useThemeColor("muted-foreground");
+  const fg = useThemeColor("foreground");
+  const card = useThemeColor("card");
+  const border = useThemeColor("border");
+
+  const initialIndex = Math.max(0, items.indexOf(selectedValue));
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      scrollRef.current?.scrollTo({ y: initialIndex * DRUM_ITEM_HEIGHT, animated: false });
+    }, 60);
+    return () => clearTimeout(t);
+  }, []);
+
+  const commit = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const y = e.nativeEvent.contentOffset.y;
+    const index = Math.max(0, Math.min(Math.round(y / DRUM_ITEM_HEIGHT), items.length - 1));
+    onValueChange(items[index]!);
+  };
+
+  return (
+    <View
+      style={{
+        height: DRUM_ITEM_HEIGHT * DRUM_VISIBLE,
+        borderRadius: 16,
+        overflow: "hidden",
+        backgroundColor: card,
+        borderWidth: 1,
+        borderColor: border,
+        marginTop: 16,
+      }}
+    >
+      {/* Selection highlight */}
+      <View
+        pointerEvents="none"
+        style={{
+          position: "absolute",
+          top: DRUM_ITEM_HEIGHT * Math.floor(DRUM_VISIBLE / 2),
+          left: 12,
+          right: 12,
+          height: DRUM_ITEM_HEIGHT,
+          borderTopWidth: 1,
+          borderBottomWidth: 1,
+          borderColor: primary,
+          borderRadius: 8,
+          zIndex: 1,
+        }}
+      />
+      <ScrollView
+        ref={scrollRef}
+        showsVerticalScrollIndicator={false}
+        snapToInterval={DRUM_ITEM_HEIGHT}
+        decelerationRate="fast"
+        nestedScrollEnabled
+        onMomentumScrollEnd={commit}
+        onScrollEndDrag={commit}
+        contentContainerStyle={{ paddingVertical: DRUM_ITEM_HEIGHT * Math.floor(DRUM_VISIBLE / 2) }}
+      >
+        {items.map((item) => {
+          const selected = item === selectedValue;
+          return (
+            <Pressable
+              key={item}
+              style={{ height: DRUM_ITEM_HEIGHT, alignItems: "center", justifyContent: "center" }}
+              onPress={() => {
+                const index = items.indexOf(item);
+                scrollRef.current?.scrollTo({ y: index * DRUM_ITEM_HEIGHT, animated: true });
+                onValueChange(item);
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: selected ? "DMSans_700Bold" : "DMSans_400Regular",
+                  fontSize: selected ? 17 : 15,
+                  color: selected ? fg : muted,
+                }}
+              >
+                {item}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
+}
 
 function StepLabel({ text }: { text: string }) {
   const fg = useThemeColor("foreground");

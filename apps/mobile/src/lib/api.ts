@@ -216,9 +216,14 @@ export const ApiClient = {
       method: "PATCH",
       body: JSON.stringify(patch),
     }),
+  redeemPromo: (code: string) =>
+    api<{ profile: Profile; tier: string }>("/api/profile/redeem-promo", {
+      method: "POST",
+      body: JSON.stringify({ code }),
+    }),
 
   getGenerateTokens: () =>
-    api<{ tokensRemaining: number; resetsAt: string | null }>("/api/plans/generate/tokens"),
+    api<{ tokensRemaining: number; resetsAt: string | null; tierLimit: number }>("/api/plans/generate/tokens"),
   generateDevotional: (body: {
     bookOrTopic: string;
     inputType: "book" | "topic";
@@ -257,6 +262,14 @@ export const ApiClient = {
     body: { currentDay?: number; completed?: boolean }
   ) =>
     api<{ progress: PlanProgress }>(`/api/progress/${planId}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+  updateGroupProgress: (
+    groupId: string,
+    body: { nextDay?: number; completed?: boolean }
+  ) =>
+    api<{ ok: boolean; allDone: boolean }>(`/api/groups/${groupId}/day`, {
       method: "PATCH",
       body: JSON.stringify(body),
     }),
