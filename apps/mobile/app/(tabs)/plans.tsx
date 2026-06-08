@@ -1,4 +1,13 @@
-import { Alert, Image, ImageSourcePropType, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  Alert,
+  Image,
+  ImageSourcePropType,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { CheckCircle2, Hammer, Sparkles } from "lucide-react-native";
 
@@ -104,7 +113,7 @@ export default function PlansScreen() {
           >
             <Image
               source={CATEGORY_IMAGES.completed}
-              style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+              style={[StyleSheet.absoluteFillObject, { width: "100%", height: "100%" }]}
               resizeMode="cover"
             />
             <View
@@ -171,7 +180,7 @@ export default function PlansScreen() {
                 {img && (
                   <Image
                     source={img}
-                    style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
+                    style={[StyleSheet.absoluteFillObject, { width: "100%", height: "100%" }]}
                     resizeMode="cover"
                   />
                 )}
