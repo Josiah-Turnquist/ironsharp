@@ -17,15 +17,21 @@ export default function Login() {
 
   const handleLogin = async () => {
     setLoading(true);
-    const { error } = await authClient.signIn.email({ email, password });
-    if (error) {
+    try {
+      const { error } = await authClient.signIn.email({ email, password });
+      if (error) {
+        Alert.alert("Login failed", error.message ?? "Check your email and password.");
+        return;
+      }
+      await refresh();
+      router.replace("/");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Check your email and password.";
+      Alert.alert("Login failed", message);
+    } finally {
       setLoading(false);
-      Alert.alert("Login failed", error.message ?? "Check your email and password.");
-      return;
     }
-    await refresh();
-    setLoading(false);
-    router.replace("/");
   };
 
   return (

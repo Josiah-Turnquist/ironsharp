@@ -26,22 +26,28 @@ export default function Signup() {
       return;
     }
     setLoading(true);
-    // Better Auth requires a name; default it from the email until the user
-    // sets a display name during onboarding.
-    const { error } = await authClient.signUp.email({
-      email,
-      password,
-      name: email.split("@")[0] ?? "Friend",
-    });
-    if (error) {
+    try {
+      // Better Auth requires a name; default it from the email until the user
+      // sets a display name during onboarding.
+      const { error } = await authClient.signUp.email({
+        email,
+        password,
+        name: email.split("@")[0] ?? "Friend",
+      });
+      if (error) {
+        Alert.alert("Sign up failed", error.message ?? "Please try again.");
+        return;
+      }
+      // A session is created on sign up — head into onboarding via the gate.
+      await refresh();
+      router.replace("/");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Please try again.";
+      Alert.alert("Sign up failed", message);
+    } finally {
       setLoading(false);
-      Alert.alert("Sign up failed", error.message ?? "Please try again.");
-      return;
     }
-    // A session is created on sign up — head into onboarding via the gate.
-    await refresh();
-    setLoading(false);
-    router.replace("/");
   };
 
   return (
