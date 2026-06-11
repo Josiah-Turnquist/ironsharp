@@ -126,6 +126,7 @@ profile.patch("/", async (c) => {
     "primaryRole",
     "surveyName",
     "surveyAgeRange",
+    "surveyGender",
     "surveyState",
     "surveyCity",
     "surveyEducation",

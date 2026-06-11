@@ -80,6 +80,7 @@ export const devotionalDays = pgTable(
     chapter: text("chapter").notNull(),
     theme: text("theme"),
     studyNotes: jsonb("study_notes").notNull().default([]),
+    reflection: text("reflection"),
     reflectionQ1: text("reflection_q1").notNull(),
     reflectionQ2: text("reflection_q2").notNull(),
     prayerPrompt: text("prayer_prompt"),
@@ -129,6 +130,7 @@ export const profiles = pgTable("profiles", {
   // survey
   surveyName: text("survey_name"),
   surveyAgeRange: text("survey_age_range"),
+  surveyGender: text("survey_gender"),
   surveyState: text("survey_state"),
   surveyCity: text("survey_city"),
   surveyEducation: text("survey_education"),

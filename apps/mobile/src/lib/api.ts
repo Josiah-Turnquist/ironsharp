@@ -55,6 +55,7 @@ export type DevotionalDay = {
   chapter: string;
   theme: string | null;
   studyNotes: StudyNoteEntry[];
+  reflection: string | null;
   reflectionQ1: string;
   reflectionQ2: string;
   prayerPrompt: string | null;
@@ -72,6 +73,7 @@ export type Profile = {
   // Survey answers (collected during onboarding).
   surveyName: string | null;
   surveyAgeRange: string | null;
+  surveyGender: string | null;
   surveyState: string | null;
   surveyCity: string | null;
   surveyEducation: string | null;

@@ -25,6 +25,16 @@ export default function Index() {
 
   if (!authed) return <Redirect href="/(auth)/welcome" />;
 
+  // If the profile fetch failed (server unreachable), don't send to onboarding —
+  // keep showing the spinner until it resolves or the user reloads.
+  if (profile.isError) {
+    return (
+      <Screen center>
+        <ActivityIndicator color={spinner} />
+      </Screen>
+    );
+  }
+
   const onboarded = !!profile.data?.surveyCompletedAt;
   return <Redirect href={onboarded ? "/(tabs)/home" : "/onboarding/role"} />;
 }
