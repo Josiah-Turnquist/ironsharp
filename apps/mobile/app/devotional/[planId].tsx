@@ -4,6 +4,7 @@ import {
   Animated,
   Easing,
   ActivityIndicator,
+  findNodeHandle,
   Image,
   KeyboardAvoidingView,
   Modal,
@@ -16,7 +17,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowUp, BookMarked, BookOpen, Car, ChevronDown, Headphones, Lock, Map, Play, Trash2, Unlock } from "lucide-react-native";
+import { ArrowUp, BookMarked, BookOpen, Car, CheckCircle, ChevronDown, ChevronUp, Headphones, Lock, Map, Play, Trash2, Unlock } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/Button";
@@ -329,7 +330,7 @@ const TRANSLATION_STORAGE_KEY = "@ironsharp/bible_translation";
 
 const VERSES_PER_PAGE = 15;
 
-function BiblePassageCard({ passageRef, onPageChange }: { passageRef: string; onPageChange?: () => void }) {
+function BiblePassageCard({ passageRef, onPageChange, passageRead, onMarkRead }: { passageRef: string; onPageChange?: () => void; passageRead?: boolean; onMarkRead?: () => void; }) {
   const cardBg = useThemeColor("card");
   const mutedBg = useThemeColor("muted");
   const borderColor = useThemeColor("border");
@@ -339,6 +340,7 @@ function BiblePassageCard({ passageRef, onPageChange }: { passageRef: string; on
   const bg = useThemeColor("background");
 
   const [page, setPage] = useState(0);
+  const [collapsed, setCollapsed] = useState(false);
   const [translation, setTranslation] = useState("KJV");
   const [showPicker, setShowPicker] = useState(false);
 
@@ -352,7 +354,7 @@ function BiblePassageCard({ passageRef, onPageChange }: { passageRef: string; on
     });
   }, []);
 
-  useEffect(() => { setPage(0); }, [passageRef]);
+  useEffect(() => { setPage(0); setCollapsed(false); }, [passageRef]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["bibleChapter", passageRef, translation],
@@ -397,48 +399,60 @@ function BiblePassageCard({ passageRef, onPageChange }: { passageRef: string; on
     <>
       <View style={{ backgroundColor: cardBg, borderRadius: 16, borderWidth: 1, borderColor, overflow: "hidden" }}>
 
-        {/* Header row */}
-        <View className="flex-row items-center justify-between px-4 pt-3 pb-2">
-          <View className="flex-row items-center gap-2">
+        {/* Header row — tap to collapse/expand */}
+        <Pressable
+          onPress={() => setCollapsed((c) => !c)}
+          style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingTop: 12, paddingBottom: collapsed ? 12 : 8 }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             <BookOpen size={13} color={mutedFg} />
             <Text style={{ fontSize: 9, letterSpacing: 2, color: mutedFg, textTransform: "uppercase", fontFamily: "DMSans_400Regular" }}>
               {verseRange ? passageRef : parsed ? `${parsed.book} Chapter ${parsed.chapter}` : passageRef}
             </Text>
           </View>
-          <Pressable
-            onPress={() => setShowPicker(true)}
-            style={{ borderWidth: 1, borderColor, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 }}
-          >
-            <Text style={{ fontSize: 10, color: accent, fontFamily: "DMSans_600SemiBold", letterSpacing: 0.5 }}>
-              {translation} ▾
-            </Text>
-          </Pressable>
-        </View>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            {!collapsed && (
+              <Pressable
+                onPress={() => setShowPicker(true)}
+                style={{ borderWidth: 1, borderColor, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 }}
+              >
+                <Text style={{ fontSize: 10, color: accent, fontFamily: "DMSans_600SemiBold", letterSpacing: 0.5 }}>
+                  {translation} ▾
+                </Text>
+              </Pressable>
+            )}
+            {collapsed
+              ? <ChevronDown size={14} color={mutedFg} />
+              : <ChevronUp size={14} color={mutedFg} />}
+          </View>
+        </Pressable>
 
         {/* Verses */}
-        <View className="px-4 pb-3">
-          {isLoading ? (
-            <SkeletonLines count={6} />
-          ) : displayVerses.length > 0 ? (
-            pageVerses.map((verseText, i) => (
-              <View key={startIndex + i} className="mb-3 flex-row gap-2">
-                <Text style={{ fontSize: 9, color: accent, fontFamily: "DMSans_700Bold", minWidth: 16, paddingTop: 2 }}>
-                  {startVerseNum + startIndex + i}
-                </Text>
-                <Text className="font-serif flex-1" style={{ color: fgColor, fontSize: 13, lineHeight: 22 }}>
-                  {verseText}
-                </Text>
-              </View>
-            ))
-          ) : (
-            <Text className="font-serif-italic text-center text-sm" style={{ color: mutedFg }}>
-              Bible text coming soon.
-            </Text>
-          )}
-        </View>
+        {!collapsed && (
+          <View className="px-4 pb-3">
+            {isLoading ? (
+              <SkeletonLines count={6} />
+            ) : displayVerses.length > 0 ? (
+              pageVerses.map((verseText, i) => (
+                <View key={startIndex + i} className="mb-3 flex-row gap-2">
+                  <Text style={{ fontSize: 9, color: accent, fontFamily: "DMSans_700Bold", minWidth: 16, paddingTop: 2 }}>
+                    {startVerseNum + startIndex + i}
+                  </Text>
+                  <Text className="font-serif flex-1" style={{ color: fgColor, fontSize: 13, lineHeight: 22 }}>
+                    {verseText}
+                  </Text>
+                </View>
+              ))
+            ) : (
+              <Text className="font-serif-italic text-center text-sm" style={{ color: mutedFg }}>
+                Bible text coming soon.
+              </Text>
+            )}
+          </View>
+        )}
 
         {/* Pagination */}
-        {totalPages > 1 && (
+        {!collapsed && totalPages > 1 && (
           <View
             style={{ borderTopWidth: 1, borderTopColor: borderColor, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 10 }}
           >
@@ -462,6 +476,32 @@ function BiblePassageCard({ passageRef, onPageChange }: { passageRef: string; on
               <Text style={{ color: accent, fontSize: 13, fontFamily: "DMSans_600SemiBold" }}>Next →</Text>
             </Pressable>
           </View>
+        )}
+
+        {/* Finished reading button */}
+        {!collapsed && onMarkRead && (
+          <Pressable
+            onPress={() => { if (!passageRead) { setCollapsed(true); onMarkRead(); } }}
+            style={{
+              borderTopWidth: 1,
+              borderTopColor: passageRead ? `${accent}40` : borderColor,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              paddingVertical: 14,
+              backgroundColor: passageRead ? `${accent}10` : "transparent",
+            }}
+          >
+            <CheckCircle size={15} color={passageRead ? accent : mutedFg} fill={passageRead ? accent : "transparent"} />
+            <Text style={{
+              fontFamily: "DMSans_600SemiBold",
+              fontSize: 13,
+              color: passageRead ? accent : mutedFg,
+            }}>
+              {passageRead ? "Passage read — reflection below" : "Finished reading — read reflection"}
+            </Text>
+          </Pressable>
         )}
       </View>
 
@@ -668,6 +708,18 @@ export default function DevotionalReader() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
   const cardYRef = useRef<number>(0);
+  const input1Ref = useRef<TextInput>(null);
+  const input2Ref = useRef<TextInput>(null);
+  const input3Ref = useRef<TextInput>(null);
+
+  const scrollToInput = (ref: React.RefObject<TextInput | null>) => {
+    if (!ref.current || !scrollRef.current) return;
+    const node = findNodeHandle(scrollRef.current);
+    if (!node) return;
+    ref.current.measureLayout(node, (_x, y) => {
+      scrollRef.current?.scrollTo({ y: y - 120, animated: true });
+    }, () => {});
+  };
 
   const progress = useProgress();
   const progressRow = (progress.data ?? []).find((p) => p.planId === planId);
@@ -713,10 +765,52 @@ export default function DevotionalReader() {
   const [q1Private, setQ1Private] = useState(false);
   const [q2Private, setQ2Private] = useState(false);
   const [prayerPrivate, setPrayerPrivate] = useState(true);
+  const [passageRead, setPassageRead] = useState(false);
+  const [reflectionOpen, setReflectionOpen] = useState(true);
   const [done, setDone] = useState(false);
   const isDoneState = done || lockedUntilTomorrow;
   const completedDayForFeed = done ? currentDay : currentDay - 1;
   const groupResponsesQ = useGroupDayResponses(planId, completedDayForFeed, isDoneState);
+
+  const draftKey = groupId
+    ? `@ironsharp/draft_${planId}_${groupId}_day_${currentDay}`
+    : `@ironsharp/draft_${planId}_day_${currentDay}`;
+  const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Reset UI state and restore any saved draft when day changes.
+  useEffect(() => {
+    setPassageRead(false);
+    setReflectionOpen(true);
+    import("@react-native-async-storage/async-storage").then(({ default: AsyncStorage }) => {
+      AsyncStorage.getItem(draftKey).then((raw) => {
+        if (!raw) return;
+        try {
+          const d = JSON.parse(raw);
+          if (d.response1 !== undefined) setResponse1(d.response1);
+          if (d.response2 !== undefined) setResponse2(d.response2);
+          if (d.prayer !== undefined) setPrayer(d.prayer);
+          if (d.q1Private !== undefined) setQ1Private(d.q1Private);
+          if (d.q2Private !== undefined) setQ2Private(d.q2Private);
+          if (d.prayerPrivate !== undefined) setPrayerPrivate(d.prayerPrivate);
+          if (d.passageRead) { setPassageRead(true); }
+        } catch {}
+      });
+    });
+  }, [currentDay, draftKey]);
+
+  // Debounced auto-save draft whenever any answer field changes.
+  useEffect(() => {
+    if (isDoneState) return;
+    if (draftTimerRef.current) clearTimeout(draftTimerRef.current);
+    draftTimerRef.current = setTimeout(() => {
+      import("@react-native-async-storage/async-storage").then(({ default: AsyncStorage }) => {
+        AsyncStorage.setItem(draftKey, JSON.stringify({
+          response1, response2, prayer, q1Private, q2Private, prayerPrivate, passageRead,
+        }));
+      });
+    }, 400);
+    return () => { if (draftTimerRef.current) clearTimeout(draftTimerRef.current); };
+  }, [response1, response2, prayer, q1Private, q2Private, prayerPrivate, passageRead, draftKey, isDoneState]);
 
   // Prefill from any existing submission for this day.
   useEffect(() => {
@@ -768,6 +862,7 @@ export default function DevotionalReader() {
       midnight.setHours(0, 0, 0, 0);
       const { default: AsyncStorage } = await import("@react-native-async-storage/async-storage");
       await AsyncStorage.setItem(lockKey, String(midnight.getTime()));
+      await AsyncStorage.removeItem(draftKey);
       await qc.invalidateQueries({ queryKey: ["progress"] });
       await qc.invalidateQueries({ queryKey: ["progress", "active"] });
       if (groupId) await qc.invalidateQueries({ queryKey: ["groups"] });
@@ -959,8 +1054,51 @@ export default function DevotionalReader() {
             <BiblePassageCard
               passageRef={day?.chapter ?? ""}
               onPageChange={() => scrollRef.current?.scrollTo({ y: cardYRef.current, animated: true })}
+              passageRead={passageRead}
+              onMarkRead={day?.reflection ? () => { setPassageRead(true); scrollRef.current?.scrollTo({ y: 0, animated: true }); } : undefined}
             />
           </View>
+
+          {/* Reflection bubble — shown after passage is marked read */}
+          {passageRead && day?.reflection ? (
+            <View style={{
+              backgroundColor: cardBg,
+              borderRadius: 16,
+              borderWidth: 1,
+              borderColor,
+              overflow: "hidden",
+            }}>
+              <Pressable
+                onPress={() => setReflectionOpen((o) => !o)}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: 18,
+                  paddingBottom: reflectionOpen ? 10 : 18,
+                }}
+              >
+                <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 9, letterSpacing: 2, color: muted, textTransform: "uppercase" }}>
+                  Reflection
+                </Text>
+                {reflectionOpen
+                  ? <ChevronUp size={14} color={muted} />
+                  : <ChevronDown size={14} color={muted} />}
+              </Pressable>
+              {reflectionOpen && (
+                <Text style={{
+                  fontFamily: "PlayfairDisplay_400Regular",
+                  fontSize: 15,
+                  color: fgColor,
+                  lineHeight: 27,
+                  paddingHorizontal: 18,
+                  paddingBottom: 18,
+                }}>
+                  {day.reflection}
+                </Text>
+              )}
+            </View>
+          ) : null}
 
           {/* Passage tools — connected visual block */}
           <View
@@ -976,83 +1114,87 @@ export default function DevotionalReader() {
             <StudyNotesDrawer passageRef={day?.chapter ?? ""} notes={day?.studyNotes ?? []} />
           </View>
 
-          {/* Reflect */}
+          {/* Reflect, Apply, Prayer, Submit */}
           <View className="gap-2">
-            <Text className="font-sans-semibold text-base text-foreground">
-              Reflect
-            </Text>
-            <Text className="text-sm leading-relaxed text-muted-foreground">
-              {day?.reflectionQ1}
-            </Text>
-            <TextInput
-              value={response1}
-              onChangeText={setResponse1}
-              placeholder="Share your honest reflection..."
-              placeholderTextColor={muted}
-              multiline
-              textAlignVertical="top"
-              className={inputClass}
-            />
-            <PrivacyToggle
-              value={q1Private}
-              onChange={setQ1Private}
-              color={accent}
-            />
-          </View>
+              <Text className="font-sans-semibold text-base text-foreground">
+                Reflect
+              </Text>
+              <Text className="text-sm leading-relaxed text-muted-foreground">
+                {day?.reflectionQ1}
+              </Text>
+              <TextInput
+                ref={input1Ref}
+                value={response1}
+                onChangeText={setResponse1}
+                onFocus={() => scrollToInput(input1Ref)}
+                placeholder="Share your honest reflection..."
+                placeholderTextColor={muted}
+                multiline
+                textAlignVertical="top"
+                className={inputClass}
+              />
+              <PrivacyToggle
+                value={q1Private}
+                onChange={setQ1Private}
+                color={accent}
+              />
+            </View>
 
-          {/* Apply */}
-          <View className="gap-2">
-            <Text className="font-sans-semibold text-base text-foreground">
-              Apply
-            </Text>
-            <Text className="text-sm leading-relaxed text-muted-foreground">
-              {day?.reflectionQ2}
-            </Text>
-            <TextInput
-              value={response2}
-              onChangeText={setResponse2}
-              placeholder="What's the invitation here?"
-              placeholderTextColor={muted}
-              multiline
-              textAlignVertical="top"
-              className={inputClass}
-            />
-            <PrivacyToggle
-              value={q2Private}
-              onChange={setQ2Private}
-              color={accent}
-            />
-          </View>
+            <View className="gap-2">
+              <Text className="font-sans-semibold text-base text-foreground">
+                Apply
+              </Text>
+              <Text className="text-sm leading-relaxed text-muted-foreground">
+                {day?.reflectionQ2}
+              </Text>
+              <TextInput
+                ref={input2Ref}
+                value={response2}
+                onChangeText={setResponse2}
+                onFocus={() => scrollToInput(input2Ref)}
+                placeholder="What's the invitation here?"
+                placeholderTextColor={muted}
+                multiline
+                textAlignVertical="top"
+                className={inputClass}
+              />
+              <PrivacyToggle
+                value={q2Private}
+                onChange={setQ2Private}
+                color={accent}
+              />
+            </View>
 
-          {/* Prayer */}
-          <View className="gap-2">
-            <Text className="font-sans-semibold text-base text-foreground">
-              Prayer & Praise
-            </Text>
-            <TextInput
-              value={prayer}
-              onChangeText={setPrayer}
-              placeholder="A personal prayer or praise..."
-              placeholderTextColor={muted}
-              multiline
-              textAlignVertical="top"
-              className="min-h-[80px] rounded-xl border border-input bg-card p-4 font-sans text-base text-foreground"
-            />
-            <PrivacyToggle
-              value={prayerPrivate}
-              onChange={setPrayerPrivate}
-              color={accent}
-            />
-          </View>
+            <View className="gap-2">
+              <Text className="font-sans-semibold text-base text-foreground">
+                Prayer & Praise
+              </Text>
+              <TextInput
+                ref={input3Ref}
+                value={prayer}
+                onChangeText={setPrayer}
+                onFocus={() => scrollToInput(input3Ref)}
+                placeholder="A personal prayer or praise..."
+                placeholderTextColor={muted}
+                multiline
+                textAlignVertical="top"
+                className="min-h-[80px] rounded-xl border border-input bg-card p-4 font-sans text-base text-foreground"
+              />
+              <PrivacyToggle
+                value={prayerPrivate}
+                onChange={setPrayerPrivate}
+                color={accent}
+              />
+            </View>
 
-          <View className="w-2/3 self-center">
-            <Button
-              title={submit.isPending ? "Submitting..." : "Submit"}
-              loading={submit.isPending}
-              disabled={!response1.trim() || !response2.trim()}
-              onPress={() => submit.mutate()}
-            />
-          </View>
+            <View className="w-2/3 self-center">
+              <Button
+                title={submit.isPending ? "Submitting..." : "Submit"}
+                loading={submit.isPending}
+                disabled={!response1.trim() || !response2.trim()}
+                onPress={() => submit.mutate()}
+              />
+            </View>
         </ScrollView>
         {showScrollTop && (
           <Pressable

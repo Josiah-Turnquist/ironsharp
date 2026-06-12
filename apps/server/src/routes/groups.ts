@@ -1,9 +1,10 @@
 import { Hono } from "hono";
-import { and, count, eq, isNotNull, sql } from "drizzle-orm";
+import { and, count, eq, isNotNull, or, sql } from "drizzle-orm";
 import { db } from "../db/index.js";
 import {
   groups,
   groupMembers,
+  groupPlanHistory,
   profiles,
   devotionalPlans,
   devotionalDays,
@@ -100,14 +101,17 @@ groupsRoute.post("/", async (c) => {
     .where(eq(groupMembers.userId, userId));
   const nextOrder = (maxRow?.maxOrder ?? -1) + 1;
 
-  // Short, readable invite code
-  const inviteCode = Math.random().toString(36).slice(2, 8).toUpperCase();
-
-  const [group] = await db
-    .insert(groups)
-    .values({ name: name.trim(), groupType, inviteCode, createdBy: userId })
-    .returning();
-
+  // Short, readable invite code — retry on the rare collision.
+  let group: typeof groups.$inferSelect | undefined;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const inviteCode = Math.random().toString(36).slice(2, 8).toUpperCase();
+    const [inserted] = await db
+      .insert(groups)
+      .values({ name: name.trim(), groupType, inviteCode, createdBy: userId })
+      .onConflictDoNothing()
+      .returning();
+    if (inserted) { group = inserted; break; }
+  }
   if (!group) return c.json({ error: "Failed to create group" }, 500);
 
   await db.insert(groupMembers).values({
@@ -150,35 +154,42 @@ groupsRoute.post("/join", async (c) => {
   const creatorTier = (creatorProfile?.membershipTier ?? "free") as MembershipTier;
   const maxSize = TIER_LIMITS[creatorTier].maxGroupSize;
 
-  if (maxSize !== Infinity) {
-    const [sizeRow] = await db
-      .select({ count: count() })
-      .from(groupMembers)
-      .where(eq(groupMembers.groupId, group.id));
-    const currentSize = sizeRow?.count ?? 0;
-
-    if (currentSize >= maxSize) {
-      return c.json(
-        {
-          error: `This group is full. The group creator's ${TIER_NAMES[creatorTier]} plan supports up to ${maxSize} members.`,
-        },
-        403
-      );
-    }
-  }
-
   const [maxRow] = await db
     .select({ maxOrder: sql<number>`coalesce(max(${groupMembers.displayOrder}), -1)` })
     .from(groupMembers)
     .where(eq(groupMembers.userId, userId));
   const nextOrder = (maxRow?.maxOrder ?? -1) + 1;
 
-  await db.insert(groupMembers).values({
-    groupId: group.id,
-    userId,
-    memberRole: "member",
-    displayOrder: nextOrder,
+  // Wrap size check + insert in a transaction so two concurrent joins can't
+  // both pass the limit check before either one has committed.
+  let tooFull = false;
+  await db.transaction(async (tx) => {
+    if (maxSize !== Infinity) {
+      const [sizeRow] = await tx
+        .select({ count: count() })
+        .from(groupMembers)
+        .where(eq(groupMembers.groupId, group.id));
+      if ((sizeRow?.count ?? 0) >= maxSize) {
+        tooFull = true;
+        return;
+      }
+    }
+    await tx.insert(groupMembers).values({
+      groupId: group.id,
+      userId,
+      memberRole: "member",
+      displayOrder: nextOrder,
+    });
   });
+
+  if (tooFull) {
+    return c.json(
+      {
+        error: `This group is full. The group creator's ${TIER_NAMES[creatorTier]} plan supports up to ${maxSize} members.`,
+      },
+      403
+    );
+  }
 
   return c.json({ group: { id: group.id, name: group.name } }, 201);
 });
@@ -256,32 +267,16 @@ groupsRoute.post("/:id/members", async (c) => {
     .where(eq(groups.id, groupId))
     .limit(1);
 
+  let maxSize: number = Infinity;
+  let creatorTier: MembershipTier = "free";
   if (group) {
     const [creatorProfile] = await db
       .select({ membershipTier: profiles.membershipTier })
       .from(profiles)
       .where(eq(profiles.userId, group.createdBy))
       .limit(1);
-
-    const creatorTier = (creatorProfile?.membershipTier ?? "free") as MembershipTier;
-    const maxSize = TIER_LIMITS[creatorTier].maxGroupSize;
-
-    if (maxSize !== Infinity) {
-      const [sizeRow] = await db
-        .select({ count: count() })
-        .from(groupMembers)
-        .where(eq(groupMembers.groupId, groupId));
-      const currentSize = sizeRow?.count ?? 0;
-
-      if (currentSize >= maxSize) {
-        return c.json(
-          {
-            error: `This group is full. The ${TIER_NAMES[creatorTier]} plan supports up to ${maxSize} members. Upgrade to add more.`,
-          },
-          403
-        );
-      }
-    }
+    creatorTier = (creatorProfile?.membershipTier ?? "free") as MembershipTier;
+    maxSize = TIER_LIMITS[creatorTier].maxGroupSize;
   }
 
   const [maxRow] = await db
@@ -290,10 +285,34 @@ groupsRoute.post("/:id/members", async (c) => {
     .where(eq(groupMembers.groupId, groupId));
   const nextOrder = (maxRow?.maxOrder ?? -1) + 1;
 
-  await db
-    .insert(groupMembers)
-    .values({ groupId, userId: targetUserId, memberRole: "member", displayOrder: nextOrder })
-    .onConflictDoNothing();
+  // Wrap size check + insert in a transaction so two concurrent adds can't
+  // both pass the limit check before either one has committed.
+  let tooFull = false;
+  await db.transaction(async (tx) => {
+    if (maxSize !== Infinity) {
+      const [sizeRow] = await tx
+        .select({ count: count() })
+        .from(groupMembers)
+        .where(eq(groupMembers.groupId, groupId));
+      if ((sizeRow?.count ?? 0) >= maxSize) {
+        tooFull = true;
+        return;
+      }
+    }
+    await tx
+      .insert(groupMembers)
+      .values({ groupId, userId: targetUserId, memberRole: "member", displayOrder: nextOrder })
+      .onConflictDoNothing();
+  });
+
+  if (tooFull) {
+    return c.json(
+      {
+        error: `This group is full. The ${TIER_NAMES[creatorTier]} plan supports up to ${maxSize} members. Upgrade to add more.`,
+      },
+      403
+    );
+  }
 
   return c.json({ ok: true }, 201);
 });
@@ -336,6 +355,19 @@ groupsRoute.patch("/:id/plan", async (c) => {
     .limit(1);
   if (!membership) return c.json({ error: "Not a member of this group" }, 403);
 
+  // Verify the plan exists and is visible to this user.
+  const [plan] = await db
+    .select({ id: devotionalPlans.id })
+    .from(devotionalPlans)
+    .where(
+      and(
+        eq(devotionalPlans.id, planId),
+        or(eq(devotionalPlans.isPublic, true), eq(devotionalPlans.createdByUserId, userId))
+      )
+    )
+    .limit(1);
+  if (!plan) return c.json({ error: "Plan not found" }, 404);
+
   // Group limit: 3 active group devotionals at a time.
   const [activeGroups] = await db
     .select({ count: count() })
@@ -371,15 +403,47 @@ groupsRoute.patch("/:id/day", async (c) => {
   const { nextDay, completed } = body as { nextDay?: number; completed?: boolean };
 
   const [membership] = await db
-    .select({ id: groupMembers.id })
+    .select({
+      id: groupMembers.id,
+      streakCount: groupMembers.streakCount,
+      lastStreakDate: groupMembers.lastStreakDate,
+    })
     .from(groupMembers)
     .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, userId)))
     .limit(1);
   if (!membership) return c.json({ error: "Not a member" }, 403);
 
+  // Reset stale doneToday flags when the calendar day has rolled over, mirroring
+  // the same guard in updateGroupStreaks (submissions.ts).
+  const today = new Date().toISOString().slice(0, 10);
+  const [grp] = await db
+    .select({ lastStreakDate: groups.lastStreakDate, streakCount: groups.streakCount })
+    .from(groups)
+    .where(eq(groups.id, groupId))
+    .limit(1);
+
+  if (grp && grp.lastStreakDate !== today) {
+    const prev = grp.lastStreakDate ? new Date(grp.lastStreakDate + "T00:00:00Z") : null;
+    if (prev) prev.setUTCDate(prev.getUTCDate() + 1);
+    const isYesterday = prev ? prev.toISOString().slice(0, 10) === today : false;
+    const carry = isYesterday ? grp.streakCount : 0;
+    await db.update(groupMembers).set({ doneToday: false }).where(eq(groupMembers.groupId, groupId));
+    await db.update(groups).set({ streakCount: carry, lastStreakDate: today, updatedAt: new Date() }).where(eq(groups.id, groupId));
+  }
+
+  // Compute and persist member's individual streak within this group.
+  let newMemberStreak = membership.streakCount;
+  if (membership.lastStreakDate !== today) {
+    const mPrev = membership.lastStreakDate ? new Date(membership.lastStreakDate + "T00:00:00Z") : null;
+    if (mPrev) mPrev.setUTCDate(mPrev.getUTCDate() + 1);
+    newMemberStreak = mPrev && mPrev.toISOString().slice(0, 10) === today
+      ? membership.streakCount + 1
+      : 1;
+  }
+
   await db
     .update(groupMembers)
-    .set({ doneToday: true })
+    .set({ doneToday: true, streakCount: newMemberStreak, lastStreakDate: today })
     .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, userId)));
 
   const allMembers = await db
@@ -391,6 +455,20 @@ groupsRoute.patch("/:id/day", async (c) => {
 
   if (allDone) {
     if (completed) {
+      // Record the completed plan in history before clearing it from the group.
+      const [finishedPlan] = await db
+        .select({ title: devotionalPlans.title, id: devotionalPlans.id })
+        .from(groups)
+        .innerJoin(devotionalPlans, eq(groups.currentPlanId, devotionalPlans.id))
+        .where(eq(groups.id, groupId))
+        .limit(1);
+      if (finishedPlan) {
+        await db.insert(groupPlanHistory).values({
+          groupId,
+          planId: finishedPlan.id,
+          planTitle: finishedPlan.title,
+        });
+      }
       await db
         .update(groups)
         .set({ currentPlanId: null, currentDay: 1, updatedAt: new Date() })

@@ -9,6 +9,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 import {
   PlayfairDisplay_700Bold,
+  PlayfairDisplay_400Regular,
   PlayfairDisplay_400Regular_Italic,
 } from "@expo-google-fonts/playfair-display";
 import {
@@ -52,6 +53,7 @@ function RootNavigator() {
   const { ready } = useTheme();
   const [fontsLoaded, fontError] = useFonts({
     PlayfairDisplay_700Bold,
+    PlayfairDisplay_400Regular,
     PlayfairDisplay_400Regular_Italic,
     DMSans_400Regular,
     DMSans_500Medium,

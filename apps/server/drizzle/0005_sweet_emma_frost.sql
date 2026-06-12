@@ -1,0 +1,1 @@
+CREATE INDEX "idx_plans_match_key" ON "devotional_plans" USING btree ("match_key");

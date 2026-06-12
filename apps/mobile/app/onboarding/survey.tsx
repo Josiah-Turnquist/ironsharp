@@ -23,6 +23,8 @@ const MIDDLE_SCHOOL = "Junior High or Middle School";
 
 const RELATIONSHIP_OPTIONS = ["Single", "Dating", "Engaged", "Married"];
 
+const GENDER_OPTIONS = ["Male", "Female", "Prefer not to say"];
+
 const AGE_OPTIONS = ["Under 18", "18 - 24", "25 - 34", "35 - 44", "45 - 54", "55 and older"];
 
 const EDU_OPTIONS = [
@@ -134,6 +136,7 @@ export default function OnboardingSurvey() {
   // Local answers
   const [name, setName] = useState(displayName);
   const [ageRange, setAgeRange] = useState(survey.ageRange ?? "");
+  const [gender, setGender] = useState(survey.gender ?? "");
   const [usState, setUsState] = useState(survey.state ?? "");
   const [city, setCity] = useState(survey.city ?? "");
   const [education, setEducation] = useState(survey.education ?? "");
@@ -152,23 +155,24 @@ export default function OnboardingSurvey() {
   const [hasKids, setHasKids] = useState<boolean | null>(survey.hasKids ?? null);
 
   const isMiddleSchool = education === MIDDLE_SCHOOL;
-  const TOTAL = isMiddleSchool ? 10 : 9;
-  // For steps > 4, shift everything up by 1 when middle school (step 5 = family code)
+  const TOTAL = isMiddleSchool ? 11 : 10;
+  // For steps > 5, shift everything up by 1 when middle school (step 6 = family code)
   const offset = isMiddleSchool ? 1 : 0;
 
-  const isFamilyCodeStep = step === 5 && isMiddleSchool;
+  const isFamilyCodeStep = step === 6 && isMiddleSchool;
 
   const canContinue =
     step === 1 ? name.trim().length > 0 :
     step === 2 ? !!ageRange :
-    step === 3 ? !!usState :
-    step === 4 ? !!education :
+    step === 3 ? !!gender :
+    step === 4 ? !!usState :
+    step === 5 ? !!education :
     isFamilyCodeStep ? familyJoinCode.trim().length === 6 :
-    (step - offset === 5) ? churchOption !== null :
-    (step - offset === 6) ? devotionalRating !== null :
-    (step - offset === 7) ? !!faithJourney :
-    (step - offset === 8) ? goals.length > 0 :
-    (step - offset === 9) ? (!!relationshipStatus && (relationshipStatus !== "Married" || hasKids !== null)) :
+    (step - offset === 6) ? churchOption !== null :
+    (step - offset === 7) ? devotionalRating !== null :
+    (step - offset === 8) ? !!faithJourney :
+    (step - offset === 9) ? goals.length > 0 :
+    (step - offset === 10) ? (!!relationshipStatus && (relationshipStatus !== "Married" || hasKids !== null)) :
     false;
 
   const advance = () => {
@@ -179,6 +183,7 @@ export default function OnboardingSurvey() {
       set({ displayName: name.trim() });
       setSurvey({
         ageRange: ageRange || null,
+        gender: gender || null,
         state: usState,
         city,
         education: education || null,
@@ -294,8 +299,27 @@ export default function OnboardingSurvey() {
             </View>
           )}
 
-          {/* ── Q3: State + City ── */}
+          {/* ── Q3: Gender ── */}
           {step === 3 && (
+            <View>
+              <Text className="font-serif text-2xl font-bold text-foreground mb-6">
+                How do you identify?
+              </Text>
+              <View className="gap-2.5">
+                {GENDER_OPTIONS.map((opt) => (
+                  <ListOption
+                    key={opt}
+                    label={opt}
+                    active={gender === opt}
+                    onPress={() => setGender(opt)}
+                  />
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* ── Q4: State + City ── */}
+          {step === 4 && (
             <View>
               <Text className="font-serif text-2xl font-bold text-foreground mb-6">
                 Where are you based?
@@ -365,8 +389,8 @@ export default function OnboardingSurvey() {
             </View>
           )}
 
-          {/* ── Q4: Education ── */}
-          {step === 4 && (
+          {/* ── Q5: Education ── */}
+          {step === 5 && (
             <View>
               <Text className="font-serif text-2xl font-bold text-foreground mb-6">
                 Where are you in your education?
@@ -414,8 +438,8 @@ export default function OnboardingSurvey() {
             </View>
           )}
 
-          {/* ── Q5/6: Church ── */}
-          {step - offset === 5 && !isFamilyCodeStep && (
+          {/* ── Q6/7: Church ── */}
+          {step - offset === 6 && !isFamilyCodeStep && (
             <View>
               <Text className="font-serif text-2xl font-bold text-foreground mb-6">
                 Do you belong to a church?
@@ -450,8 +474,8 @@ export default function OnboardingSurvey() {
             </View>
           )}
 
-          {/* ── Q6/7: Devotional rating ── */}
-          {step - offset === 6 && (
+          {/* ── Q7/8: Devotional rating ── */}
+          {step - offset === 7 && (
             <View>
               <Text className="font-serif text-2xl font-bold leading-snug text-foreground mb-2">
                 How would you rate your current devotional life and time with God?
@@ -487,8 +511,8 @@ export default function OnboardingSurvey() {
             </View>
           )}
 
-          {/* ── Q7/8: Faith journey ── */}
-          {step - offset === 7 && (
+          {/* ── Q8/9: Faith journey ── */}
+          {step - offset === 8 && (
             <View>
               <Text className="font-serif text-2xl font-bold leading-snug text-foreground mb-2">
                 How would you describe where you are in your faith right now?
@@ -509,8 +533,8 @@ export default function OnboardingSurvey() {
             </View>
           )}
 
-          {/* ── Q8/9: Goals ── */}
-          {step - offset === 8 && (
+          {/* ── Q9/10: Goals ── */}
+          {step - offset === 9 && (
             <View>
               <Text className="font-serif text-2xl font-bold leading-snug text-foreground mb-2">
                 What are you most hoping IronSharp helps you with?
@@ -539,8 +563,8 @@ export default function OnboardingSurvey() {
             </View>
           )}
 
-          {/* ── Q9/10: Relationship status ── */}
-          {step - offset === 9 && (
+          {/* ── Q10/11: Relationship status ── */}
+          {step - offset === 10 && (
             <View>
               <Text className="font-serif text-2xl font-bold leading-snug text-foreground mb-6">
                 What's your relationship status?

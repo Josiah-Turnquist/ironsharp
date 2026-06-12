@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import Anthropic from "@anthropic-ai/sdk";
 import { db } from "../db/index.js";
 import { devotionalPlans, devotionalDays, profiles } from "../db/schema.js";
@@ -43,53 +43,70 @@ TONE
 THEME (per day)
 A punchy 4–7 word phrase naming the real tension or truth of that day. Not a topic label. A provocation. Examples of the right register: "Talk to God Like He's Actually There", "What You Hunger For", "The Freedom of Being Known", "Greatness Upside Down". Wrong register: "Prayer", "Fasting", "Community".
 
-STUDY NOTES / COMMENTARY
-(Not part of the JSON output — but inform the quality of the questions. Know the passage before you write about it.)
+REFLECTION (per day)
+A pastoral and theological commentary on the passage. Written in the teaching posture — you stand beside the reader and explain what is happening in the text and why it matters. You are not the voice of the text; you are a trusted interpreter of it. Heavier on pastoral application than theological exposition.
+
+Structure (in order):
+1. 2–3 sentences: Name the core theological reality of the passage — what God is doing, saying, or revealing here that a reader might walk past.
+2. 3–4 sentences: Unpack it. What does this mean? Why does it carry weight? What is the author doing and why?
+3. 3–4 sentences: Pastoral turn. What does this mean for the person reading it right now? Real life, not abstract. This is where the weight lands.
+4. 1 sentence: Close with a punch — a provocation, a charge, or a truth they carry into the rest of the day.
+
+Total length: 9–12 sentences. For longer or denser passages, up to 12 is fine. Never shorter than 9.
+
+Tone rules for the reflection:
+- Teaching posture — "Paul is doing this here…", "What Luke is showing us…", "The tension in this passage is…"
+- Never preachy or performative. The voice is a trusted older brother who has lived with this passage, not a professor who studied it.
+- Plain language only. No jargon. No churchy vocabulary.
+- Short sentences carry more weight than long ones.
+- The pastoral section should feel personal — as if written for the specific person holding this plan.
 
 REFLECTION QUESTIONS — NON-NEGOTIABLE RULES
 Every day has EXACTLY 2 reflection questions. Never 1. Never 3. Always exactly 2.
 
-Q1 — INWARD
-Points at the reader's interior life — their heart, motives, patterns, fears, hidden contradictions. Must be specific to something concrete in that day's passage. Should feel slightly uncomfortable to answer honestly. Impossible to answer with a generic response.
-
-Must start with a concrete anchor such as:
-"Where in your life right now..."
-"What does this passage expose in you..."
-"If you are honest about..."
-"What is the gap between..."
-"When did you last..."
-
-Must never:
-- Be a comprehension question about the passage
-- Be answerable with yes or no
-- Be answerable with a comfortable generic response
-- Begin with "How does this make you feel"
-- Use churchy vocabulary or jargon
-
-Q2 — OUTWARD
-Points toward specific action, change, relationship, or obedience in the reader's real life this week. Calls the reader to DO something — not just feel something or know something. Names a direction, not just a feeling.
+Q1 — DIAGNOSTIC
+Identify the core tension in the passage. Ask the person to measure their life against it — not just "are you doing this" but "what has this actually cost you, what has it produced, what does it reveal." The weight of consequence is what forces honesty. Cannot be answered without naming something real.
 
 Must:
-- Be rooted in something concrete from the passage
-- Point toward a specific person, situation, or decision
-- Have a clear real-world application this week
-- Be specific enough that it cannot be answered generically
+- Identify the core tension in the passage
+- Ask the person to measure their current life against it
+- Add a consequence, cost, or fruit: what has this cost you, what has it produced, what does it reveal
+- Be impossible to answer without naming something specific and real
 
 Must never:
-- Be vague or general
-- Be a repeat of the inward question
+- Be answerable with a comfortable or generic response
+- Ask only "are you doing this" without adding weight
+- Be a comprehension question about the passage
+- Be answerable with yes or no
+- Use churchy vocabulary or jargon
+
+Q2 — UNCOMFORTABLE MIRROR
+Take a specific command or principle from the passage and make it impossible to answer abstractly. Restate what the passage is actually demanding, then ask where they are falling short of it — not in general, but in their actual life right now. Forces them to think of a real person, real situation, or real pattern.
+
+Must:
+- Restate what the passage is specifically demanding
+- Make it impossible to answer abstractly — force a real person, real situation, or real pattern
+- Ask where they are falling short right now, specifically
+- Be rooted in a concrete command or principle from the passage
+
+Must never:
 - Be answerable without naming something specific
+- Be vague or general
+- Repeat Q1
 - Use churchy vocabulary or jargon
 
 PRAYER PROMPT
 Every day has a prayerPrompt. This is a direct, concrete invitation to talk to God about something specific from that day's passage. It is NOT a reflection question. It is "say this to God" — not "think about this." It alternates naturally across days between confession, surrender, praise, petition, and gratitude. It names what to bring, in what posture, with what honesty. Never generic. "Pray that God would speak to you" is too generic — name exactly what to bring.
 
 FINAL VERIFICATION (run mentally before outputting each day)
-1. Can Q1 or Q2 be answered comfortably without real self-examination? If yes — rewrite it.
-2. Does Q1 point inward to the heart? If no — rewrite it.
-3. Does Q2 point outward to specific action this week? If no — rewrite it.
-4. Does the prayerPrompt invite actual conversation with God about something specific? If no — rewrite it.
-5. Are there exactly 2 reflection questions? If no — fix it.
+1. Is the reflection 9–12 sentences? If no — fix it.
+2. Does the reflection open with the core theological reality (2–3 sentences), unpack it (3–4), make a pastoral turn (3–4), and close with a punch (1)? If no — fix it.
+3. Does Q1 identify the core tension and add a cost, consequence, or fruit that forces honesty? If no — rewrite it.
+4. Can Q1 be answered without naming something real and specific? If yes — rewrite it.
+5. Does Q2 restate what the passage is demanding and force a real person, situation, or pattern? If no — rewrite it.
+6. Can Q2 be answered abstractly or generically? If yes — rewrite it.
+7. Does the prayerPrompt invite actual conversation with God about something specific? If no — rewrite it.
+8. Are there exactly 2 reflection questions? If no — fix it.
 
 OUTPUT FORMAT
 Respond with ONLY valid JSON. No markdown fences, no code blocks, no commentary, no text before or after the JSON. If your output is not parseable as JSON it will fail.
@@ -103,8 +120,9 @@ Respond with ONLY valid JSON. No markdown fences, no code blocks, no commentary,
       "dayNumber": 1,
       "chapter": "Book Chapter:verses",
       "theme": "Short punchy theme phrase",
-      "reflectionQ1": "The inward question...",
-      "reflectionQ2": "The outward question...",
+      "reflection": "The pastoral reflection on the passage (9–12 sentences)...",
+      "reflectionQ1": "The diagnostic question...",
+      "reflectionQ2": "The uncomfortable mirror question...",
       "prayerPrompt": "The prayer/praise prompt..."
     }
   ]
@@ -207,6 +225,18 @@ generate.post("/", async (c) => {
     return c.json({ error: "Missing required fields" }, 400);
   }
 
+  if (!["book", "topic"].includes(inputType)) {
+    return c.json({ error: "inputType must be 'book' or 'topic'" }, 400);
+  }
+
+  if (!Number.isInteger(days) || days < 1 || days > 30) {
+    return c.json({ error: "days must be a whole number between 1 and 30" }, 400);
+  }
+
+  if (!["just-me", "friend", "small-group", "discipleship"].includes(who)) {
+    return c.json({ error: "Invalid value for 'who'" }, 400);
+  }
+
   if (inputType === "book" && !isValidBibleBook(bookOrTopic)) {
     return c.json({ error: "Please enter a single book of the Bible (e.g. Romans, Psalms, 1 Corinthians)." }, 400);
   }
@@ -242,7 +272,12 @@ generate.post("/", async (c) => {
   const [existing] = await db
     .select({ id: devotionalPlans.id })
     .from(devotionalPlans)
-    .where(eq(devotionalPlans.matchKey, matchKey))
+    .where(
+      and(
+        eq(devotionalPlans.matchKey, matchKey),
+        or(eq(devotionalPlans.isPublic, true), eq(devotionalPlans.createdByUserId, userId))
+      )
+    )
     .limit(1);
 
   let planId: string;
@@ -289,7 +324,7 @@ Generate exactly ${days} days. Each day should progress logically through ${inpu
       title: string;
       subtitle: string;
       description: string;
-      days: { dayNumber: number; chapter: string; theme: string; reflectionQ1: string; reflectionQ2: string; prayerPrompt: string }[];
+      days: { dayNumber: number; chapter: string; theme: string; reflection: string; reflectionQ1: string; reflectionQ2: string; prayerPrompt: string }[];
     };
 
     try {
@@ -299,46 +334,55 @@ Generate exactly ${days} days. Each day should progress logically through ${inpu
       return c.json({ error: "Generation failed — please try again." }, 500);
     }
 
-    const [inserted] = await db
-      .insert(devotionalPlans)
-      .values({
-        title: planData.title,
-        subtitle: planData.subtitle,
-        description: planData.description,
-        category: "generated",
-        totalDays: days,
-        source: "generated",
-        createdByUserId: userId,
-        isPublic: false,
-        matchKey,
-      })
-      .returning({ id: devotionalPlans.id });
+    const inserted = await db.transaction(async (tx) => {
+      const [plan] = await tx
+        .insert(devotionalPlans)
+        .values({
+          title: planData.title,
+          subtitle: planData.subtitle,
+          description: planData.description,
+          category: "generated",
+          totalDays: days,
+          source: "generated",
+          createdByUserId: userId,
+          isPublic: false,
+          matchKey,
+        })
+        .returning({ id: devotionalPlans.id });
+
+      if (!plan) return null;
+
+      await tx.insert(devotionalDays).values(
+        planData.days.map((d) => ({
+          planId: plan.id,
+          dayNumber: d.dayNumber,
+          chapter: d.chapter,
+          theme: d.theme,
+          reflection: d.reflection ?? null,
+          reflectionQ1: d.reflectionQ1,
+          reflectionQ2: d.reflectionQ2,
+          prayerPrompt: d.prayerPrompt,
+        }))
+      );
+
+      return plan;
+    });
 
     if (!inserted) return c.json({ error: "Failed to save plan." }, 500);
     planId = inserted.id;
-
-    await db.insert(devotionalDays).values(
-      planData.days.map((d) => ({
-        planId,
-        dayNumber: d.dayNumber,
-        chapter: d.chapter,
-        theme: d.theme,
-        reflectionQ1: d.reflectionQ1,
-        reflectionQ2: d.reflectionQ2,
-        prayerPrompt: d.prayerPrompt,
-      }))
-    );
   }
 
-  // ── Consume token ──────────────────────────────────────────────────────────
-  await db
-    .update(profiles)
-    .set({
-      generatedCount: count + 1,
-      generatedWindowStart: new Date(activeWindowStart),
-      updatedAt: new Date(),
-    })
-    .where(eq(profiles.userId, userId));
+  // ── Consume token (only for fresh generations, not cache hits) ────────────
+  if (!reused) {
+    await db
+      .update(profiles)
+      .set({
+        generatedCount: count + 1,
+        generatedWindowStart: new Date(activeWindowStart),
+        updatedAt: new Date(),
+      })
+      .where(eq(profiles.userId, userId));
+  }
 
   return c.json({ planId, reused });
 });

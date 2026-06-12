@@ -184,9 +184,9 @@ submissions.put("/", async (c) => {
     .returning();
 
   // Background tasks — none of these block the response.
-  updateStreaks(userId, planId, dayNumber).catch(() => {});
-  notifyPartnerDone(userId, planId).catch(() => {});
-  notifyGroupCompleteIfDone(userId, planId, dayNumber).catch(() => {});
+  updateStreaks(userId, planId, dayNumber).catch((err) => console.error("[submissions] updateStreaks failed:", err));
+  notifyPartnerDone(userId, planId).catch((err) => console.error("[submissions] notifyPartnerDone failed:", err));
+  notifyGroupCompleteIfDone(userId, planId, dayNumber).catch((err) => console.error("[submissions] notifyGroupCompleteIfDone failed:", err));
 
   return c.json({ submission: row });
 });
@@ -266,10 +266,25 @@ async function updateGroupStreaks(userId: string, planId: string, dayNumber: num
         .where(eq(groups.id, groupId));
     }
 
-    // Mark this member done.
+    // Mark this member done and update their individual streak within this group.
+    const [memberRow] = await db
+      .select({ streakCount: groupMembers.streakCount, lastStreakDate: groupMembers.lastStreakDate })
+      .from(groupMembers)
+      .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, userId)))
+      .limit(1);
+
+    let newMemberStreak = memberRow?.streakCount ?? 1;
+    if (memberRow && memberRow.lastStreakDate !== today) {
+      const prev = memberRow.lastStreakDate ? new Date(memberRow.lastStreakDate + "T00:00:00Z") : null;
+      if (prev) prev.setUTCDate(prev.getUTCDate() + 1);
+      newMemberStreak = prev && prev.toISOString().slice(0, 10) === today
+        ? memberRow.streakCount + 1
+        : 1;
+    }
+
     await db
       .update(groupMembers)
-      .set({ doneToday: true })
+      .set({ doneToday: true, streakCount: newMemberStreak, lastStreakDate: today })
       .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, userId)));
 
     // Check if every member is done.

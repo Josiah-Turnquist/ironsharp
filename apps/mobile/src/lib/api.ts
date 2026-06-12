@@ -16,20 +16,41 @@ export class ApiError extends Error {
  */
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = await getAuthToken();
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(init.headers ?? {}),
-    },
-  });
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15_000);
+
+  let res: Response;
+  try {
+    res = await fetch(`${BASE_URL}${path}`, {
+      ...init,
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(init.headers ?? {}),
+      },
+    });
+  } catch (err) {
+    if ((err as Error)?.name === "AbortError") {
+      throw new ApiError(0, "Request timed out. Please check your connection and try again.");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   const text = await res.text();
-  const data = text ? JSON.parse(text) : null;
+  let data: unknown = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    throw new ApiError(res.status, res.ok ? "Invalid server response" : res.statusText || "Server error");
+  }
 
   if (!res.ok) {
-    const message = (data && (data.error || data.message)) || res.statusText;
+    const body = data as Record<string, unknown> | null;
+    const message = (body?.error || body?.message) as string | undefined || res.statusText;
     throw new ApiError(res.status, message);
   }
   return data as T;
@@ -55,6 +76,7 @@ export type DevotionalDay = {
   chapter: string;
   theme: string | null;
   studyNotes: StudyNoteEntry[];
+  reflection: string | null;
   reflectionQ1: string;
   reflectionQ2: string;
   prayerPrompt: string | null;
@@ -72,6 +94,7 @@ export type Profile = {
   // Survey answers (collected during onboarding).
   surveyName: string | null;
   surveyAgeRange: string | null;
+  surveyGender: string | null;
   surveyState: string | null;
   surveyCity: string | null;
   surveyEducation: string | null;

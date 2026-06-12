@@ -5,6 +5,7 @@ export type OnboardingRole = "discipler" | "disciple" | "partner";
 
 export type OnboardingSurvey = {
   ageRange: string | null;
+  gender: string | null;
   state: string;
   city: string;
   education: string | null;
@@ -27,6 +28,7 @@ type OnboardingState = {
 
 const DEFAULT_SURVEY: OnboardingSurvey = {
   ageRange: null,
+  gender: null,
   state: "",
   city: "",
   education: null,

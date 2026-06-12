@@ -36,7 +36,7 @@ profile.get("/search", async (c) => {
       avatarUrl: profiles.avatarUrl,
     })
     .from(profiles)
-    .where(ilike(profiles.displayName, `%${q}%`) && ne(profiles.userId, userId))
+    .where(and(ilike(profiles.displayName, `%${q}%`), ne(profiles.userId, userId)))
     .limit(10);
 
   return c.json({ users: results });
@@ -98,7 +98,13 @@ profile.post("/redeem-promo", async (c) => {
   const tier = PROMO_CODES[normalized];
   if (!tier) return c.json({ error: "Invalid promo code." }, 400);
 
-  const updates: Record<string, unknown> = { membershipTier: tier, updatedAt: new Date() };
+  const now = new Date();
+  const updates: Record<string, unknown> = {
+    membershipTier: tier,
+    membershipSource: "promo",
+    membershipStartedAt: now,
+    updatedAt: now,
+  };
   if (tier === "family") {
     updates.familyCode = generateFamilyCode();
   }
@@ -126,6 +132,7 @@ profile.patch("/", async (c) => {
     "primaryRole",
     "surveyName",
     "surveyAgeRange",
+    "surveyGender",
     "surveyState",
     "surveyCity",
     "surveyEducation",
@@ -242,22 +249,25 @@ profile.post("/family/join", async (c) => {
 profile.delete("/", async (c) => {
   const userId = c.var.user.id;
 
-  // Delete app-side data in dependency order.
-  await db.delete(disciplerNotes).where(
-    or(eq(disciplerNotes.fromUserId, userId), eq(disciplerNotes.toUserId, userId))
-  );
-  await db.delete(discipleRelationships).where(
-    or(eq(discipleRelationships.disciplerId, userId), eq(discipleRelationships.discipleId, userId))
-  );
-  await db.delete(groupMembers).where(eq(groupMembers.userId, userId));
-  // submission_reactions cascade from devotional_submissions via FK
-  await db.delete(devotionalSubmissions).where(eq(devotionalSubmissions.userId, userId));
-  await db.delete(userPlanProgress).where(eq(userPlanProgress.userId, userId));
-  // Only delete plans this user generated — curated plans are shared
-  await db.delete(devotionalPlans).where(
-    and(eq(devotionalPlans.createdByUserId, userId), eq(devotionalPlans.source, "generated"))
-  );
-  await db.delete(profiles).where(eq(profiles.userId, userId));
+  // Delete app-side data in a transaction so a mid-flight failure leaves no partial state.
+  // Neon Auth deletion runs after — it can't join the same transaction (cross-schema).
+  await db.transaction(async (tx) => {
+    await tx.delete(disciplerNotes).where(
+      or(eq(disciplerNotes.fromUserId, userId), eq(disciplerNotes.toUserId, userId))
+    );
+    await tx.delete(discipleRelationships).where(
+      or(eq(discipleRelationships.disciplerId, userId), eq(discipleRelationships.discipleId, userId))
+    );
+    await tx.delete(groupMembers).where(eq(groupMembers.userId, userId));
+    // submission_reactions cascade from devotional_submissions via FK
+    await tx.delete(devotionalSubmissions).where(eq(devotionalSubmissions.userId, userId));
+    await tx.delete(userPlanProgress).where(eq(userPlanProgress.userId, userId));
+    // Only delete plans this user generated — curated plans are shared
+    await tx.delete(devotionalPlans).where(
+      and(eq(devotionalPlans.createdByUserId, userId), eq(devotionalPlans.source, "generated"))
+    );
+    await tx.delete(profiles).where(eq(profiles.userId, userId));
+  });
 
   // Delete the Neon Auth user — cascades to neon_auth.session, account, member, invitation
   await db.execute(sql`DELETE FROM neon_auth."user" WHERE id = ${userId}`);
