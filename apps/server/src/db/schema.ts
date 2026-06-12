@@ -52,22 +52,30 @@ export const bibleChapters = pgTable(
  * PUBLIC DEVOTIONAL CONTENT (no per-user data)
  * ============================================================ */
 
-export const devotionalPlans = pgTable("devotional_plans", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  title: text("title").notNull(),
-  subtitle: text("subtitle"),
-  description: text("description"),
-  category: text("category").notNull(),
-  totalDays: integer("total_days").notNull().default(7),
-  howToUse: text("how_to_use"),
-  imageUrl: text("image_url"),
-  source: text("source").notNull().default("curated"),       // "curated" | "generated"
-  createdByUserId: text("created_by_user_id"),
-  isPublic: boolean("is_public").notNull().default(true),
-  matchKey: text("match_key"),                               // e.g. "book:romans-14" — dedup key
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export const devotionalPlans = pgTable(
+  "devotional_plans",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    title: text("title").notNull(),
+    subtitle: text("subtitle"),
+    description: text("description"),
+    category: text("category").notNull(),
+    totalDays: integer("total_days").notNull().default(7),
+    howToUse: text("how_to_use"),
+    imageUrl: text("image_url"),
+    source: text("source").notNull().default("curated"),       // "curated" | "generated"
+    createdByUserId: text("created_by_user_id"),
+    isPublic: boolean("is_public").notNull().default(true),
+    matchKey: text("match_key"),                               // e.g. "book:romans-14" — dedup key
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    browseIdx: index("idx_plans_browse").on(t.isPublic, t.category),
+    creatorIdx: index("idx_plans_creator").on(t.createdByUserId),
+    matchKeyIdx: index("idx_plans_match_key").on(t.matchKey),
+  })
+);
 
 export const devotionalDays = pgTable(
   "devotional_days",
@@ -174,6 +182,7 @@ export const userPlanProgress = pgTable(
   },
   (t) => ({
     userPlanUnique: unique("user_plan_progress_unique").on(t.userId, t.planId),
+    completedIdx: index("idx_progress_user_completed").on(t.userId, t.completedAt),
   })
 );
 
@@ -206,9 +215,11 @@ export const groupMembers = pgTable(
     displayOrder: integer("display_order").notNull().default(0),
     doneToday: boolean("done_today").notNull().default(false),
     streakCount: integer("streak_count").notNull().default(0),
+    lastStreakDate: date("last_streak_date"),
   },
   (t) => ({
     groupUserUnique: unique("group_members_unique").on(t.groupId, t.userId),
+    userIdx: index("idx_group_members_user").on(t.userId),
   })
 );
 
@@ -220,9 +231,11 @@ export const discipleRelationships = pgTable(
     discipleId: text("disciple_id").notNull(),
     status: text("status").notNull().default("active"), // pending | active | ended
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => ({
     pairUnique: unique("disciple_relationships_unique").on(t.disciplerId, t.discipleId),
+    discipleIdx: index("idx_disciple_relationships_disciple").on(t.discipleId),
   })
 );
 
@@ -280,6 +293,22 @@ export const submissionReactions = pgTable(
   })
 );
 
+export const groupPlanHistory = pgTable(
+  "group_plan_history",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    groupId: uuid("group_id")
+      .notNull()
+      .references(() => groups.id, { onDelete: "cascade" }),
+    planId: uuid("plan_id").references(() => devotionalPlans.id, { onDelete: "set null" }),
+    planTitle: text("plan_title").notNull(), // snapshot — survives plan deletion
+    completedAt: timestamp("completed_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    groupIdx: index("idx_group_plan_history_group").on(t.groupId),
+  })
+);
+
 export const disciplerNotes = pgTable(
   "discipler_notes",
   {
@@ -294,11 +323,8 @@ export const disciplerNotes = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => ({
-    threadIdx: index("idx_discipler_notes_thread").on(
-      t.fromUserId,
-      t.toUserId,
-      t.createdAt
-    ),
+    threadIdx: index("idx_discipler_notes_thread").on(t.fromUserId, t.toUserId, t.createdAt),
+    recipientIdx: index("idx_discipler_notes_recipient").on(t.toUserId),
   })
 );
 
@@ -310,6 +336,7 @@ export const schema = {
   profiles,
   userPlanProgress,
   groups,
+  groupPlanHistory,
   groupMembers,
   discipleRelationships,
   devotionalSubmissions,

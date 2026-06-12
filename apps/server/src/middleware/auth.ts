@@ -69,11 +69,9 @@ export const requireAuth = createMiddleware<AppEnv>(async (c, next) => {
 
   const header = c.req.header("Authorization") ?? "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : null;
-  console.log("[auth] token present:", !!token, token ? token.slice(0, 20) + "…" : "MISSING");
   if (!token) return c.json({ error: "Unauthorized" }, 401);
 
   const user = await verifyToken(token);
-  console.log("[auth] verifyToken:", user ? `ok uid=${user.id}` : "null");
   if (!user) return c.json({ error: "Invalid or expired token" }, 401);
 
   c.set("user", user);

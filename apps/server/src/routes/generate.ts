@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import Anthropic from "@anthropic-ai/sdk";
 import { db } from "../db/index.js";
 import { devotionalPlans, devotionalDays, profiles } from "../db/schema.js";
@@ -225,6 +225,18 @@ generate.post("/", async (c) => {
     return c.json({ error: "Missing required fields" }, 400);
   }
 
+  if (!["book", "topic"].includes(inputType)) {
+    return c.json({ error: "inputType must be 'book' or 'topic'" }, 400);
+  }
+
+  if (!Number.isInteger(days) || days < 1 || days > 30) {
+    return c.json({ error: "days must be a whole number between 1 and 30" }, 400);
+  }
+
+  if (!["just-me", "friend", "small-group", "discipleship"].includes(who)) {
+    return c.json({ error: "Invalid value for 'who'" }, 400);
+  }
+
   if (inputType === "book" && !isValidBibleBook(bookOrTopic)) {
     return c.json({ error: "Please enter a single book of the Bible (e.g. Romans, Psalms, 1 Corinthians)." }, 400);
   }
@@ -260,7 +272,12 @@ generate.post("/", async (c) => {
   const [existing] = await db
     .select({ id: devotionalPlans.id })
     .from(devotionalPlans)
-    .where(eq(devotionalPlans.matchKey, matchKey))
+    .where(
+      and(
+        eq(devotionalPlans.matchKey, matchKey),
+        or(eq(devotionalPlans.isPublic, true), eq(devotionalPlans.createdByUserId, userId))
+      )
+    )
     .limit(1);
 
   let planId: string;
@@ -317,47 +334,55 @@ Generate exactly ${days} days. Each day should progress logically through ${inpu
       return c.json({ error: "Generation failed — please try again." }, 500);
     }
 
-    const [inserted] = await db
-      .insert(devotionalPlans)
-      .values({
-        title: planData.title,
-        subtitle: planData.subtitle,
-        description: planData.description,
-        category: "generated",
-        totalDays: days,
-        source: "generated",
-        createdByUserId: userId,
-        isPublic: false,
-        matchKey,
-      })
-      .returning({ id: devotionalPlans.id });
+    const inserted = await db.transaction(async (tx) => {
+      const [plan] = await tx
+        .insert(devotionalPlans)
+        .values({
+          title: planData.title,
+          subtitle: planData.subtitle,
+          description: planData.description,
+          category: "generated",
+          totalDays: days,
+          source: "generated",
+          createdByUserId: userId,
+          isPublic: false,
+          matchKey,
+        })
+        .returning({ id: devotionalPlans.id });
+
+      if (!plan) return null;
+
+      await tx.insert(devotionalDays).values(
+        planData.days.map((d) => ({
+          planId: plan.id,
+          dayNumber: d.dayNumber,
+          chapter: d.chapter,
+          theme: d.theme,
+          reflection: d.reflection ?? null,
+          reflectionQ1: d.reflectionQ1,
+          reflectionQ2: d.reflectionQ2,
+          prayerPrompt: d.prayerPrompt,
+        }))
+      );
+
+      return plan;
+    });
 
     if (!inserted) return c.json({ error: "Failed to save plan." }, 500);
     planId = inserted.id;
-
-    await db.insert(devotionalDays).values(
-      planData.days.map((d) => ({
-        planId,
-        dayNumber: d.dayNumber,
-        chapter: d.chapter,
-        theme: d.theme,
-        reflection: d.reflection ?? null,
-        reflectionQ1: d.reflectionQ1,
-        reflectionQ2: d.reflectionQ2,
-        prayerPrompt: d.prayerPrompt,
-      }))
-    );
   }
 
-  // ── Consume token ──────────────────────────────────────────────────────────
-  await db
-    .update(profiles)
-    .set({
-      generatedCount: count + 1,
-      generatedWindowStart: new Date(activeWindowStart),
-      updatedAt: new Date(),
-    })
-    .where(eq(profiles.userId, userId));
+  // ── Consume token (only for fresh generations, not cache hits) ────────────
+  if (!reused) {
+    await db
+      .update(profiles)
+      .set({
+        generatedCount: count + 1,
+        generatedWindowStart: new Date(activeWindowStart),
+        updatedAt: new Date(),
+      })
+      .where(eq(profiles.userId, userId));
+  }
 
   return c.json({ planId, reused });
 });

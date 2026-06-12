@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { userPlanProgress, devotionalPlans, devotionalDays, profiles } from "../db/schema.js";
 import { requireAuth, type AppEnv } from "../middleware/auth.js";
@@ -165,6 +165,14 @@ progress.patch("/:planId", async (c) => {
   const planId = c.req.param("planId");
   const body = await c.req.json().catch(() => ({}));
 
+  // Fetch current state before updating so we can detect transitions.
+  const [before] = await db
+    .select({ completedAt: userPlanProgress.completedAt })
+    .from(userPlanProgress)
+    .where(and(eq(userPlanProgress.userId, userId), eq(userPlanProgress.planId, planId)))
+    .limit(1);
+  if (!before) return c.json({ error: "Progress not found" }, 404);
+
   const set: Record<string, unknown> = {};
   if (typeof body.currentDay === "number") set.currentDay = body.currentDay;
   if (body.completed === true) set.completedAt = new Date();
@@ -179,5 +187,23 @@ progress.patch("/:planId", async (c) => {
     .returning();
 
   if (!row) return c.json({ error: "Progress not found" }, 404);
+
+  const wasCompleted = !!before.completedAt;
+  const isNowCompleted = !!row.completedAt;
+
+  if (!wasCompleted && isNowCompleted) {
+    // Transitioning null → timestamp: first completion.
+    await db
+      .update(profiles)
+      .set({ totalCompleted: sql`${profiles.totalCompleted} + 1`, updatedAt: new Date() })
+      .where(eq(profiles.userId, userId));
+  } else if (wasCompleted && !isNowCompleted) {
+    // Transitioning timestamp → null: un-completing.
+    await db
+      .update(profiles)
+      .set({ totalCompleted: sql`greatest(${profiles.totalCompleted} - 1, 0)`, updatedAt: new Date() })
+      .where(eq(profiles.userId, userId));
+  }
+
   return c.json({ progress: row });
 });

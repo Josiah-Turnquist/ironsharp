@@ -1,0 +1,1 @@
+CREATE INDEX "idx_discipler_notes_recipient" ON "discipler_notes" USING btree ("to_user_id");
