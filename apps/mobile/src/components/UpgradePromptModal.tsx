@@ -22,10 +22,12 @@ export function UpgradePromptModal({ visible, currentTier, onDismiss }: Props) {
   const muted = useThemeColor("muted-foreground");
 
   const upgradeTier = UPGRADE_PATH[currentTier];
-  if (!upgradeTier) return null;
 
-  const display = TIER_DISPLAY[upgradeTier];
-
+  // Rules of Hooks: every hook must run before any early return. This effect
+  // only depends on `visible`, so it's safe to run even when there's no upgrade
+  // tier. Previously the `if (!upgradeTier) return null` below sat ABOVE this
+  // useEffect — so when a user reached the top tier (family → UPGRADE_PATH is
+  // null) the hook count dropped between renders and React crashed the app.
   useEffect(() => {
     if (visible) {
       Animated.parallel([
@@ -48,6 +50,10 @@ export function UpgradePromptModal({ visible, currentTier, onDismiss }: Props) {
       ]).start();
     }
   }, [visible]);
+
+  if (!upgradeTier) return null;
+
+  const display = TIER_DISPLAY[upgradeTier];
 
   const handleViewPlans = () => {
     onDismiss();
