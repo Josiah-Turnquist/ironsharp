@@ -63,6 +63,8 @@ const noopAdapter = {
   signUp: { email: async () => ({ data: null, error: new Error("Auth unavailable") }) },
   signOut: async () => ({ data: null, error: null }),
   getSession: async () => ({ data: null, error: new Error("Auth unavailable") }),
+  requestPasswordReset: async () => ({ data: null, error: new Error("Auth unavailable") }),
+  resetPassword: async () => ({ data: null, error: new Error("Auth unavailable") }),
 };
 
 /** Better Auth client: authClient.signIn.email / signUp.email / getSession / signOut / signIn.social */
