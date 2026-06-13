@@ -248,10 +248,13 @@ export const ApiClient = {
       body: JSON.stringify(patch),
     }),
   redeemPromo: (code: string) =>
-    api<{ profile: Profile; tier: string }>("/api/profile/redeem-promo", {
-      method: "POST",
-      body: JSON.stringify({ code }),
-    }),
+    api<{ profile: Profile; tier: string; discountPercent?: number; label?: string }>(
+      "/api/profile/redeem-promo",
+      {
+        method: "POST",
+        body: JSON.stringify({ code }),
+      }
+    ),
   deleteAccount: () =>
     api<{ ok: boolean }>("/api/profile", { method: "DELETE" }),
   savePushToken: (token: string) =>

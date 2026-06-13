@@ -12,6 +12,7 @@ import {
   devotionalPlans,
 } from "../db/schema.js";
 import { requireAuth, type AppEnv } from "../middleware/auth.js";
+import type { MembershipTier } from "../lib/tiers.js";
 
 export const profile = new Hono<AppEnv>();
 
@@ -84,28 +85,44 @@ profile.get("/", async (c) => {
   return c.json({ profile: row });
 });
 
-// POST /api/profile/redeem-promo → validate a promo code and upgrade membership
-const PROMO_CODES: Record<string, string> = {
-  IRONSHARP: "family",
-  FOUNDING:  "family",
-  SHARPEN:   "sharpen",
+// POST /api/profile/redeem-promo → validate a promo code and upgrade membership.
+//
+// Promo code table. Each code unlocks a membership tier. `discountPercent` is the
+// percentage off that tier's subscription price — 100 means the membership is free.
+// Paid billing isn't live yet, so today a redeemed code grants its tier outright;
+// `discountPercent` is recorded so it can be applied at checkout once billing ships.
+//
+// IRONSHARP is the maximum code: a 100% discount on the top tier (Family) = free
+// Family membership for life. Codes are case-insensitive (normalized to upper-case).
+type PromoReward = { tier: MembershipTier; discountPercent: number; label: string };
+
+const PROMO_CODES: Record<string, PromoReward> = {
+  // ── Maximum — free top-tier (Family) membership ─────────────────────────
+  IRONSHARP: { tier: "family",  discountPercent: 100, label: "Free Family membership" },
+  FOUNDING:  { tier: "family",  discountPercent: 100, label: "Founding member — free Family membership" },
+  // ── Sharpen tier, free ──────────────────────────────────────────────────
+  SHARPEN:   { tier: "sharpen", discountPercent: 100, label: "Free Sharpen membership" },
+  DISCIPLER: { tier: "sharpen", discountPercent: 100, label: "Free Sharpen membership" },
+  // ── Connect tier, free ──────────────────────────────────────────────────
+  CONNECT:   { tier: "connect", discountPercent: 100, label: "Free Connect membership" },
+  WELCOME:   { tier: "connect", discountPercent: 100, label: "Free Connect membership" },
 };
 
 profile.post("/redeem-promo", async (c) => {
   const userId = c.var.user.id;
   const { code } = await c.req.json().catch(() => ({ code: "" }));
   const normalized = (code as string).trim().toUpperCase();
-  const tier = PROMO_CODES[normalized];
-  if (!tier) return c.json({ error: "Invalid promo code." }, 400);
+  const reward = PROMO_CODES[normalized];
+  if (!reward) return c.json({ error: "Invalid promo code." }, 400);
 
   const now = new Date();
   const updates: Record<string, unknown> = {
-    membershipTier: tier,
+    membershipTier: reward.tier,
     membershipSource: "promo",
     membershipStartedAt: now,
     updatedAt: now,
   };
-  if (tier === "family") {
+  if (reward.tier === "family") {
     updates.familyCode = generateFamilyCode();
   }
 
@@ -115,7 +132,12 @@ profile.post("/redeem-promo", async (c) => {
     .where(eq(profiles.userId, userId))
     .returning();
 
-  return c.json({ profile: row, tier });
+  return c.json({
+    profile: row,
+    tier: reward.tier,
+    discountPercent: reward.discountPercent,
+    label: reward.label,
+  });
 });
 
 // PATCH /api/profile  → update editable profile fields

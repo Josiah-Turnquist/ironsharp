@@ -40,10 +40,17 @@ export default function MembershipScreen() {
     setRedeeming(true);
     setPromoError("");
     try {
-      await ApiClient.redeemPromo(promoCode.trim());
+      const res = await ApiClient.redeemPromo(promoCode.trim());
       await qc.invalidateQueries({ queryKey: ["profile"] });
       setShowPromo(false);
       setPromoCode("");
+      // Confirm success — previously the modal just closed silently, which
+      // read as "nothing happened" even when the code worked.
+      const tierName = TIER_DISPLAY[res.tier as MembershipTier]?.name ?? res.tier;
+      Alert.alert(
+        "Code applied 🎉",
+        res.label ?? `You're now on the ${tierName} plan.`
+      );
     } catch (err) {
       setPromoError(err instanceof ApiError ? err.message : "Something went wrong.");
     } finally {
