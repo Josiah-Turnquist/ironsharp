@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  LayoutAnimation,
   Modal,
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -256,6 +259,48 @@ function MemberSearch({
   );
 }
 
+// Bottom-sheet modal shared by the create / edit / join flows. Lifts above the
+// keyboard (so inputs aren't hidden), and tapping the dimmed backdrop closes it
+// while taps inside the sheet are absorbed by the inner Pressable.
+function BottomSheet({
+  visible,
+  onClose,
+  children,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  const bg = useThemeColor("background");
+  return (
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+      >
+        <Pressable
+          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}
+          onPress={onClose}
+        >
+          <Pressable
+            onPress={() => {}}
+            style={{
+              backgroundColor: bg,
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              padding: 24,
+              paddingBottom: 40,
+              maxHeight: "90%",
+            }}
+          >
+            {children}
+          </Pressable>
+        </Pressable>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+}
+
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
 export default function GroupsScreen() {
@@ -269,7 +314,7 @@ export default function GroupsScreen() {
   const card = useThemeColor("card");
   const fg = useThemeColor("foreground");
 
-  const [expanded, setExpanded] = useState<string | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {
@@ -296,8 +341,17 @@ export default function GroupsScreen() {
   const [joinCode, setJoinCode] = useState("");
   const [joining, setJoining] = useState(false);
 
-  const toggle = (id: string) =>
-    setExpanded((prev) => (prev === id ? null : id));
+  const toggle = (id: string) => {
+    // Animate the height change, and allow multiple groups open at once —
+    // toggling one no longer auto-closes the others.
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const closeCreate = () => {
     setShowCreate(false);
@@ -375,7 +429,11 @@ export default function GroupsScreen() {
         onPress: async () => {
           await ApiClient.deleteGroup(groupId);
           await qc.invalidateQueries({ queryKey: ["groups"] });
-          if (expanded === groupId) setExpanded(null);
+          setExpandedIds((prev) => {
+            const next = new Set(prev);
+            next.delete(groupId);
+            return next;
+          });
         },
       },
     ]);
@@ -465,7 +523,7 @@ export default function GroupsScreen() {
           {groupList.map((group, idx) => {
             const config = GROUP_TYPE_CONFIG[group.groupType] ?? { label: group.groupType, color: primary };
             const doneCount = group.members.filter((m) => m.doneToday).length;
-            const isOpen = expanded === group.id;
+            const isOpen = expandedIds.has(group.id);
             const isFirst = idx === 0;
             const isLast = idx === groupList.length - 1;
 
@@ -622,15 +680,7 @@ export default function GroupsScreen() {
       )}
 
       {/* ── Create group modal ─────────────────────────────────────────────── */}
-      <Modal
-        visible={showCreate}
-        animationType="slide"
-        transparent
-        onRequestClose={() => !creating && closeCreate()}
-      >
-        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}>
-          <View style={{ backgroundColor: bg, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, paddingBottom: 40 }}>
-
+      <BottomSheet visible={showCreate} onClose={() => !creating && closeCreate()}>
             <View className="mb-5 flex-row items-center justify-between">
               <Text className="font-serif text-xl font-bold text-foreground">
                 {createStep === 1 ? "New Group" : createdGroup?.name ?? "Group Created"}
@@ -721,19 +771,10 @@ export default function GroupsScreen() {
                 </Pressable>
               </ScrollView>
             ) : null}
-          </View>
-        </View>
-      </Modal>
+      </BottomSheet>
 
       {/* ── Edit group sheet ───────────────────────────────────────────────── */}
-      <Modal
-        visible={!!editGroup}
-        animationType="slide"
-        transparent
-        onRequestClose={() => !saving && setEditGroup(null)}
-      >
-        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}>
-          <View style={{ backgroundColor: bg, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, paddingBottom: 40, maxHeight: "85%" }}>
+      <BottomSheet visible={!!editGroup} onClose={() => !saving && setEditGroup(null)}>
             <View className="mb-5 flex-row items-center justify-between">
               <Text className="font-serif text-xl font-bold text-foreground">Edit Group</Text>
               <Pressable onPress={() => setEditGroup(null)} hitSlop={12}>
@@ -788,19 +829,10 @@ export default function GroupsScreen() {
                 />
               )}
             </ScrollView>
-          </View>
-        </View>
-      </Modal>
+      </BottomSheet>
 
       {/* ── Join by code sheet ─────────────────────────────────────────────── */}
-      <Modal
-        visible={showJoin}
-        animationType="slide"
-        transparent
-        onRequestClose={() => !joining && setShowJoin(false)}
-      >
-        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}>
-          <View style={{ backgroundColor: bg, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, paddingBottom: 40 }}>
+      <BottomSheet visible={showJoin} onClose={() => !joining && setShowJoin(false)}>
             <View className="mb-5 flex-row items-center justify-between">
               <Text className="font-serif text-xl font-bold text-foreground">Join a Group</Text>
               <Pressable onPress={() => setShowJoin(false)} hitSlop={12}>
@@ -822,7 +854,10 @@ export default function GroupsScreen() {
                 borderWidth: 1, borderColor: border, borderRadius: 10,
                 padding: 14, color: fg, backgroundColor: card,
                 marginBottom: 20, fontSize: 22, fontFamily: "DMSans_700Bold",
-                letterSpacing: 4, textAlign: "center",
+                // Space out the typed code for readability, but keep the empty
+                // placeholder at normal spacing (letterSpacing also spreads the
+                // placeholder, which made "e.g. AB12CD" look broken).
+                letterSpacing: joinCode ? 4 : 0, textAlign: "center",
               }}
             />
 
@@ -836,9 +871,7 @@ export default function GroupsScreen() {
                 {joining ? "Joining…" : "Join Group"}
               </Text>
             </Pressable>
-          </View>
-        </View>
-      </Modal>
+      </BottomSheet>
     </Screen>
   );
 }

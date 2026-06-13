@@ -18,6 +18,13 @@ groupsRoute.use("*", requireAuth);
 // GET /api/groups — all groups the user belongs to, ordered by display_order
 groupsRoute.get("/", async (c) => {
   const userId = c.var.user.id;
+  // A member counts as "done today" if they completed the group's devotional
+  // today. The doneToday boolean gets reset to false the instant the whole
+  // group advances to the next day, so it can't be trusted for the checkmark
+  // (a solo member, or the last person to finish, would never show as done).
+  // lastStreakDate is stamped on completion and is NOT reset on advance, so
+  // it's the reliable per-member "did it today" signal.
+  const today = new Date().toISOString().slice(0, 10);
 
   const memberships = await db
     .select({ group: groups, membership: groupMembers, plan: devotionalPlans })
@@ -69,7 +76,7 @@ groupsRoute.get("/", async (c) => {
           id: m.id,
           userId: m.userId,
           memberRole: m.memberRole,
-          doneToday: m.doneToday,
+          doneToday: m.lastStreakDate === today,
           streakCount: m.streakCount,
           displayName: p?.displayName ?? "Member",
           avatarUrl: p?.avatarUrl ?? null,
