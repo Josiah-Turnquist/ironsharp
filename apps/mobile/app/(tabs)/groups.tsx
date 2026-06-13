@@ -313,9 +313,19 @@ export default function GroupsScreen() {
     try {
       const { group } = await ApiClient.createGroup({ name: newName.trim(), groupType: newType });
       await qc.invalidateQueries({ queryKey: ["groups"] });
+      // Prefer the fully-assembled row from the list (it includes members);
+      // fall back to the freshly-created group so step 2 always has the
+      // invite code even if the refetch hasn't landed yet.
       const fresh = (await ApiClient.getGroups()).groups.find((g) => g.id === group.id) ?? null;
-      setCreatedGroup(fresh);
+      setCreatedGroup(fresh ?? { ...group, members: group.members ?? [] });
       setCreateStep(2);
+    } catch (err) {
+      // Without this the failure was silent — the modal just sat on step 1
+      // with no feedback, which read as "create group is broken".
+      Alert.alert(
+        "Couldn't create group",
+        err instanceof ApiError ? err.message : "Something went wrong. Please try again."
+      );
     } finally {
       setCreating(false);
     }

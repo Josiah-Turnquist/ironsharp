@@ -90,7 +90,8 @@ groupsRoute.post("/", async (c) => {
   if (!name?.trim() || !groupType) {
     return c.json({ error: "name and groupType are required" }, 400);
   }
-  if (!["one-on-one", "family", "small-group"].includes(groupType)) {
+  // Must stay in sync with GROUP_TYPE_CONFIG in apps/mobile/app/(tabs)/groups.tsx.
+  if (!["one-on-one", "family", "small-group", "large-group", "community"].includes(groupType)) {
     return c.json({ error: "Invalid groupType" }, 400);
   }
 

@@ -189,7 +189,7 @@ export const userPlanProgress = pgTable(
 export const groups = pgTable("groups", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
-  groupType: text("group_type").notNull(), // one-on-one | family | small-group
+  groupType: text("group_type").notNull(), // one-on-one | family | small-group | large-group | community
   currentPlanId: uuid("current_plan_id").references(() => devotionalPlans.id, {
     onDelete: "set null",
   }),
