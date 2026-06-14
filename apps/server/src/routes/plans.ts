@@ -1,8 +1,9 @@
 import { Hono } from "hono";
-import { and, asc, eq, or } from "drizzle-orm";
+import { and, asc, eq, inArray, or } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { devotionalPlans, devotionalDays } from "../db/schema.js";
 import { requireAuth, type AppEnv } from "../middleware/auth.js";
+import { summarizeBooks } from "../lib/book-summary.js";
 
 export const plans = new Hono<AppEnv>();
 
@@ -39,7 +40,29 @@ plans.get("/category/:category", async (c) => {
       )
     )
     .orderBy(asc(devotionalPlans.createdAt));
-  return c.json({ plans: rows });
+
+  // Derive a "book of the Bible" summary per plan from its daily passages.
+  const planIds = rows.map((p) => p.id);
+  const booksByPlan = new Map<string, string[]>();
+  if (planIds.length > 0) {
+    const days = await db
+      .select({ planId: devotionalDays.planId, chapter: devotionalDays.chapter })
+      .from(devotionalDays)
+      .where(inArray(devotionalDays.planId, planIds))
+      .orderBy(asc(devotionalDays.dayNumber));
+    for (const d of days) {
+      const list = booksByPlan.get(d.planId) ?? [];
+      list.push(d.chapter);
+      booksByPlan.set(d.planId, list);
+    }
+  }
+
+  const plansWithBooks = rows.map((p) => ({
+    ...p,
+    bookSummary: summarizeBooks(booksByPlan.get(p.id) ?? []),
+  }));
+
+  return c.json({ plans: plansWithBooks });
 });
 
 // GET /api/plans/:planId  → a single plan (must be public or owned by caller)

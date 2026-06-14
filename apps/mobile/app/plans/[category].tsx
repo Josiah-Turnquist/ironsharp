@@ -166,36 +166,47 @@ export default function PlanList() {
           (plans ?? []).map((plan) => {
             const prog = progressByPlan.get(plan.id);
             const groupForPlan = (groups.data ?? []).find((g) => g.plan?.id === plan.id);
-            const status = groupForPlan
-              ? `Group Plan · Day ${groupForPlan.currentDay}`
+            const completed = !groupForPlan && !!prog?.completedAt;
+            const actionLabel = groupForPlan
+              ? "Continue"
               : !prog
                 ? "Start Plan"
                 : prog.completedAt
-                  ? "Completed ✓"
-                  : `Continue · Day ${prog.currentDay}`;
+                  ? "Completed"
+                  : "Continue";
+            const meta = `${plan.totalDays} days${
+              plan.bookSummary ? ` · ${plan.bookSummary}` : ""
+            }`;
             return (
               <Pressable
                 key={plan.id}
                 onPress={() => handlePlanTap(plan.id)}
-                className="flex-row items-start justify-between gap-3 rounded-xl border border-border bg-card p-4"
+                className="rounded-xl border border-border bg-card p-4"
               >
-                <View className="flex-1">
-                  <Text className="font-serif text-lg font-bold text-foreground">
+                <View className="flex-row items-start justify-between gap-3">
+                  <Text className="flex-1 font-serif text-lg font-bold text-foreground">
                     {plan.title}
                   </Text>
-                  {plan.description ? (
+                  <View className="flex-row items-center gap-0.5 pt-1">
                     <Text
-                      className="mt-1 text-sm leading-relaxed text-muted-foreground"
-                      numberOfLines={2}
+                      className="text-[13px] font-sans-medium"
+                      style={{ color: completed ? muted : primary }}
                     >
-                      {plan.description}
+                      {completed ? "Completed ✓" : actionLabel}
                     </Text>
-                  ) : null}
-                  <Text className="mt-2 self-start rounded-md bg-muted px-2 py-0.5 text-[11px] font-sans-medium text-muted-foreground">
-                    {status}
-                  </Text>
+                    {!completed ? <ChevronRight size={16} color={primary} /> : null}
+                  </View>
                 </View>
-                <ChevronRight size={18} color={muted} />
+
+                {plan.description ? (
+                  <Text className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                    {plan.description}
+                  </Text>
+                ) : null}
+
+                <Text className="mt-2 text-xs font-sans-medium text-muted-foreground">
+                  {meta}
+                </Text>
               </Pressable>
             );
           })

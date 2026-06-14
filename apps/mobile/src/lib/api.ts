@@ -67,6 +67,8 @@ export type DevotionalPlan = {
   totalDays: number;
   howToUse: string | null;
   imageUrl: string | null;
+  /** Derived server-side from the plan's daily passages (category list only). */
+  bookSummary?: string;
 };
 
 export type DevotionalDay = {
