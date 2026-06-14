@@ -96,10 +96,23 @@ export default function DevotionalHub() {
                   Day {active.data.currentDay}/{active.data.totalDays}
                 </Text>
               </View>
-              <Pressable onPress={() => router.push(`/devotional/${active.data!.planId}`)}>
-                <Text className="text-sm font-semibold uppercase tracking-wider text-primary">
-                  Continue
-                </Text>
+              <Pressable
+                onPress={() => router.push(`/devotional/${active.data!.planId}`)}
+                accessibilityRole="button"
+                accessibilityLabel={active.data.doneToday ? "Done today — tap to re-read" : "Continue reading"}
+              >
+                {active.data.doneToday ? (
+                  <View className="flex-row items-center gap-1">
+                    <CheckCircle2 size={15} color={primary} />
+                    <Text className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                      Done today
+                    </Text>
+                  </View>
+                ) : (
+                  <Text className="text-sm font-semibold uppercase tracking-wider text-primary">
+                    Continue
+                  </Text>
+                )}
               </Pressable>
             </View>
           </View>

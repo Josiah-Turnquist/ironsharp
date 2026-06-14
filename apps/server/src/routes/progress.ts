@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import { and, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, gte, isNull, lt, sql } from "drizzle-orm";
 import { db } from "../db/index.js";
-import { userPlanProgress, devotionalPlans, devotionalDays, profiles } from "../db/schema.js";
+import { userPlanProgress, devotionalPlans, devotionalDays, devotionalSubmissions, profiles } from "../db/schema.js";
 import { requireAuth, type AppEnv } from "../middleware/auth.js";
 import {
   TIER_LIMITS,
@@ -57,6 +57,24 @@ progress.get("/active", async (c) => {
     )
     .limit(1);
 
+  // Has the user submitted anything for this plan today? Lets the UI show
+  // "Done today" instead of "Continue" once the day's reading is in. UTC-bounded.
+  const today = new Date().toISOString().slice(0, 10);
+  const todayStart = new Date(today + "T00:00:00.000Z");
+  const tomorrowStart = new Date(todayStart.getTime() + 86_400_000);
+  const [doneRow] = await db
+    .select({ id: devotionalSubmissions.id })
+    .from(devotionalSubmissions)
+    .where(
+      and(
+        eq(devotionalSubmissions.userId, userId),
+        eq(devotionalSubmissions.planId, active.planId),
+        gte(devotionalSubmissions.submittedAt, todayStart),
+        lt(devotionalSubmissions.submittedAt, tomorrowStart)
+      )
+    )
+    .limit(1);
+
   return c.json({
     active: {
       planId: active.planId,
@@ -65,6 +83,7 @@ progress.get("/active", async (c) => {
       currentDay: active.currentDay,
       chapter: day?.chapter ?? null,
       theme: day?.theme ?? null,
+      doneToday: !!doneRow,
     },
   });
 });

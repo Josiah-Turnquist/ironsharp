@@ -1,6 +1,6 @@
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { Flame, BookOpen, Globe, Sun, Headphones } from "lucide-react-native";
+import { Flame, BookOpen, CheckCircle2, Globe, Sun, Headphones } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
 import { useThemeColor } from "@/components/useThemeColor";
 import { useProfile, useActiveDevotional } from "@/lib/queries";
@@ -117,8 +117,17 @@ export default function HomeScreen() {
             {active?.theme ?? "Head to Plans to pick your first devotional and start your journey."}
           </Text>
           <View className="flex-row items-center gap-2 pt-1">
-            <BookOpen size={18} color={primary} />
-            <Text className="font-sans-medium text-base text-primary">Continue Reading →</Text>
+            {active?.doneToday ? (
+              <>
+                <CheckCircle2 size={18} color={primary} />
+                <Text className="font-sans-medium text-base text-muted-foreground">Done for today</Text>
+              </>
+            ) : (
+              <>
+                <BookOpen size={18} color={primary} />
+                <Text className="font-sans-medium text-base text-primary">Continue Reading →</Text>
+              </>
+            )}
           </View>
         </Pressable>
 

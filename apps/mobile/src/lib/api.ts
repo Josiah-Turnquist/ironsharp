@@ -139,6 +139,8 @@ export type ActiveDevotional = {
   currentDay: number;
   chapter: string | null;
   theme: string | null;
+  /** True if the user already submitted today's reading for this plan. */
+  doneToday: boolean;
 };
 
 export type StudyNoteEntry = {
