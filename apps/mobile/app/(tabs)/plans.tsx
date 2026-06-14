@@ -24,6 +24,7 @@ const CATEGORY_IMAGES: Record<string, ImageSourcePropType> = {
   completed:      require("../../assets/images/categories/completed.jpg"),
 };
 import { Screen } from "@/components/Screen";
+import { ScreenHeader } from "@/components/ScreenHeader";
 import { ErrorState } from "@/components/ErrorState";
 import { useThemeColor } from "@/components/useThemeColor";
 import { usePlans, useProgress, useGenerateTokens } from "@/lib/queries";
@@ -105,13 +106,10 @@ export default function PlansScreen() {
   return (
     <Screen edges={["top"]}>
       <ScrollView
-        contentContainerClassName="mx-auto w-full max-w-lg px-4 py-8"
+        contentContainerClassName="mx-auto w-full max-w-lg px-6 py-8"
         showsVerticalScrollIndicator={false}
       >
-        <Text className="text-xs uppercase tracking-wider text-muted-foreground">
-          Browse &amp; Start
-        </Text>
-        <Text className="mb-5 font-serif text-2xl font-bold text-foreground">Plans</Text>
+        <ScreenHeader eyebrow="Browse & Start" title="Plans" />
 
         <View className="flex-row flex-wrap justify-between">
           {/* Completed tile (pinned first) */}

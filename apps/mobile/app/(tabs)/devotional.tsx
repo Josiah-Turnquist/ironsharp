@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, ChevronDown, ChevronUp, Circle } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
 import { useThemeColor } from "@/components/useThemeColor";
+import { ScreenHeader } from "@/components/ScreenHeader";
 import { useActiveDevotional, useGroups } from "@/lib/queries";
 import { useLocalDoneToday } from "@/lib/useLocalDoneToday";
 
@@ -74,14 +75,11 @@ export default function DevotionalHub() {
   return (
     <Screen edges={["top"]}>
       <ScrollView
-        contentContainerClassName="mx-auto w-full max-w-lg px-4 py-8"
+        contentContainerClassName="mx-auto w-full max-w-lg px-6 py-8"
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={primary} />}
       >
-        <Text className="text-sm uppercase tracking-wider text-muted-foreground">
-          Your Daily Reading
-        </Text>
-        <Text className="mb-6 font-serif text-3xl font-bold text-foreground">Devotionals</Text>
+        <ScreenHeader eyebrow="Your Daily Reading" title="Devotionals" />
 
         {/* ── Personal ───────────────────────────────────────────────────────── */}
         <SectionHeader label="Personal" />

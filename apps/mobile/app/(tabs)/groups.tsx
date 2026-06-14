@@ -33,6 +33,7 @@ import {
   X,
 } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
+import { ScreenHeader } from "@/components/ScreenHeader";
 import { ErrorState } from "@/components/ErrorState";
 import { useThemeColor } from "@/components/useThemeColor";
 import { useGroups } from "@/lib/queries";
@@ -528,25 +529,13 @@ export default function GroupsScreen() {
         </View>
       ) : (
         <ScrollView
-          contentContainerStyle={{
-            paddingHorizontal: 16,
-            paddingTop: 32,
-            paddingBottom: 32,
-            maxWidth: 512,
-            alignSelf: "center",
-            width: "100%",
-          }}
+          contentContainerClassName="mx-auto w-full max-w-lg px-6 py-8"
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={primary} />
           }
         >
-          <View style={{ marginBottom: 20 }}>
-            <Text className="text-sm uppercase tracking-wider text-muted-foreground">
-              Your Relationships
-            </Text>
-            <Text className="font-serif text-3xl font-bold text-foreground">Groups</Text>
-          </View>
+          <ScreenHeader eyebrow="Your Relationships" title="Groups" />
 
           {groupList.map((group, idx) => {
             const config = GROUP_TYPE_CONFIG[group.groupType] ?? { label: group.groupType, color: primary };
