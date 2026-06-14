@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { and, count, eq, isNotNull, or, sql } from "drizzle-orm";
+import { and, count, eq, gte, isNotNull, lt, or, sql } from "drizzle-orm";
 import { db } from "../db/index.js";
 import {
   groups,
@@ -8,6 +8,7 @@ import {
   profiles,
   devotionalPlans,
   devotionalDays,
+  devotionalSubmissions,
 } from "../db/schema.js";
 import { requireAuth, type AppEnv } from "../middleware/auth.js";
 import { TIER_LIMITS, TIER_NAMES, type MembershipTier } from "../lib/tiers.js";
@@ -18,13 +19,15 @@ groupsRoute.use("*", requireAuth);
 // GET /api/groups — all groups the user belongs to, ordered by display_order
 groupsRoute.get("/", async (c) => {
   const userId = c.var.user.id;
-  // A member counts as "done today" if they completed the group's devotional
-  // today. The doneToday boolean gets reset to false the instant the whole
-  // group advances to the next day, so it can't be trusted for the checkmark
-  // (a solo member, or the last person to finish, would never show as done).
-  // lastStreakDate is stamped on completion and is NOT reset on advance, so
-  // it's the reliable per-member "did it today" signal.
+  // A member counts as "done today" if they have a submission for the group's
+  // current plan dated today. The submissions table is the source of truth:
+  // the doneToday flag resets the moment the group advances a day, and
+  // lastStreakDate only gets stamped when completing through the group context
+  // (not from Home/Plans) — so both miss legitimate completions. Bound the day
+  // in UTC so it doesn't depend on the DB session timezone.
   const today = new Date().toISOString().slice(0, 10);
+  const todayStart = new Date(today + "T00:00:00.000Z");
+  const tomorrowStart = new Date(todayStart.getTime() + 86_400_000);
 
   const memberships = await db
     .select({ group: groups, membership: groupMembers, plan: devotionalPlans })
@@ -36,7 +39,7 @@ groupsRoute.get("/", async (c) => {
 
   const result = await Promise.all(
     memberships.map(async ({ group, membership, plan }) => {
-      const [members, dayRow] = await Promise.all([
+      const [members, dayRow, doneRows] = await Promise.all([
         db
           .select({ m: groupMembers, p: profiles })
           .from(groupMembers)
@@ -54,7 +57,24 @@ groupsRoute.get("/", async (c) => {
               )
               .limit(1)
           : Promise.resolve([]),
+        // Who has submitted for this group's current plan today?
+        group.currentPlanId
+          ? db
+              .select({ userId: devotionalSubmissions.userId })
+              .from(devotionalSubmissions)
+              .where(
+                and(
+                  eq(devotionalSubmissions.planId, group.currentPlanId),
+                  gte(devotionalSubmissions.submittedAt, todayStart),
+                  lt(devotionalSubmissions.submittedAt, tomorrowStart)
+                )
+              )
+          : Promise.resolve([]),
       ]);
+
+      const doneUserIds = new Set(
+        (doneRows as { userId: string }[]).map((r) => r.userId)
+      );
 
       return {
         id: group.id,
@@ -76,7 +96,7 @@ groupsRoute.get("/", async (c) => {
           id: m.id,
           userId: m.userId,
           memberRole: m.memberRole,
-          doneToday: m.lastStreakDate === today,
+          doneToday: doneUserIds.has(m.userId),
           streakCount: m.streakCount,
           displayName: p?.displayName ?? "Member",
           avatarUrl: p?.avatarUrl ?? null,

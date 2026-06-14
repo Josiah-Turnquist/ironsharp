@@ -784,6 +784,7 @@ export default function DevotionalReader() {
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
   const [reflectionOpen, setReflectionOpen] = useState(true);
   const [done, setDone] = useState(false);
+  const [reread, setReread] = useState(false);
   const isDoneState = done || lockedUntilTomorrow;
   const completedDayForFeed = done ? currentDay : currentDay - 1;
   const groupResponsesQ = useGroupDayResponses(planId, completedDayForFeed, isDoneState);
@@ -913,7 +914,7 @@ export default function DevotionalReader() {
     );
   }
 
-  if (done || lockedUntilTomorrow) {
+  if (isDoneState && !reread) {
     const completedDay = done ? currentDay : currentDay - 1;
     const verse = getDailyVerse();
     const groupResponses = groupResponsesQ.data ?? [];
@@ -965,6 +966,11 @@ export default function DevotionalReader() {
             <Button
               title="Back to Devotionals"
               onPress={() => router.replace("/(tabs)/devotional")}
+            />
+            <Button
+              title="Re-read today's passage"
+              variant="outline"
+              onPress={() => { setReread(true); setPassageRead(true); }}
             />
             <Button
               title="View my responses"
@@ -1165,6 +1171,7 @@ export default function DevotionalReader() {
                 ref={input1Ref}
                 value={response1}
                 onChangeText={setResponse1}
+                editable={!reread}
                 onFocus={() => scrollToInput(input1Ref)}
                 placeholder="Share your honest reflection..."
                 placeholderTextColor={muted}
@@ -1190,6 +1197,7 @@ export default function DevotionalReader() {
                 ref={input2Ref}
                 value={response2}
                 onChangeText={setResponse2}
+                editable={!reread}
                 onFocus={() => scrollToInput(input2Ref)}
                 placeholder="What's the invitation here?"
                 placeholderTextColor={muted}
@@ -1212,6 +1220,7 @@ export default function DevotionalReader() {
                 ref={input3Ref}
                 value={prayer}
                 onChangeText={setPrayer}
+                editable={!reread}
                 onFocus={() => scrollToInput(input3Ref)}
                 placeholder="A personal prayer or praise..."
                 placeholderTextColor={muted}
@@ -1226,29 +1235,41 @@ export default function DevotionalReader() {
               />
             </View>
 
-            {(response1 || response2 || prayer) && saveState !== "idle" ? (
-              <Text style={{ textAlign: "center", fontSize: 12, color: muted }}>
-                {saveState === "saving" ? "Saving…" : "Saved ✓"}
-              </Text>
-            ) : null}
+            {reread ? (
+              <View className="w-2/3 self-center">
+                <Button
+                  title="Done re-reading"
+                  variant="outline"
+                  onPress={() => setReread(false)}
+                />
+              </View>
+            ) : (
+              <>
+                {(response1 || response2 || prayer) && saveState !== "idle" ? (
+                  <Text style={{ textAlign: "center", fontSize: 12, color: muted }}>
+                    {saveState === "saving" ? "Saving…" : "Saved ✓"}
+                  </Text>
+                ) : null}
 
-            <View className="w-2/3 self-center">
-              <Button
-                title={submit.isPending ? "Submitting..." : "Submit"}
-                loading={submit.isPending}
-                disabled={!response1.trim() || !response2.trim()}
-                onPress={() =>
-                  Alert.alert(
-                    "Submit today's reflection?",
-                    "You won't be able to edit it after submitting.",
-                    [
-                      { text: "Cancel", style: "cancel" },
-                      { text: "Submit", onPress: () => submit.mutate() },
-                    ]
-                  )
-                }
-              />
-            </View>
+                <View className="w-2/3 self-center">
+                  <Button
+                    title={submit.isPending ? "Submitting..." : "Submit"}
+                    loading={submit.isPending}
+                    disabled={!response1.trim() || !response2.trim()}
+                    onPress={() =>
+                      Alert.alert(
+                        "Submit today's reflection?",
+                        "You won't be able to edit it after submitting.",
+                        [
+                          { text: "Cancel", style: "cancel" },
+                          { text: "Submit", onPress: () => submit.mutate() },
+                        ]
+                      )
+                    }
+                  />
+                </View>
+              </>
+            )}
         </ScrollView>
         {showScrollTop && (
           <Pressable
