@@ -27,6 +27,10 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
       signal: controller.signal,
       headers: {
         "Content-Type": "application/json",
+        // Lets the server reason about the user's *local* calendar day (for
+        // "done today" / streak windows) instead of UTC. Minutes local is
+        // behind UTC: EDT=240, PDT=420.
+        "x-timezone-offset": String(new Date().getTimezoneOffset()),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(init.headers ?? {}),
       },

@@ -12,6 +12,7 @@ import {
 } from "../db/schema.js";
 import { requireAuth, type AppEnv } from "../middleware/auth.js";
 import { TIER_LIMITS, TIER_NAMES, type MembershipTier } from "../lib/tiers.js";
+import { clientDayWindow } from "../lib/localday.js";
 
 export const groupsRoute = new Hono<AppEnv>();
 groupsRoute.use("*", requireAuth);
@@ -26,10 +27,10 @@ groupsRoute.get("/", async (c) => {
   // The "current day" arm covers multi-member groups where a member finished on
   // a prior calendar day and the group hasn't advanced yet; the "today" arm
   // covers a solo/last member whose completion advances the day and would
-  // otherwise clear their own check instantly. UTC-bounded to avoid DB-tz drift.
-  const today = new Date().toISOString().slice(0, 10);
-  const todayStart = new Date(today + "T00:00:00.000Z");
-  const tomorrowStart = new Date(todayStart.getTime() + 86_400_000);
+  // otherwise clear their own check instantly. Bounded to the requester's local
+  // day (x-timezone-offset header) so checks don't clear in the evening when the
+  // UTC day rolls over ahead of the user's calendar day.
+  const { start: todayStart, end: tomorrowStart } = clientDayWindow(c);
 
   const memberships = await db
     .select({ group: groups, membership: groupMembers, plan: devotionalPlans })

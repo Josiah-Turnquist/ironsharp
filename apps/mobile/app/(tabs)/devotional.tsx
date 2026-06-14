@@ -6,6 +6,7 @@ import { CheckCircle2, ChevronDown, ChevronUp, Circle } from "lucide-react-nativ
 import { Screen } from "@/components/Screen";
 import { useThemeColor } from "@/components/useThemeColor";
 import { useActiveDevotional, useGroups } from "@/lib/queries";
+import { useLocalDoneToday } from "@/lib/useLocalDoneToday";
 
 const GROUP_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
   "one-on-one":  { label: "One-on-One",  color: "#89B4C9" },
@@ -51,6 +52,10 @@ export default function DevotionalHub() {
   const muted = useThemeColor("muted-foreground");
   const border = useThemeColor("border");
   const fg = useThemeColor("foreground");
+
+  // Matches the reader's local "done for today" lock so the row agrees with
+  // what you see when you tap in — even after the UTC day has rolled over.
+  const localDone = useLocalDoneToday(active.data?.planId);
 
   const [expanded, setExpanded] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -99,9 +104,9 @@ export default function DevotionalHub() {
               <Pressable
                 onPress={() => router.push(`/devotional/${active.data!.planId}`)}
                 accessibilityRole="button"
-                accessibilityLabel={active.data.doneToday ? "Done today — tap to re-read" : "Continue reading"}
+                accessibilityLabel={active.data.doneToday || localDone ? "Done today — tap to re-read" : "Continue reading"}
               >
-                {active.data.doneToday ? (
+                {active.data.doneToday || localDone ? (
                   <View className="flex-row items-center gap-1">
                     <CheckCircle2 size={15} color={primary} />
                     <Text className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">

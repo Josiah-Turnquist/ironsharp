@@ -4,11 +4,16 @@ import { Flame, BookOpen, CheckCircle2, Globe, Sun, Headphones } from "lucide-re
 import { Screen } from "@/components/Screen";
 import { useThemeColor } from "@/components/useThemeColor";
 import { useProfile, useActiveDevotional } from "@/lib/queries";
+import { useLocalDoneToday } from "@/lib/useLocalDoneToday";
 
 export default function HomeScreen() {
   const router = useRouter();
   const profile = useProfile();
   const { data: active } = useActiveDevotional();
+  // Server `doneToday` covers fresh installs; the local lock covers the
+  // evening gap when the UTC day has rolled over but the user's hasn't.
+  const localDone = useLocalDoneToday(active?.planId);
+  const doneToday = !!active?.doneToday || localDone;
   const primary = useThemeColor("primary");
   const muted = useThemeColor("muted-foreground");
 
@@ -117,7 +122,7 @@ export default function HomeScreen() {
             {active?.theme ?? "Head to Plans to pick your first devotional and start your journey."}
           </Text>
           <View className="flex-row items-center gap-2 pt-1">
-            {active?.doneToday ? (
+            {doneToday ? (
               <>
                 <CheckCircle2 size={18} color={primary} />
                 <Text className="font-sans-medium text-base text-muted-foreground">Done for today</Text>

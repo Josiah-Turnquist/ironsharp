@@ -3,6 +3,7 @@ import { and, desc, eq, gte, isNull, lt, sql } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { userPlanProgress, devotionalPlans, devotionalDays, devotionalSubmissions, profiles } from "../db/schema.js";
 import { requireAuth, type AppEnv } from "../middleware/auth.js";
+import { clientDayWindow } from "../lib/localday.js";
 import {
   TIER_LIMITS,
   UPGRADE_PATH,
@@ -58,10 +59,10 @@ progress.get("/active", async (c) => {
     .limit(1);
 
   // Has the user submitted anything for this plan today? Lets the UI show
-  // "Done today" instead of "Continue" once the day's reading is in. UTC-bounded.
-  const today = new Date().toISOString().slice(0, 10);
-  const todayStart = new Date(today + "T00:00:00.000Z");
-  const tomorrowStart = new Date(todayStart.getTime() + 86_400_000);
+  // "Done today" instead of "Continue" once the day's reading is in. Bounded to
+  // the *client's* local day (x-timezone-offset header) so it doesn't flip off
+  // in the evening when the UTC day rolls over ahead of the user's.
+  const { start: todayStart, end: tomorrowStart } = clientDayWindow(c);
   const [doneRow] = await db
     .select({ id: devotionalSubmissions.id })
     .from(devotionalSubmissions)
