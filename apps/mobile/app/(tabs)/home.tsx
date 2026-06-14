@@ -1,7 +1,8 @@
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { Flame, BookOpen, CheckCircle2, Globe, Sun, Headphones } from "lucide-react-native";
+import { BookOpen, CheckCircle2, Globe, Sun, Headphones } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
+import { StreakFlame } from "@/components/StreakFlame";
 import { useThemeColor } from "@/components/useThemeColor";
 import { useProfile, useActiveDevotional } from "@/lib/queries";
 import { useLocalDoneToday } from "@/lib/useLocalDoneToday";
@@ -33,22 +34,7 @@ export default function HomeScreen() {
           <Text className="font-serif text-3xl font-bold text-foreground">
             {greeting}, {firstName}
           </Text>
-          <View
-            accessible={true}
-            accessibilityLabel={`${streak} day streak`}
-            style={{ width: 32, height: 36, alignItems: "center", justifyContent: "center" }}
-          >
-            <Flame size={32} color={primary} fill={primary} />
-            <Text style={{
-              position: "absolute",
-              bottom: 5,
-              fontFamily: "DMSans_700Bold",
-              fontSize: streak > 99 ? 8 : streak > 9 ? 10 : 12,
-              color: "#fff",
-            }}>
-              {streak}
-            </Text>
-          </View>
+          <StreakFlame streak={streak} size={32} />
         </View>
 
         {/* Community & Podcast */}
