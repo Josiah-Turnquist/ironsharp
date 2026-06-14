@@ -1,13 +1,5 @@
-import { useEffect } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from "react-native-reanimated";
+import { useEffect, useRef } from "react";
+import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 import { Flame } from "lucide-react-native";
 
 type Props = {
@@ -22,98 +14,61 @@ const CORE = "#FACC15"; // yellow-400
 const GLOW = "#FB923C"; // orange-400
 
 /**
- * The streak indicator, animated to flicker like a real flame. Three loops run
- * on the UI thread at deliberately mismatched durations so the motion never
- * settles into an obvious cycle:
- *   • the outer flame stretches/squashes and sways from its base (it licks up)
+ * The streak indicator, animated to flicker like a real flame. Built on the
+ * core React Native Animated API (native driver) — deliberately NOT Reanimated,
+ * so it carries no worklet/Babel-plugin dependency and can ship safely over OTA.
+ * Three loops run at mismatched durations so the motion never looks cyclic:
+ *   • the outer body stretches/squashes and sways from its base (it licks up)
  *   • the inner core flickers faster and pulses brightness (heat shimmer)
  *   • a soft halo breathes behind it
  * The count rides on top, held steady and shadowed so it stays readable.
  */
 export function StreakFlame({ streak, size = 32 }: Props) {
-  const stretch = useSharedValue(1); // outer scaleY
-  const sway = useSharedValue(0); // outer rotation (deg)
-  const coreScale = useSharedValue(1); // inner core scaleY
-  const coreOpacity = useSharedValue(0.9);
-  const glowOpacity = useSharedValue(0.3);
-  const glowScale = useSharedValue(1);
+  const stretch = useRef(new Animated.Value(1)).current; // outer scaleY
+  const sway = useRef(new Animated.Value(0)).current; // -1..1 → rotation
+  const core = useRef(new Animated.Value(1)).current; // inner core scaleY
+  const coreOpacity = useRef(new Animated.Value(0.9)).current;
+  const glow = useRef(new Animated.Value(0)).current; // 0..1 → halo opacity+scale
 
   useEffect(() => {
     const ease = Easing.inOut(Easing.quad);
+    const loop = (value: Animated.Value, frames: [number, number][]) =>
+      Animated.loop(
+        Animated.sequence(
+          frames.map(([toValue, duration]) =>
+            Animated.timing(value, { toValue, duration, easing: ease, useNativeDriver: true })
+          )
+        )
+      );
 
-    // Outer body: irregular vertical lick, restarting each loop (directional).
-    stretch.value = withRepeat(
-      withSequence(
-        withTiming(1.1, { duration: 230, easing: ease }),
-        withTiming(0.94, { duration: 190, easing: ease }),
-        withTiming(1.05, { duration: 250, easing: ease }),
-        withTiming(0.985, { duration: 210, easing: ease })
-      ),
-      -1,
-      false
-    );
-
-    // Gentle side-to-side sway, ping-ponged.
-    sway.value = withRepeat(
-      withSequence(
-        withTiming(3, { duration: 300, easing: ease }),
-        withTiming(-2.5, { duration: 340, easing: ease }),
-        withTiming(1.5, { duration: 280, easing: ease })
-      ),
-      -1,
-      true
-    );
-
-    // Hot core: faster, twitchier flicker.
-    coreScale.value = withRepeat(
-      withSequence(
-        withTiming(1.22, { duration: 130, easing: ease }),
-        withTiming(0.86, { duration: 110, easing: ease }),
-        withTiming(1.12, { duration: 150, easing: ease }),
-        withTiming(0.95, { duration: 120, easing: ease })
-      ),
-      -1,
-      false
-    );
-    coreOpacity.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 150 }),
-        withTiming(0.55, { duration: 120 }),
-        withTiming(0.85, { duration: 140 })
-      ),
-      -1,
-      true
-    );
-
-    // Halo breathing — slow, out of phase with everything else.
-    glowOpacity.value = withRepeat(withTiming(0.5, { duration: 850, easing: ease }), -1, true);
-    glowScale.value = withRepeat(withTiming(1.25, { duration: 1050, easing: ease }), -1, true);
-  }, [coreOpacity, coreScale, glowOpacity, glowScale, stretch, sway]);
+    const anims = [
+      loop(stretch, [[1.1, 230], [0.94, 190], [1.05, 250], [0.985, 210]]),
+      loop(sway, [[1, 300], [-1, 340], [0.5, 280], [0, 260]]),
+      loop(core, [[1.22, 130], [0.86, 110], [1.12, 150], [0.95, 120]]),
+      loop(coreOpacity, [[1, 150], [0.55, 120], [0.85, 140]]),
+      loop(glow, [[1, 900], [0, 1050]]),
+    ];
+    anims.forEach((a) => a.start());
+    return () => anims.forEach((a) => a.stop());
+  }, [core, coreOpacity, glow, stretch, sway]);
 
   // Stretch up from the base: scale vertically, counter-squash horizontally to
   // preserve volume, and shift up by half the growth so the base stays planted.
-  const outerStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateY: -(stretch.value - 1) * size * 0.5 },
-      { scaleX: 1 + (1 - stretch.value) * 0.5 },
-      { scaleY: stretch.value },
-      { rotate: `${sway.value}deg` },
-    ],
-  }));
+  const outerTranslateY = stretch.interpolate({
+    inputRange: [0.94, 1.1],
+    outputRange: [size * 0.03, -size * 0.05],
+  });
+  const outerScaleX = stretch.interpolate({ inputRange: [0.94, 1.1], outputRange: [1.03, 0.95] });
+  const rotate = sway.interpolate({ inputRange: [-1, 1], outputRange: ["-2.5deg", "3deg"] });
 
-  const coreStyle = useAnimatedStyle(() => ({
-    opacity: coreOpacity.value,
-    transform: [
-      { translateY: -(coreScale.value - 1) * size * 0.35 },
-      { scaleX: 1 + (1 - coreScale.value) * 0.5 },
-      { scaleY: coreScale.value },
-    ],
-  }));
+  const coreTranslateY = core.interpolate({
+    inputRange: [0.86, 1.22],
+    outputRange: [size * 0.05, -size * 0.08],
+  });
+  const coreScaleX = core.interpolate({ inputRange: [0.86, 1.22], outputRange: [1.07, 0.89] });
 
-  const glowStyle = useAnimatedStyle(() => ({
-    opacity: glowOpacity.value,
-    transform: [{ scale: glowScale.value }],
-  }));
+  const glowOpacity = glow.interpolate({ inputRange: [0, 1], outputRange: [0.22, 0.5] });
+  const glowScale = glow.interpolate({ inputRange: [0, 1], outputRange: [1, 1.2] });
 
   const coreSize = size * 0.62;
   const fontSize = streak > 99 ? size * 0.25 : streak > 9 ? size * 0.31 : size * 0.375;
@@ -127,26 +82,40 @@ export function StreakFlame({ streak, size = 32 }: Props) {
       {/* Warm halo */}
       <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.center]}>
         <Animated.View
-          style={[
-            {
-              width: size * 0.82,
-              height: size * 0.82,
-              borderRadius: size,
-              backgroundColor: GLOW,
-            },
-            glowStyle,
-          ]}
+          style={{
+            width: size * 0.82,
+            height: size * 0.82,
+            borderRadius: size,
+            backgroundColor: GLOW,
+            opacity: glowOpacity,
+            transform: [{ scale: glowScale }],
+          }}
         />
       </View>
 
       {/* Outer flame body */}
-      <Animated.View style={outerStyle}>
+      <Animated.View
+        style={{
+          transform: [
+            { translateY: outerTranslateY },
+            { scaleX: outerScaleX },
+            { scaleY: stretch },
+            { rotate },
+          ],
+        }}
+      >
         <Flame size={size} color={OUTER} fill={OUTER} strokeWidth={1.5} />
       </Animated.View>
 
       {/* Hot inner core, nudged into the lower body */}
       <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.center]}>
-        <Animated.View style={[{ marginTop: size * 0.2 }, coreStyle]}>
+        <Animated.View
+          style={{
+            marginTop: size * 0.2,
+            opacity: coreOpacity,
+            transform: [{ translateY: coreTranslateY }, { scaleX: coreScaleX }, { scaleY: core }],
+          }}
+        >
           <Flame size={coreSize} color={CORE} fill={CORE} strokeWidth={0} />
         </Animated.View>
       </View>
