@@ -17,7 +17,8 @@
   },
   "overrides": {
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "expo": "54.0.35"
   },
   "dependencies": {
     "@neondatabase/auth": "^0.3.0-beta",
