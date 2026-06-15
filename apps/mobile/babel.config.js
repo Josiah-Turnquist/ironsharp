@@ -6,8 +6,10 @@ module.exports = function (api) {
       "nativewind/babel",
     ],
     plugins: [
-      // react-native-reanimated/plugin must be listed last.
-      "react-native-reanimated/plugin",
+      // Worklets plugin must be listed last. Reanimated 4 moved the worklet
+      // Babel transform here from the old react-native-reanimated/plugin; using
+      // the old path silently shipped un-workletized code (a launch crash).
+      "react-native-worklets/plugin",
     ],
   };
 };
