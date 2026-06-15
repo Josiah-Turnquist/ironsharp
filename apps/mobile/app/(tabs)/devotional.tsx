@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, ChevronDown, ChevronUp, Circle } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
 import { useThemeColor } from "@/components/useThemeColor";
+import { PopIn } from "@/components/PopIn";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { useActiveDevotional, useGroups } from "@/lib/queries";
 import { useLocalDoneToday } from "@/lib/useLocalDoneToday";
@@ -106,7 +107,9 @@ export default function DevotionalHub() {
               >
                 {active.data.doneToday || localDone ? (
                   <View className="flex-row items-center gap-1">
-                    <CheckCircle2 size={15} color={primary} />
+                    <PopIn>
+                      <CheckCircle2 size={15} color={primary} />
+                    </PopIn>
                     <Text className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                       Done today
                     </Text>

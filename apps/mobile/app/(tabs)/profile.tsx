@@ -16,6 +16,7 @@ import {
   Trash2,
 } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
+import { SurveySummary } from "@/components/SurveySummary";
 import { useThemeColor } from "@/components/useThemeColor";
 import { useProfile } from "@/lib/queries";
 import { ApiClient } from "@/lib/api";
@@ -243,6 +244,9 @@ export default function ProfileScreen() {
             <Text className="text-xs text-muted-foreground">Plans completed</Text>
           </View>
         </View>
+
+        {/* Survey recap */}
+        {p ? <SurveySummary p={p} /> : null}
 
         {/* Settings rows */}
         <View className="overflow-hidden rounded-xl border border-border bg-card">

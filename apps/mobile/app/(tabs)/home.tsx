@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { BookOpen, CheckCircle2, Globe, Sun, Headphones } from "lucide-react-native";
+import { PopIn } from "@/components/PopIn";
 import { Screen } from "@/components/Screen";
 import { StreakFlame } from "@/components/StreakFlame";
 import { useThemeColor } from "@/components/useThemeColor";
@@ -110,7 +111,9 @@ export default function HomeScreen() {
           <View className="flex-row items-center gap-2 pt-1">
             {doneToday ? (
               <>
-                <CheckCircle2 size={18} color={primary} />
+                <PopIn>
+                  <CheckCircle2 size={18} color={primary} />
+                </PopIn>
                 <Text className="font-sans-medium text-base text-muted-foreground">Done for today</Text>
               </>
             ) : (
