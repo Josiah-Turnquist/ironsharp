@@ -6,6 +6,7 @@ import { Screen } from "@/components/Screen";
 import { Header } from "@/components/Header";
 import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
+import { SurveySummary } from "@/components/SurveySummary";
 import { useProfile } from "@/lib/queries";
 import { ApiClient } from "@/lib/api";
 
@@ -84,6 +85,8 @@ export default function EditProfile() {
               onPress={() => save.mutate()}
             />
           </View>
+
+          {profile.data ? <SurveySummary p={profile.data} /> : null}
         </ScrollView>
       </KeyboardAvoidingView>
     </Screen>
