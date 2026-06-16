@@ -248,8 +248,17 @@ export type Submission = {
 
 /* ---------- Endpoint helpers ---------- */
 
+/** Streamable URL for a prepared TTS clip — play via expo-audio with a Bearer header. */
+export const ttsStreamUrl = (id: string): string => `${BASE_URL}/api/tts/${id}`;
+
 export const ApiClient = {
   getProfile: () => api<{ profile: Profile }>("/api/profile"),
+  /** Generate (or reuse a cached) cloud reading; returns an id to stream. */
+  prepareTts: (text: string, opts?: { voice?: string; instructions?: string }) =>
+    api<{ id: string; cached: boolean }>("/api/tts", {
+      method: "POST",
+      body: JSON.stringify({ text, voice: opts?.voice, instructions: opts?.instructions }),
+    }),
   updateProfile: (patch: Partial<Profile> & { surveyCompleted?: boolean }) =>
     api<{ profile: Profile }>("/api/profile", {
       method: "PATCH",

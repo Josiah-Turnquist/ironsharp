@@ -17,7 +17,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowUp, BookMarked, BookOpen, Car, CheckCircle, ChevronDown, ChevronUp, Headphones, Lock, Map, Play, Trash2, Unlock } from "lucide-react-native";
+import { ArrowUp, BookMarked, BookOpen, Car, CheckCircle, ChevronDown, ChevronUp, Headphones, Lock, Map, Mic, Play, Trash2, Unlock } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/Button";
@@ -1055,6 +1055,23 @@ export default function DevotionalReader() {
                   </Text>
                   <Text className="mt-0.5 text-xs text-muted-foreground">
                     Reads the devotional aloud
+                  </Text>
+                </View>
+              </Pressable>
+
+              <Pressable
+                onPress={() => { setShowPlayMenu(false); router.push(`/guided/${planId}`); }}
+                className="flex-row items-start gap-3 border-t border-border px-4 py-3.5 active:opacity-70"
+              >
+                <View className="mt-0.5 h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                  <Mic size={16} color={primary} />
+                </View>
+                <View className="flex-1">
+                  <Text className="font-sans-semibold text-sm text-foreground">
+                    Guided (hands-free)
+                  </Text>
+                  <Text className="mt-0.5 text-xs text-muted-foreground">
+                    Reads aloud, pauses, and transcribes your spoken answers
                   </Text>
                 </View>
               </Pressable>

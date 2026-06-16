@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import * as Speech from "expo-speech";
 import {
@@ -14,6 +14,7 @@ import {
 } from "expo-audio";
 import { Screen } from "@/components/Screen";
 import { Header } from "@/components/Header";
+import { useTts } from "@/lib/useTts";
 
 /**
  * PHASE 0 smoke test — validates the three speech/audio native modules on a
@@ -30,6 +31,30 @@ export default function SpeechTest() {
 
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const player = useAudioPlayer(recUri ?? undefined);
+
+  const cloudTts = useTts();
+  const [cloudStatus, setCloudStatus] = useState("idle");
+  const hearCloud = () => {
+    setCloudStatus("speaking…");
+    cloudTts.speak(
+      "As iron sharpens iron, so one person sharpens another. Be still, and know that I am God.",
+      {
+        onDone: () =>
+          setCloudStatus(
+            cloudTts.isUsingCloud()
+              ? "done — cloud voice ✓"
+              : "done — on-device fallback (add OPENAI_API_KEY for the cloud voice)"
+          ),
+      }
+    );
+  };
+
+  // Route all audio OUT through the speaker and play even when the ringer
+  // switch is silenced — otherwise TTS and playback are inaudible. This is the
+  // fix for "TTS does nothing" and "playback doesn't work".
+  useEffect(() => {
+    setAudioModeAsync({ playsInSilentMode: true, allowsRecording: false }).catch(() => {});
+  }, []);
 
   useSpeechRecognitionEvent("result", (e) => {
     setTranscript(e.results?.[0]?.transcript ?? "");
@@ -85,12 +110,16 @@ export default function SpeechTest() {
     recorder.record();
     setTimeout(async () => {
       await recorder.stop();
+      // Switch the session back to playback so the recording comes out the
+      // speaker, not the (silent) earpiece.
+      await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: false });
       setRecUri(recorder.uri ?? null);
       setAudioStatus("recorded");
     }, 3000);
   };
 
-  const play = () => {
+  const play = async () => {
+    await setAudioModeAsync({ playsInSilentMode: true, allowsRecording: false });
     player.seekTo(0);
     player.play();
     setAudioStatus("playing");
@@ -116,6 +145,11 @@ export default function SpeechTest() {
           <DevButton label="Record 3 seconds" onPress={record} />
           <DevButton label="Play recording" onPress={play} disabled={!recUri} />
           <Status text={`status: ${audioStatus}`} />
+        </Card>
+
+        <Card title="4 · Cloud voice (OpenAI) — falls back on-device">
+          <DevButton label="Hear cloud voice" onPress={hearCloud} />
+          <Status text={`status: ${cloudStatus}`} />
         </Card>
       </ScrollView>
     </Screen>
