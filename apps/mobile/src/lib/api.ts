@@ -81,6 +81,7 @@ export type DevotionalDay = {
   dayNumber: number;
   chapter: string;
   theme: string | null;
+  passageContext: string | null;
   studyNotes: StudyNoteEntry[];
   reflection: string | null;
   reflectionQ1: string;

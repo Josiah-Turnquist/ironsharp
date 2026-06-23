@@ -45,6 +45,18 @@ TONE
 THEME (per day)
 A punchy 4–7 word phrase naming the real tension or truth of that day. Not a topic label. A provocation. Examples of the right register: "Talk to God Like He's Actually There", "What You Hunger For", "The Freedom of Being Known", "Greatness Upside Down". Wrong register: "Prayer", "Fasting", "Community".
 
+PASSAGE CONTEXT (per day) — REQUIRED on every day
+A short setup that orients the reader before they read the passage — 1–2 sentences. Where we are, who is speaking, what is happening, what is at stake. Plain and warm, like a friend saying "here's what you're walking into." NOT a summary of the verses, NOT commentary on their meaning — just enough grounding to read well. Register examples: "Jesus is on a hillside with his disciples, teaching them how to actually live — prayer, fasting, money, worry." / "A poet is meditating on what it takes to stay clean, and the answer keeps coming back to the word of God."
+
+STUDY NOTES (per day) — REQUIRED on every day
+An array of { verse_ref, note } entries that illuminate the day's passage in order. One entry per natural verse group — typically 3–6 entries depending on passage length. Cover the whole passage, in sequence.
+Each note:
+- ONE sentence only, never two. Maximum 40 words.
+- Two movements joined by an em dash: first a theological observation about what the verse reveals (about God, human nature, salvation, or the Christian life); then one application landing — what that truth means for the reader's actual life today.
+- No labels ("Theology:" / "Application:"). No questions — a note is a statement. Never summarize the verse; illuminate it. Both halves must earn each other.
+- verse_ref format matches the day's range: "v2–4", "v9–13", etc.
+Register example (Proverbs 27:17): "Iron on iron produces friction before it produces a sharper edge — if no one in your life has made you uncomfortable enough to actually change, you do not yet have the kind of friendship this verse is describing."
+
 REFLECTION (per day)
 A warm, personal reflection on the passage — written like a trusted older brother who has actually lived this, sitting across from the reader and talking to them, not teaching at them. You care about the person reading this, and that care should come through in every line. You open up the text only as much as a real friend would in conversation — enough to let it breathe, never so much that it turns into a lecture. Heavily weighted toward what this means for the person's actual life over theological exposition.
 
@@ -115,6 +127,8 @@ FINAL VERIFICATION (run mentally before outputting each day)
 8. Do both questions sound like a caring friend asking, not a worksheet interrogating? If they feel clinical — rewrite them.
 9. Does the prayerPrompt invite actual conversation with God about something specific? If no — rewrite it.
 10. Are there exactly 2 reflection questions? If no — fix it.
+11. Does every day have a passageContext (1–2 sentence orienting setup, not a summary)? If no — fix it.
+12. Does every day have studyNotes covering the passage in order — each one sentence, ≤40 words, observation joined to application by an em dash? If no — fix it.
 
 OUTPUT FORMAT
 Respond with ONLY valid JSON. No markdown fences, no code blocks, no commentary, no text before or after the JSON. If your output is not parseable as JSON it will fail.
@@ -128,6 +142,10 @@ Respond with ONLY valid JSON. No markdown fences, no code blocks, no commentary,
       "dayNumber": 1,
       "chapter": "Book Chapter:verses",
       "theme": "Short punchy theme phrase",
+      "passageContext": "1–2 sentence orienting setup for the passage...",
+      "studyNotes": [
+        { "verse_ref": "v2–4", "note": "One-sentence observation — em dash — application landing." }
+      ],
       "reflection": "The pastoral reflection on the passage (9–12 sentences)...",
       "reflectionQ1": "The diagnostic question...",
       "reflectionQ2": "The uncomfortable mirror question...",
@@ -315,7 +333,12 @@ Generate exactly ${days} days. Each day should progress logically through ${inpu
 
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-6",
-      max_tokens: 8000,
+      // Each day now also carries passageContext + studyNotes, which roughly
+      // doubles per-day output. Scale the budget with the day count so a 30-day
+      // plan isn't truncated (truncated JSON fails the parse and the whole
+      // generation retries). ~1.3k tokens/day + headroom, capped under the model's
+      // 64k output ceiling.
+      max_tokens: Math.min(48000, 4000 + days * 1300),
       system: [
         {
           type: "text",
@@ -328,11 +351,22 @@ Generate exactly ${days} days. Each day should progress logically through ${inpu
 
     const raw = response.content[0]?.type === "text" ? response.content[0].text.trim() : "";
 
+    type StudyNote = { verse_ref: string; note: string };
     let planData: {
       title: string;
       subtitle: string;
       description: string;
-      days: { dayNumber: number; chapter: string; theme: string; reflection: string; reflectionQ1: string; reflectionQ2: string; prayerPrompt: string }[];
+      days: {
+        dayNumber: number;
+        chapter: string;
+        theme: string;
+        passageContext: string;
+        studyNotes: StudyNote[];
+        reflection: string;
+        reflectionQ1: string;
+        reflectionQ2: string;
+        prayerPrompt: string;
+      }[];
     };
 
     try {
@@ -340,6 +374,23 @@ Generate exactly ${days} days. Each day should progress logically through ${inpu
     } catch {
       console.error("Claude returned non-JSON:", raw.slice(0, 500));
       return c.json({ error: "Generation failed — please try again." }, 500);
+    }
+
+    // Every day must ship with passage context AND study notes — no half-populated
+    // plans. If the model dropped either on any day, fail rather than persist a gap.
+    const missing = (planData.days ?? []).filter(
+      (d) =>
+        !d.passageContext?.trim() ||
+        !Array.isArray(d.studyNotes) ||
+        d.studyNotes.length === 0 ||
+        d.studyNotes.some((n) => !n?.verse_ref?.trim() || !n?.note?.trim())
+    );
+    if (missing.length > 0) {
+      console.error(
+        "Generation missing passageContext/studyNotes on days:",
+        missing.map((d) => d.dayNumber).join(", ")
+      );
+      return c.json({ error: "Generation incomplete — please try again." }, 500);
     }
 
     const inserted = await db.transaction(async (tx) => {
@@ -366,6 +417,8 @@ Generate exactly ${days} days. Each day should progress logically through ${inpu
           dayNumber: d.dayNumber,
           chapter: d.chapter,
           theme: d.theme,
+          passageContext: d.passageContext,
+          studyNotes: d.studyNotes,
           reflection: d.reflection ?? null,
           reflectionQ1: d.reflectionQ1,
           reflectionQ2: d.reflectionQ2,

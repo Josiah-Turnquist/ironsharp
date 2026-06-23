@@ -17,7 +17,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 1,
         "chapter": "Matthew 6:5–13",
         "theme": "Talk to God like He's actually there",
-        "studyNotes": [],
+        "passageContext": "Jesus is teaching his disciples how to actually pray — pulling it out of performance and religious show and back into a real conversation with a Father who already sees.",
+        "studyNotes": [
+          { "verse_ref": "v5–6", "note": "Jesus warns against prayer as performance — the moment an audience enters, prayer stops being a conversation with God and becomes a show God was never the point of." },
+          { "verse_ref": "v7–8", "note": "Your Father knows what you need before you ask — prayer isn't informing a distant God or wearing him down with words, it's trusting one who is already paying attention." },
+          { "verse_ref": "v9–13", "note": "The Lord's Prayer puts God's name and kingdom before your own needs — the order you pray in quietly reveals what you actually trust to run your life." }
+        ],
         "reflection": null,
         "reflectionQ1": "Where in your life right now are you going through the motions of prayer without actually expecting God to respond?",
         "reflectionQ2": "Set a timer for 10 minutes right now and pray through each line of the Lord's Prayer slowly — not as a recitation, but as an actual conversation.",
@@ -27,7 +32,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 2,
         "chapter": "Psalm 119:9–16",
         "theme": "The Word that changes you",
-        "studyNotes": [],
+        "passageContext": "A poet is meditating on what it actually takes to stay clean in a world that pulls you everywhere — and the answer keeps coming back to the word of God.",
+        "studyNotes": [
+          { "verse_ref": "v9–11", "note": "Hiding God's word in your heart is not poetic decoration but the actual mechanism of change — Scripture rewrites your desire from the inside, where willpower alone never reaches." },
+          { "verse_ref": "v12–13", "note": "The psalmist asks to be taught and then speaks what he has learned aloud — truth you never put into words or share stays theoretical and slowly fades." },
+          { "verse_ref": "v14–16", "note": "He delights in God's word like great riches — Scripture only forms you when it becomes something you treasure, not just a duty you discharge." }
+        ],
         "reflection": null,
         "reflectionQ1": "If you are honest about your relationship with Scripture right now — are you reading it to check a box or actually expecting it to say something to you?",
         "reflectionQ2": "Pick one verse from today's passage and write it somewhere you will see it before this day is over.",
@@ -37,7 +47,11 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 3,
         "chapter": "Matthew 6:16–18",
         "theme": "What you hunger for",
-        "studyNotes": [],
+        "passageContext": "Jesus turns from prayer to fasting — not as a religious stunt to be seen, but as a way of training your hunger to point back toward God.",
+        "studyNotes": [
+          { "verse_ref": "v16", "note": "Fasting done to be noticed already has its full reward — the applause you were after, and nothing of the God it was supposed to be about." },
+          { "verse_ref": "v17–18", "note": "Fasting is a reorientation of hunger, not a transaction to impress God — going without trains your desire toward him instead of the thing you keep reaching for." }
+        ],
         "reflection": null,
         "reflectionQ1": "What is the thing you reach for first when you feel anxious, bored, or stressed — and what would it reveal about your actual god if you went without it for a day?",
         "reflectionQ2": "What is the one thing you reach for when you are stressed — can you go without it today?",
@@ -47,7 +61,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 4,
         "chapter": "John 4:19–24",
         "theme": "Spirit and truth",
-        "studyNotes": [],
+        "passageContext": "A Samaritan woman tries to pull Jesus into an old argument about the right place to worship, and he lifts the whole question onto different ground entirely.",
+        "studyNotes": [
+          { "verse_ref": "v19–20", "note": "The woman reaches for a geography debate to avoid the personal — we still hide behind questions about church style and place when God is after something far more personal than location." },
+          { "verse_ref": "v21–22", "note": "Jesus does not flatten all worship as equal — truth still matters, but he is moving the question from where you worship to who you worship and how." },
+          { "verse_ref": "v23–24", "note": "God seeks worshipers who worship in spirit and truth — real worship is not about the building, the music, or the performance, but the honest condition of the heart bringing it." }
+        ],
         "reflection": null,
         "reflectionQ1": "What does your worship look like when no one is watching — when there is no music, no crowd, no service — and does that private version match what you perform on Sunday?",
         "reflectionQ2": "Before your next moment of worship, spend five minutes being honest with God about exactly where you are right now.",
@@ -57,7 +76,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 5,
         "chapter": "Mark 1:35–39",
         "theme": "Before the day owns you",
-        "studyNotes": [],
+        "passageContext": "At the height of his popularity, with everyone wanting a piece of him, Jesus gets up before dawn and goes to be alone with his Father.",
+        "studyNotes": [
+          { "verse_ref": "v35", "note": "Jesus, with more demands on him than you will ever have, still made solitude with God non-negotiable — if he needed it, the idea that you are too busy doesn't hold." },
+          { "verse_ref": "v36–37", "note": "Everyone is looking for you is the pressure of a hundred legitimate needs — and time with the Father is what lets you carry that pressure without being crushed by it." },
+          { "verse_ref": "v38–39", "note": "Jesus leaves the crowd that wants him to go where the Father is sending him — clarity about your purpose is forged in the quiet before the noise, not in the middle of it." }
+        ],
         "reflection": null,
         "reflectionQ1": "Where in your schedule is there space for God to actually speak to you — or has your life become so full that the only time you are quiet is when you are asleep?",
         "reflectionQ2": "Can you give God 20 minutes tomorrow morning before your phone — what would have to change tonight to make that happen?",
@@ -67,7 +91,11 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 6,
         "chapter": "Psalm 46:10",
         "theme": "Be still and know",
-        "studyNotes": [],
+        "passageContext": "In the middle of a psalm about chaos, war, and the earth giving way, God speaks one short, steadying command.",
+        "studyNotes": [
+          { "verse_ref": "v10a", "note": "Be still is not a suggestion to relax but a command to stop striving — the stillness God calls you to is the deliberate act of taking your hands off what you've been white-knuckling." },
+          { "verse_ref": "v10b", "note": "Know that I am God reorders everything — you can be still precisely because the one running the universe is not you, and he will be exalted whether or not you hold it together." }
+        ],
         "reflection": null,
         "reflectionQ1": "What are you afraid would surface if you actually stopped the noise and sat in silence — and what does that fear tell you about what you are using activity to avoid?",
         "reflectionQ2": "Identify one source of noise in your life and remove it for the rest of today.",
@@ -77,7 +105,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 7,
         "chapter": "Mark 2:23–28",
         "theme": "Rest as an act of trust",
-        "studyNotes": [],
+        "passageContext": "The religious leaders attack Jesus' disciples for picking grain on the Sabbath, and Jesus redefines what rest was always meant to be.",
+        "studyNotes": [
+          { "verse_ref": "v23–24", "note": "The Pharisees turned rest into another rule to enforce — religion always tends to take a gift God gave for your good and weaponize it into a burden." },
+          { "verse_ref": "v25–26", "note": "Jesus points to David eating the consecrated bread — God's commands were always for the flourishing of people, never a cage built around them." },
+          { "verse_ref": "v27–28", "note": "The Sabbath was made for man, not man for the Sabbath — rest is an act of trust, declaring the world keeps turning when you stop because God, not you, sustains it." }
+        ],
         "reflection": null,
         "reflectionQ1": "When was the last time you truly rested — not scrolled, not caught up, not been productive — and what does your inability to stop tell you about where you actually put your trust?",
         "reflectionQ2": "What is one thing on your schedule today that God can handle without you — can you actually let it go?",
@@ -87,7 +120,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 8,
         "chapter": "1 John 1:8–10",
         "theme": "The freedom of being known",
-        "studyNotes": [],
+        "passageContext": "John writes to people tempted to pretend they're fine, and offers the strange freedom that comes from finally stopping the act.",
+        "studyNotes": [
+          { "verse_ref": "v8", "note": "Claiming to have no sin doesn't make you clean, it makes you self-deceived — the pretending that looks like strength is actually the thing keeping you sick." },
+          { "verse_ref": "v9", "note": "Confession isn't groveling to an angry God but bringing the truth to a faithful one who forgives — the relief you are afraid to reach for is on the other side of honesty." },
+          { "verse_ref": "v10", "note": "Calling God a liar by denying your sin closes the only door to grace — you cannot be forgiven for what you refuse to admit you've done." }
+        ],
         "reflection": null,
         "reflectionQ1": "What is the thing you would be most ashamed for God to see clearly right now — and does the fact that it is still in the dark suggest you do not actually believe 1 John 1:9?",
         "reflectionQ2": "Confess one specific thing right now — not a category, the actual thing by name — and sit with verse 9 until you believe it.",
@@ -97,7 +135,11 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 9,
         "chapter": "Mark 10:42–45",
         "theme": "Greatness upside down",
-        "studyNotes": [],
+        "passageContext": "James and John just asked for the best seats, and Jesus dismantles the whole idea of greatness they're chasing.",
+        "studyNotes": [
+          { "verse_ref": "v42–44", "note": "The world climbs over people to lead, but Jesus says greatness in his kingdom runs the other direction — down, toward service, toward the people you could easily ignore." },
+          { "verse_ref": "v45", "note": "The Son of Man came not to be served but to serve and give his life — the measure of your maturity is not who serves you but who you are willing to spend yourself for." }
+        ],
         "reflection": null,
         "reflectionQ1": "Where in your relationships right now are you waiting to be served, recognized, or appreciated — and what would it look like to flip that expectation this week?",
         "reflectionQ2": "Who in your life could use help today — what is one thing you can do for them without telling anyone?",
@@ -107,7 +149,11 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 10,
         "chapter": "2 Corinthians 9:6–8",
         "theme": "You cannot outgive God",
-        "studyNotes": [],
+        "passageContext": "Paul is encouraging a generous offering, and he addresses the fear underneath every act of giving — that you'll end up with less.",
+        "studyNotes": [
+          { "verse_ref": "v6–7", "note": "God loves a cheerful giver, not a cornered one — generosity given under pressure or guilt misses the point, because he is after the posture of your heart, not just the size of the gift." },
+          { "verse_ref": "v8", "note": "God is able to make all grace abound to you — giving is an act of trust that the one you obey is also the one supplying you, so you can be generous without fear of running dry." }
+        ],
         "reflection": null,
         "reflectionQ1": "If you are honest about your giving right now — is it generous or is it what you can spare after everything else — and what does that ratio say about where your security actually is?",
         "reflectionQ2": "What is one thing you can give today that will actually cost you something?",
@@ -117,7 +163,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 11,
         "chapter": "Acts 2:42–47",
         "theme": "You were not made to do this alone",
-        "studyNotes": [],
+        "passageContext": "Luke describes the very first church — what people did when the gospel actually took hold of a whole community.",
+        "studyNotes": [
+          { "verse_ref": "v42–43", "note": "The early church devoted themselves to teaching, fellowship, breaking bread, and prayer — faith was never a solo pursuit but a shared life held together by ordinary, repeated practices." },
+          { "verse_ref": "v44–45", "note": "They sold possessions to meet each other's needs — real community costs you something tangible, because love that never touches your wallet or your calendar isn't love yet." },
+          { "verse_ref": "v46–47", "note": "They met daily with glad and sincere hearts — the joy that drew outsiders in wasn't a program but the visible warmth of people who actually belonged to each other." }
+        ],
         "reflection": null,
         "reflectionQ1": "Do you have the kind of Christian community described in Acts 2 — people who know your actual life and not just your Sunday version — and if not, what has kept you from pursuing it?",
         "reflectionQ2": "Who is one person from your church or faith community you have been meaning to connect with — reach out to them today.",
@@ -127,7 +178,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 12,
         "chapter": "Matthew 6:19–24",
         "theme": "Where your treasure is",
-        "studyNotes": [],
+        "passageContext": "Jesus talks about money not as a budgeting tip but as a window into what your heart actually worships.",
+        "studyNotes": [
+          { "verse_ref": "v19–21", "note": "Where your treasure is, there your heart will be — what you spend your money and energy protecting is an honest map of what you actually love, no matter what you say." },
+          { "verse_ref": "v22–23", "note": "The eye as the lamp of the body means what you fix your attention on fills your whole life with light or darkness — you slowly become what you keep looking at." },
+          { "verse_ref": "v24", "note": "You cannot serve God and money because divided loyalty is not a compromise but a collapse — eventually one master wins, and the one you feed is the one you serve." }
+        ],
         "reflection": null,
         "reflectionQ1": "Where in your life right now are you serving money instead of God — not dramatically, but in the small decisions about what you buy, what you keep, and what you will not give up?",
         "reflectionQ2": "What is one thing you own or spend money on that has more control over you than it should — name it.",
@@ -137,7 +193,11 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 13,
         "chapter": "James 4:7–10",
         "theme": "Humble yourself or be humbled",
-        "studyNotes": [],
+        "passageContext": "James gives a string of rapid commands for anyone tired of fighting God and finally ready to come home.",
+        "studyNotes": [
+          { "verse_ref": "v7–8", "note": "Submit, resist, draw near — and the promise is that the devil flees and God draws near to you, because the first move toward God is always met by his move toward you." },
+          { "verse_ref": "v9–10", "note": "Humble yourself before the Lord and he will lift you up — the way up in God's kingdom is always down, and the grasping for status he asks you to release is the very thing weighing you down." }
+        ],
         "reflection": null,
         "reflectionQ1": "Where in your life right now are you running your own kingdom instead of submitting to God's — what decision, relationship, or habit are you keeping out of his reach?",
         "reflectionQ2": "What is one decision you are currently making without God — bring it to Him right now and ask what He would do.",
@@ -147,7 +207,11 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 14,
         "chapter": "Matthew 25:14–21",
         "theme": "Do something with what you have been given",
-        "studyNotes": [],
+        "passageContext": "Jesus tells a parable about a master entrusting his wealth to servants before a long journey — and what they did with what was never theirs.",
+        "studyNotes": [
+          { "verse_ref": "v14–18", "note": "Each servant was given according to ability and expected to act — God does not measure you against anyone else, only against what he actually placed in your hands." },
+          { "verse_ref": "v19–21", "note": "Well done is spoken to faithfulness, not to size of return — the servant who used a little heard the same praise, because God rewards what you did with what you had, not what you wished you had." }
+        ],
         "reflection": null,
         "reflectionQ1": "What has God given you — gifts, opportunities, relationships, resources — that you have buried because you were afraid, comfortable, or waiting for better conditions?",
         "reflectionQ2": "What is one thing God has put in your hands that you have not been faithful with — what is one step you can take today?",
@@ -168,7 +232,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 1,
         "chapter": "Revelation 1:9-20",
         "theme": "Jesus Is Not Who You Think He Is",
-        "studyNotes": [],
+        "passageContext": "John, exiled on a prison island, turns to see who is speaking and meets a vision of Jesus so overwhelming he falls down like a dead man — the same Jesus, no longer veiled.",
+        "studyNotes": [
+          { "verse_ref": "v9–11", "note": "John shares in suffering and the kingdom in the same breath — the place of exile and pain is exactly where the clearest vision of Christ comes, not in spite of it." },
+          { "verse_ref": "v12–16", "note": "Blazing eyes, feet like bronze, a voice like rushing water — every image strips away the tame, manageable Jesus you've grown comfortable with and shows you the one heaven actually sees." },
+          { "verse_ref": "v17–20", "note": "Jesus lays his hand on the terrified John and says do not be afraid — the same holiness that flattens you is the hand that lifts you, because he holds the keys to death itself." }
+        ],
         "reflection": "John is not writing Revelation from a comfortable study. He is on the island of Patmos — a Roman penal colony — writing to churches being persecuted. The vision he receives in chapter 1 is not given to answer questions about the future. It is given to answer a question about the present: who is in charge? The Jesus John sees is not the gentle shepherd of popular imagination. His eyes are like flames of fire, his feet are like burnished bronze, his voice is like many waters, and his face is like the sun shining in full strength. John falls at his feet as though dead. This is the same Jesus who held children and wept at tombs — but this is his full, unveiled glory, and it is terrifying. What Revelation is doing from the very beginning is recalibrating your view of Jesus. The Jesus who is your savior and friend is also the one who holds the keys to death and Hades, who walks among the lampstands, who speaks with the authority of the first and the last. If your picture of Jesus is too small to produce awe, Revelation 1 is the correction. The churches being persecuted needed to know that the Jesus they were dying for was actually this — and so do you.",
         "reflectionQ1": "If you are honest about the Jesus you actually think about during the week — not the one you confess, but the one you relate to — how small or manageable have you made him, and what has that small Jesus cost you in courage, reverence, and hope?",
         "reflectionQ2": "Revelation 1 gives a picture of Jesus that produces prostration, not casual conversation — name the specific area of your life where you are treating Jesus as an advisor you can take or leave rather than the Lord of heaven and earth, and what it would look like to change that today.",
@@ -178,7 +247,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 2,
         "chapter": "Revelation 2:1-7",
         "theme": "You Left the Thing That Mattered Most",
-        "studyNotes": [],
+        "passageContext": "Jesus dictates a letter to a busy, hardworking church that has kept all its activity but quietly lost the love underneath it.",
+        "studyNotes": [
+          { "verse_ref": "v1–3", "note": "Jesus commends real labor, endurance, and discernment — proof that a life can be full of genuine Christian activity and still be missing the one thing it was all for." },
+          { "verse_ref": "v4–5", "note": "Losing your first love isn't a feeling you misplaced but a person you stopped treasuring — and the call is not to try harder but to remember, repent, and return." },
+          { "verse_ref": "v6–7", "note": "The tree of life is promised to the one who conquers — the way back to love is not nostalgia but a decision you make today about where your affection actually goes." }
+        ],
         "reflection": "The letter to Ephesus is a study in the difference between orthodoxy and love. Jesus opens by commending this church for almost everything: they work hard, they persevere, they test false teachers and reject them, they endure patiently for his name's sake. By almost any external measure, this is a healthy church. And then the blow: \"But I have this against you — you have abandoned the love you had at first.\" What Jesus is identifying is not a doctrinal failure or a moral collapse. It is a heart condition that has hardened quietly, slowly, over years of doing the right things for the wrong reasons. The Ephesian church kept all the forms of faithfulness but lost the first cause — the love for Jesus that was the original engine of all of it. This is the most dangerous kind of spiritual decay because it is invisible from the outside. You can be completely correct and completely cold. You can serve faithfully and feel nothing. You can defend the faith and have no fire for the one the faith is about. Jesus does not congratulate them on their doctrinal precision — he calls it falling. And the remedy he gives is three steps: remember, repent, do the first works again.",
         "reflectionQ1": "What has your love for Jesus actually looked like in the last thirty days — not your activity for him, not your knowledge about him, but the genuine warmth and desire for him as a person — and what does an honest answer reveal about where you are?",
         "reflectionQ2": "The Ephesian church kept all the activity but lost the love that made it worth doing — name the specific religious activity in your life right now that has become routine without affection, and ask what it would look like to do it from love again.",
@@ -188,7 +262,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 3,
         "chapter": "Revelation 3:14-22",
         "theme": "Comfortable Enough to Not Need God",
-        "studyNotes": [],
+        "passageContext": "Jesus addresses a wealthy, self-sufficient church that thinks it has everything and cannot see that it has nothing that matters.",
+        "studyNotes": [
+          { "verse_ref": "v14–17", "note": "Lukewarm isn't halfway devoted but nauseating to Jesus — the real danger is feeling rich and needing nothing while being, in his eyes, poor, blind, and naked." },
+          { "verse_ref": "v18–19", "note": "Jesus rebukes because he loves, not because he is done — and the comfort you are protecting may be the very thing keeping you from the gold refined in fire he offers." },
+          { "verse_ref": "v20–22", "note": "The famous image of Jesus knocking is spoken to the church, not to outsiders — the self-sufficient life has shut him outside its own door, and he is still asking to come in." }
+        ],
         "reflection": "The letter to Laodicea is the most uncomfortable of the seven letters because it is the most contemporary. Laodicea is the wealthiest city in the region, and the church mirrors its city: they lack nothing materially, and they know it. Jesus' diagnosis is devastating — \"You say 'I am rich, I have prospered, I need nothing,' not knowing that you are wretched, pitiable, poor, blind, and naked.\" The tragedy here is not wickedness. It is comfort that has become self-sufficiency. When you have everything you need, the urgency of prayer atrophies. When your life is managed and stable, the desperate need for God fades into background noise. The lukewarm temperature Jesus describes is not the temperature of someone who hates him — it is the temperature of someone who is content enough with life as it is that they have no real hunger for anything more. And Jesus' response is striking: he is nauseous. Not angry. Nauseous. He then offers gold refined in fire, white garments, and eye salve — the things the church thinks it already has but actually lacks. And at the end of the most scathing letter in Revelation, he stands at the door and knocks — still pursuing, still offering, still there.",
         "reflectionQ1": "Where in your life has comfort, stability, or success quietly replaced your urgency for God — and what has that slow cooling cost you in the depth and reality of your faith?",
         "reflectionQ2": "Jesus says the Laodicean church has everything and lacks everything that matters — name the specific area of your life where you are living in practical self-sufficiency, making decisions and managing your life as if you don't actually need God's involvement.",
@@ -198,7 +277,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 4,
         "chapter": "Revelation 4:1-11",
         "theme": "There Is a Throne, and You Are Not On It",
-        "studyNotes": [],
+        "passageContext": "John is caught up into heaven itself and sees the one thing at the center of all reality — a throne, occupied, surrounded by endless worship.",
+        "studyNotes": [
+          { "verse_ref": "v1–3", "note": "The first thing John sees in heaven is not streets of gold but a throne — reality is not random or up for grabs, it is governed, and someone is seated at the center of it." },
+          { "verse_ref": "v4–8", "note": "The living creatures never stop saying holy — worship in heaven is not an event that ends but the permanent response of everything that finally sees God for who he is." },
+          { "verse_ref": "v9–11", "note": "The elders cast their crowns down because everything they hold was given — the only fitting response to the throne is to lay your own small kingdom at the feet of the one who made you." }
+        ],
         "reflection": "Revelation 4 is the axis of the whole book. Everything before it and after it is understood from this vantage point: there is a throne at the center of the universe, and someone is sitting on it. John is invited through an open door in heaven and sees the one on the throne — described in jasper and carnelian, surrounded by a rainbow, attended by living creatures who never stop saying \"Holy, holy, holy is the Lord God Almighty, who was and is and is to come.\" The twenty-four elders cast their crowns before the throne and declare that he is worthy of all glory and honor and power, because he created all things. What this chapter does for the embattled churches of Asia Minor is give them the only perspective that stabilizes everything: the world that looks like Rome is in charge is actually a world in which God is on the throne. The suffering is real. The persecution is real. But the throne is more real. For anyone in any kind of distress or confusion about whether God is in control, Revelation 4 is the answer. Not an explanation of why things are the way they are, but a revelation of who is ultimately holding everything together.",
         "reflectionQ1": "Where in your life right now are you living as if there is no throne — making decisions, carrying anxiety, or operating in fear as though the outcomes depend entirely on you — and what has that weight done to you?",
         "reflectionQ2": "Revelation 4 says the throne is the center of the universe and everything flows from it — name the specific situation in your life where you are acting as if God is not in control, and what it would look like to actually bow before the one on the throne in that situation today.",
@@ -208,7 +292,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 5,
         "chapter": "Revelation 5:6-14",
         "theme": "The Lamb Still Has the Scars",
-        "studyNotes": [],
+        "passageContext": "Heaven searches for someone worthy to open the scroll of history, and the answer is a Lamb who looks as if it had been slain — power that wins by being wounded.",
+        "studyNotes": [
+          { "verse_ref": "v6–8", "note": "The Lamb standing as though slain carries his wounds into glory — your suffering is not erased in heaven but redeemed, the scars themselves becoming proof of his worth." },
+          { "verse_ref": "v9–10", "note": "He is called worthy because of his sacrifice, not despite it — and the ransom he paid was not generic but specific, people from every tribe and tongue, including you by name." },
+          { "verse_ref": "v11–14", "note": "Every creature in existence ends up worshiping the Lamb — the cross that looked like defeat is what the entire universe will one day recognize as the center of all glory." }
+        ],
         "reflection": "Chapter 5 begins with a crisis: there is a scroll in the right hand of God, sealed with seven seals, and no one is found worthy to open it. John weeps loudly. And then one of the elders tells him to stop weeping — the Lion of the tribe of Judah has conquered and can open the scroll. John turns to see the Lion, and what he sees instead is a Lamb, standing as though it had been slain. The Lamb has seven horns and seven eyes — symbols of complete power and complete knowledge. The most powerful being in the universe, the one who is worthy to open the book of history, is a slain Lamb. This is the central image of Revelation, and it reframes everything: the way God exercises power in the world is through sacrifice, not coercion. The one on the throne rules through the wounds, not in spite of them. The scars are still there — Jesus did not leave the incarnation behind. He carried it to the throne of heaven. What this means for anyone in suffering is that the one who governs the universe is not a distant power divorced from pain. He is a Lamb who was killed and is alive — and he carries the marks to prove that he has been where you are.",
         "reflectionQ1": "Where have you been treating the suffering or difficulty in your life as evidence that God is absent or indifferent — and what would it mean for your trust in him if you actually believed that the one on the throne carries wounds?",
         "reflectionQ2": "The Lamb is worthy because of his sacrifice, not despite it — name the specific suffering or loss in your life that you have been treating as God's abandonment, and ask what it would mean to bring it to a God who was also slain and is alive.",
@@ -218,7 +307,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 6,
         "chapter": "Revelation 7:9-17",
         "theme": "This Is What You Are Part Of",
-        "studyNotes": [],
+        "passageContext": "After the chaos of the seals, John is shown the end of the story — a countless multitude from every nation, the church complete and triumphant before the throne.",
+        "studyNotes": [
+          { "verse_ref": "v9–10", "note": "The multitude is too large to count and drawn from every nation — your faith was never meant to be a private, solitary thing but your place in something vast and global." },
+          { "verse_ref": "v11–12", "note": "Salvation belongs to God and the Lamb — the song of the redeemed gives every ounce of credit away, because no one in that crowd is standing there by their own doing." },
+          { "verse_ref": "v13–17", "note": "These came out of great tribulation with robes washed white — the suffering you are in now is not the end of your story but the road into the place where God wipes every tear." }
+        ],
         "reflection": "Revelation 7 pulls back the camera to an almost incomprehensible scale. John sees a great multitude that no one could number, from every nation, tribe, people, and language, standing before the throne and before the Lamb, clothed in white, crying out \"Salvation belongs to our God who sits on the throne, and to the Lamb.\" This is the final gathering — the completed church in its full global and historical reality. What John is being shown is the thing that your local congregation, your small group, your solitary faith is part of. You are not an isolated religious individual making your way through life. You are a small visible portion of an innumerable multitude that spans every culture and every century and is converging on a single throne. The elder explains that these are the ones coming out of the great tribulation, who have washed their robes in the blood of the Lamb. They came through something. The white robes are not the uniform of people who had easy lives — they are the garments of those who held on. What this scene does is locate your struggle in the largest possible context, not to minimize it, but to show you where it ends.",
         "reflectionQ1": "How much does the global and eternal reality of the church actually shape how you think about your faith day to day — and what does it say about the smallness of your vision that your struggles often feel like they are happening in isolation?",
         "reflectionQ2": "Revelation 7 shows the church as a vast, triumphant multitude from every nation — but you are living as if your faith is a private personal matter. Name one specific way you are keeping your faith contained to yourself when it was meant to be part of something much larger.",
@@ -228,7 +322,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 7,
         "chapter": "Revelation 21:1-7",
         "theme": "Everything Broken Gets Fixed",
-        "studyNotes": [],
+        "passageContext": "John sees the final scene of the whole Bible — not believers escaping to heaven, but heaven coming down, and God making everything new.",
+        "studyNotes": [
+          { "verse_ref": "v1–4", "note": "God does not discard the broken world but renews it and comes down to dwell with people — and the thing he personally does is wipe away tears, so your specific grief is not beneath his reach." },
+          { "verse_ref": "v5–6", "note": "Behold, I am making all things new is spoken from the throne as already certain — the promise is not that pain never happened but that it never gets the final word." },
+          { "verse_ref": "v7", "note": "The one who conquers inherits all of this as a son or daughter — the whole story ends not in a reward you earned but in a family you were brought into." }
+        ],
         "reflection": "The final two chapters of Revelation are not primarily about heaven as an escape destination. They are about a new creation — a new heaven and a new earth, with the new Jerusalem coming down out of heaven. The movement is not humans going up to God. It is God coming down to humanity. The dwelling of God is with man. He will dwell with them. That is the whole story of the Bible arriving at its final page — Emmanuel, God with us, as a permanent and irreversible reality. The specific promises in this passage are worth reading slowly: God will wipe every tear from their eyes. Death will be no more. Mourning and crying and pain will be no more. These are not metaphors for emotional improvement. They are the undoing of everything the fall introduced into creation. Everything that has been broken — in the world, in your body, in your relationships, in the things you grieve — is on a trajectory toward restoration. The one on the throne says \"Behold, I am making all things new.\" Not all new things. All things new. The same creation, healed. The same history, redeemed. This is the direction everything is headed — and knowing that changes how you hold everything in between.",
         "reflectionQ1": "What are you grieving right now — a loss, a broken relationship, a physical reality, a dream that didn't survive — and what does the fact that you have not brought it to this promise yet tell you about how much you actually believe it?",
         "reflectionQ2": "Revelation 21 says God will wipe every tear — which means the specific thing you are grieving right now is not outside his reach. Name it plainly, and ask what it would mean to hold your grief with the knowledge that it does not have the final word.",
@@ -249,70 +348,105 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 1,
         "chapter": "James 1:2-8",
         "theme": "Trials Are Doing Something to You",
-        "studyNotes": [],
+        "passageContext": "James opens his letter to believers scattered and worn thin by hard circumstances — and the first thing he tells them is that the trial they're in isn't proof that God walked away.",
+        "studyNotes": [
+          { "verse_ref": "v2–4", "note": "Trials get called joy not because pain is good but because it produces something comfort never could — the steadiness you want most is forged in the season you'd most like to skip." },
+          { "verse_ref": "v5–6", "note": "When you can't tell what God is doing, he doesn't shame your confusion — he invites you to ask for wisdom, because the God testing you is generous enough to help you read the test." },
+          { "verse_ref": "v7–8", "note": "The double-minded person receives nothing not because God withholds, but because a heart half-trusting and half-braced for disappointment can't lean its weight on what it won't believe." }
+        ],
         "reflection": "Nobody counts it joy when life falls apart, and James knows that — he isn't writing to people having a good week. He's writing to people who've been scattered, pushed around, and worn thin, and the first thing he tells them is that the hard thing they're in isn't proof that God walked away. It's actually doing something. He calls it testing — not the cruel kind, but the kind that shows you what's really holding you up. I know that's hard to hear when you're inside it. When you're in the middle of a trial you don't want meaning, you want it to stop. But here's what I don't want you to miss: the thing that's breaking you might be the same thing forming you, and James says you can simply ask God for the wisdom to tell the difference. He even names the trap — being double-minded, half-believing God is good when things go wrong, tossed around like a wave. That instability, not the trial itself, is the real danger. So if you're tired right now, you're not failing. You're being made into someone who can stand.",
-        "reflectionQ1": "When you think about the trial you're carrying right now — or the one you just came through — what has it quietly shown you about where your trust actually sits the moment things stop going your way?",
-        "reflectionQ2": "James says the hard thing is meant to grow steadfastness in you, but if you're honest, you've mostly been trying to get out of it as fast as you can. Name the trial you're actually in, and sit with this: what might God be forming in you that you'll walk right past if you only pray for the exit?",
+        "reflectionQ1": "When the trial you're in right now stopped going your way, where did your trust actually run to?",
+        "reflectionQ2": "James says the trial is forming something in you. Name the one you're in, and today ask God what he's building instead of only praying for the exit.",
         "prayerPrompt": "Bring your current trial to God by name — not asking for escape, but asking for the wisdom James promises to those who ask: the ability to see what God is doing in this, and the steadfastness to let him do it."
       },
       {
         "dayNumber": 2,
         "chapter": "James 1:19-27",
         "theme": "Hearing Without Doing Is Self-Deception",
-        "studyNotes": [],
+        "passageContext": "James writes to people who love hearing the truth — and warns them that knowing it without living it is a quieter, more dangerous kind of self-deception.",
+        "studyNotes": [
+          { "verse_ref": "v19–21", "note": "Quick to listen and slow to anger isn't politeness — it's the soil truth grows in, because a heart always defending and reacting never actually receives the word planted in it." },
+          { "verse_ref": "v22–25", "note": "The man who forgets his own face in the mirror is anyone who hears exactly what needs to change and walks away unchanged — Scripture was never meant to inform you, but to move you." },
+          { "verse_ref": "v26–27", "note": "Real religion is measured not by what you believe about God but by whether it reaches your tongue and the people no one else is helping — faith that changes nothing visible was never alive." }
+        ],
         "reflection": "You can know a lot about the Bible and still not be changed by it — and James says that's more dangerous than not knowing at all. He paints a picture you've probably lived: a guy looks in the mirror, sees exactly what needs attention, then walks away and forgets the whole thing. That's what it's like, he says, to hear the truth and do nothing with it. Not because you didn't understand it — because you let it slide right off. I think most of us are better at hearing than we'd admit and worse at doing than we'd like to confess. James isn't trying to shame you here; he's trying to wake you up before another good word goes in one ear and straight past your life. The gap between what you know and how you live usually isn't a mystery you can't solve. It's one specific thing you've been avoiding. He even says it plainly — a faith that never moves your hands toward the hurting or softens how you speak is empty. So this isn't about reading more. It's about letting one thing you already heard finally land.",
-        "reflectionQ1": "What's the most recent thing you heard from Scripture that you knew, right away, was meant for you — and when you look honestly at what you actually did with it, what does that tell you about yourself?",
-        "reflectionQ2": "James says hearing without doing is its own kind of self-deception. Name the one truth you already know lands straight on your life — the one you keep nodding along to — and be honest about what actually doing it would cost you, and whether that cost is the real reason you haven't.",
+        "reflectionQ1": "What's the last thing God's word told you to do that you've quietly let slide?",
+        "reflectionQ2": "James says hearing without doing fools you. Name the one truth you keep nodding at, and do something about it today — even if it costs you.",
         "prayerPrompt": "Ask God to show you the specific word he has been speaking to you that you have been hearing without doing — and ask for the courage and the will to close the gap between what you know and how you live."
       },
       {
         "dayNumber": 3,
         "chapter": "James 2:14-26",
         "theme": "Show Me Your Faith Without Works",
-        "studyNotes": [],
+        "passageContext": "James takes on the most uncomfortable question in his letter — whether the faith you say you have is actually alive, or just a set of words you agree with.",
+        "studyNotes": [
+          { "verse_ref": "v14–17", "note": "Telling a cold, hungry person to stay warm and well fed while doing nothing exposes the emptiness of faith that never reaches your hands — belief that costs you nothing was probably never belief." },
+          { "verse_ref": "v18–20", "note": "Even demons believe God exists and it changes nothing in them — agreeing with the facts about God was never the same thing as trusting him with your actual life." },
+          { "verse_ref": "v21–26", "note": "Abraham and Rahab could not be more different, yet both are remembered for faith that moved them to do something costly — real trust always eventually shows up where you can feel it." }
+        ],
         "reflection": "This is the part of James people love to argue about, but I don't want the arguments to make you miss what he's actually asking you. He isn't saying you earn your way to God — he's asking a quieter, more personal question: is the faith you say you have actually alive? He gives an example that stings because it's so ordinary — someone's cold and hungry right in front of you, and you say \"stay warm, eat well,\" and do nothing. Nice words, empty hands. James says that's what belief looks like when it never travels from your head into your life. He even points out that demons believe God exists, so just agreeing with the facts was never the point. Then he holds up Abraham and Rahab — two people who couldn't be more different — both of whom did something costly because they actually trusted God. That's the thread. Real faith eventually shows up somewhere you can feel it: in what you give, who you help, what you're willing to lose. I'm not asking you to feel guilty. I'm asking you to look at your real life and see whether what you believe has ever changed how you live.",
-        "reflectionQ1": "When you look back over the last year, what has believing in Jesus actually cost you — in comfort, money, time, reputation, a relationship — and what does the honest size of that answer tell you about how alive your faith really is?",
-        "reflectionQ2": "James says faith that does nothing is dead. Picture one specific person near you right now who has a real need you could actually meet — see their face — and gently ask yourself what your not-acting in that situation reveals about what's really going on inside you.",
+        "reflectionQ1": "Over the last year, what has believing in Jesus actually cost you — anything you can name?",
+        "reflectionQ2": "James says faith that does nothing is dead. Picture one person near you with a real need, and meet it today.",
         "prayerPrompt": "Ask God to show you the specific action your faith is currently being called to take — the person to help, the thing to give, the step to obey — and ask for the will to do it rather than just feel it."
       },
       {
         "dayNumber": 4,
         "chapter": "James 3:1-12",
         "theme": "The Smallest Member Controls Everything",
-        "studyNotes": [],
+        "passageContext": "James writes about the tongue like a man who's been burned by words and watched them burn other people — a small thing with power far beyond its size.",
+        "studyNotes": [
+          { "verse_ref": "v1–2", "note": "The one who never stumbles in what he says would be perfect, which means none of us are — your words are the most honest daily report of how far your maturity actually reaches." },
+          { "verse_ref": "v3–6", "note": "A bit steers a horse, a rudder turns a ship, a spark levels a forest — your words carry that same outsized power to direct or destroy what took years to build." },
+          { "verse_ref": "v7–12", "note": "The same mouth blessing God and cursing people isn't a tongue problem but a heart problem — what comes out isn't the thing to manage, it's the symptom showing you the source." }
+        ],
         "reflection": "James talks about the tongue like a man who's been burned by words and watched them burn other people. A tiny bit steers a whole horse, a small rudder turns a huge ship, one spark levels a forest — and your words, he says, carry that same outsized power. You already know this. You can probably still feel a sentence someone said to you years ago. And if you're honest, you can think of words you've said that you'd give a lot to take back. What James is getting at is gentle and hard at the same time: the tongue isn't really the problem, it's the messenger. What comes out of your mouth is just showing you what's already living in your heart. He lands on the thing that should stop us all — out of the same mouth comes praise and poison — and he simply says, it shouldn't be like this. He's not trying to make you police every word in fear. He's inviting you to let God deal with the source, so the fruit changes on its own. Because the goal was never a controlled tongue. It was a healed heart.",
-        "reflectionQ1": "If someone played back the last week of your words — what you said, how you said it, what you said about people who weren't in the room — what would they honestly conclude about the real condition of your heart right now?",
-        "reflectionQ2": "James says your speech reveals what's underneath it. Name the one pattern in how you talk that you already know isn't right — the sarcasm, the gossip, the sharp tone with someone at home — and be honest about what it would actually take to let God reach the root of it instead of just managing it.",
+        "reflectionQ1": "If someone replayed everything you said this week, what would they conclude about your heart?",
+        "reflectionQ2": "James says your words expose your heart. Name the one habit — the sarcasm, the gossip, the sharp tone — and ask God to reach its root today.",
         "prayerPrompt": "Ask God to show you the specific speech pattern that is most revealing about what is wrong in you right now — not the obvious one you can easily confess, but the one you defend — and ask him to go to the root of it."
       },
       {
         "dayNumber": 5,
         "chapter": "James 4:1-10",
         "theme": "You Want What You Haven't Asked For",
-        "studyNotes": [],
+        "passageContext": "James asks where all the fighting really comes from — and points away from the people around you, to a war happening inside you.",
+        "studyNotes": [
+          { "verse_ref": "v1–3", "note": "The conflicts around you usually begin as cravings within you — you fight people for what you've never brought to God, and even your prayers get bent to feed what already runs you." },
+          { "verse_ref": "v4–6", "note": "Friendship with the world isn't a harmless preference but a rival loyalty God refuses to share — yet to the proud who turn back, he gives more grace, not less." },
+          { "verse_ref": "v7–10", "note": "The way up is down — submit, draw near, humble yourself — because God meets the version of you that stops performing and gets honest, not the one still trying to look fine." }
+        ],
         "reflection": "James asks a question most of us would rather dodge: where do all the fights come from? Not out there — in here. He says the conflicts around you usually start as a war inside you: you want something badly, you can't get it, and it leaks out as friction with the people closest to you. That's an uncomfortable mirror, but it's strangely freeing too, because it means the problem you keep pinning on other people might actually be a desire you've never brought to God. You don't have, he says, because you don't ask — and when you do ask, you ask for things just to feed what's already running you. Underneath the fighting is usually one thing you want so much that you'll bruise a relationship to protect it. James doesn't hand you willpower as the fix. He hands you nearness: draw near to God, and he'll draw near to you. That's not a slogan — it's an invitation to bring the grasping, messy part of you close instead of hiding it. The way up, he says, is down. Stop performing, get honest, and let God meet the version of you that's actually struggling.",
-        "reflectionQ1": "What relationship in your life has friction in it right now that, if you're really honest, is less about the other person and more about something you want and can't let go of — and what would you have to admit about yourself to name that desire out loud?",
-        "reflectionQ2": "James says you fight because you're chasing something you've never surrendered. Name the specific thing you want right now that's creating tension with someone, and ask yourself, gently, what it would look like to bring that want to God instead of forcing it out of the people around you.",
+        "reflectionQ1": "What friction in your life is really less about the other person and more about something you want and won't let go of?",
+        "reflectionQ2": "James says the fight comes from a want you've never surrendered. Name it, and bring it to God today instead of forcing it out of someone.",
         "prayerPrompt": "Bring the desire that is producing the most conflict or frustration in your life to God today — name it specifically and honestly — and ask him to either satisfy it or free you from it."
       },
       {
         "dayNumber": 6,
         "chapter": "James 4:13-17",
         "theme": "You Don't Know What Tomorrow Holds",
-        "studyNotes": [],
+        "passageContext": "James points at a confidence that looks completely reasonable — making plans as if tomorrow belongs to you — and gently dismantles the assumption underneath it.",
+        "studyNotes": [
+          { "verse_ref": "v13–14", "note": "Nothing is wrong with planning, but the quiet assumption that tomorrow is yours is an illusion — your life is a mist, and naming that frees you from the exhausting job of pretending you're in control." },
+          { "verse_ref": "v15–16", "note": "If the Lord wills isn't a superstitious phrase to tack on but the whole difference between gripping your life with white knuckles and holding it with open hands." },
+          { "verse_ref": "v17", "note": "Knowing the right thing and not doing it is its own kind of wrong — James won't let I didn't do anything bad count as innocence when you left the good undone." }
+        ],
         "reflection": "James points at a kind of confidence that looks completely reasonable: \"tomorrow we'll go here, do this, make that happen.\" There's nothing wrong with the plan. The problem is the quiet assumption underneath it — that tomorrow belongs to you. He says something meant to humble you, not scare you: your life is a mist, here in the morning and gone by afternoon. I don't think he's trying to make you feel small. I think he's trying to free you from the exhausting job of pretending you're in control. He's not against planning — he plans right there in the verse. He just wants you to hold it differently: \"if the Lord wills, we'll live and do this.\" That little phrase is the whole difference between gripping your life with white knuckles and holding it with open hands. Then he ends with a gut-check — knowing the right thing and not doing it is its own kind of wrong. So look at your plans honestly. Are you building them with God, or just informing him afterward?",
-        "reflectionQ1": "Where in your plans or your picture of the future are you carrying a confidence you wouldn't have if you really believed your life is a mist — and when things haven't gone your way, what has that quiet sense of control actually cost you?",
-        "reflectionQ2": "James says planning as if tomorrow is yours is a kind of arrogance, even when it looks responsible. Name the specific decision or plan you're gripping right now that you haven't actually opened to God, and ask what it would look like to genuinely hold it with open hands instead of just your own.",
+        "reflectionQ1": "Which of your plans are you gripping as if tomorrow is guaranteed to be yours?",
+        "reflectionQ2": "James says planning as if tomorrow is yours is quiet arrogance. Name the plan you're gripping, and open it to God with honest hands today.",
         "prayerPrompt": "Bring your plans for the near future to God — not to present them for approval like a report, but to genuinely release them — and ask him to do with them what he will, and to give you the peace to mean it."
       },
       {
         "dayNumber": 7,
         "chapter": "James 5:13-20",
         "theme": "You Were Made to Carry Each Other",
-        "studyNotes": [],
+        "passageContext": "James ends his letter not with a grand idea but with people — praying for each other, confessing out loud, and going after the one who's drifted.",
+        "studyNotes": [
+          { "verse_ref": "v13–15", "note": "In every season — suffering, gladness, sickness — the answer is to turn toward God and toward each other, because faith was never meant to be carried in private and called strength." },
+          { "verse_ref": "v16–18", "note": "Confessing your sin out loud to another person is terrifying and healing in the same breath — and ordinary people who actually pray, like Elijah, see God move." },
+          { "verse_ref": "v19–20", "note": "Going after someone who's wandered and bringing them back is not a small kindness but something eternal — your willingness to have the hard conversation may be the rescue they can't perform for themselves." }
+        ],
         "reflection": "James doesn't end his letter with a big idea. He ends it with people — praying for each other, sitting with the sick, telling the truth about their sin out loud, going after the one who's drifting. It's a picture of a community too honest to keep up appearances. And honestly, it's the thing most of us are starving for and most afraid of at the same time. You were never meant to carry your struggles alone, but pride keeps telling you to handle them in private and call that strength. James says the opposite — confess to one another, pray for one another, let yourself actually be known. He reminds you that prayer isn't a formality; ordinary people who actually pray see God move, the way Elijah did. Then he closes with a weight you can feel: when you go after someone who's wandered and bring them back, something eternal is at stake. So who have you been keeping at arm's length — the people who could really know you, and the one you've watched drift and said nothing to? You were made to carry and be carried. Don't try to do this faith alone.",
-        "reflectionQ1": "Who in your life is drifting right now — from God, from people, from the person they used to be — and when you sit with it honestly, what has your silence toward them cost both of you?",
-        "reflectionQ2": "James says we're meant to confess to each other and actually be known. Name the one person you trust enough to tell where you're really struggling, and ask yourself whether you've genuinely let them in, or whether you've been handing them the managed version while carrying the real thing alone.",
+        "reflectionQ1": "Who in your life is quietly drifting while you've stayed silent?",
+        "reflectionQ2": "James says confess to each other and be known. Tell one person you trust where you're really struggling today — the real thing, not the managed version.",
         "prayerPrompt": "Bring to God the person in your life who is wandering — name them, and ask God for the courage, the words, and the right moment to go after them."
       }
     ]
@@ -330,7 +464,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 1,
         "chapter": "Deuteronomy 7:6-9",
         "theme": "Chosen Because of His Love, Not Your Greatness",
-        "studyNotes": [],
+        "passageContext": "Moses tells a small, unimpressive nation why God set his love on them — and it has nothing to do with anything they brought to the table.",
+        "studyNotes": [
+          { "verse_ref": "v6", "note": "Israel is called holy and treasured not because of what they achieved but because God set them apart — your identity rests on his choosing, not your performance." },
+          { "verse_ref": "v7–8", "note": "God didn't choose Israel because they were great but simply because he loved them — the most stabilizing truth you can hold is that his love for you has no cause in you to lose." },
+          { "verse_ref": "v9", "note": "He is the faithful God who keeps covenant to a thousand generations — the love that chose you is not a mood that shifts but a commitment that outlasts your failures." }
+        ],
         "reflection": "Deuteronomy 7 is one of the clearest statements of election in the Old Testament, and its logic is deliberately counterintuitive. God tells Israel that he set his love on them not because they were the greatest of all peoples — they were the fewest. He did not choose them because of anything they had done or anything they were. He chose them because he loved them, and because he was keeping the oath he swore to their fathers. This is a theological foundation that removes all ground for boasting. The chosen-ness of Israel — and by extension the chosen-ness of anyone who is in Christ — is not a reflection of their value, their effort, or their deserving. It is a reflection of the character of the one who chose. This is both humbling and stabilizing. It is humbling because it means you have nothing to brag about. It is stabilizing because it means your standing does not depend on your performance — it depends on the faithfulness of the God who chose you. The passage ends with a declaration: he is the faithful God who keeps covenant and steadfast love to a thousand generations. The choosing is not capricious. It is covenantal. God chose you, and he keeps his promises.",
         "reflectionQ1": "Where are you still, even subtly, trying to earn or maintain God's love through your performance — and what does that striving reveal about whether you actually believe the choosing was unconditional?",
         "reflectionQ2": "Deuteronomy 7 says God chose Israel not because of their greatness but because of his love — name the specific identity you are trying to build or maintain apart from God's choosing of you, and ask what it would look like to stop needing it.",
@@ -340,7 +479,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 2,
         "chapter": "1 Peter 2:9-10",
         "theme": "You Are What You Are Because of Whose You Are",
-        "studyNotes": [],
+        "passageContext": "Peter stacks up titles that once belonged only to Israel and hands them to ordinary believers scattered and unsure of who they are.",
+        "studyNotes": [
+          { "verse_ref": "v9a", "note": "Chosen, royal, holy, God's own possession — these are not aspirations to earn but declarations already made over you, true before you ever feel them." },
+          { "verse_ref": "v9b", "note": "You were called out of darkness into light to proclaim his excellencies — your new identity is not for private comfort but to point others to the one who gave it." },
+          { "verse_ref": "v10", "note": "Once you were not a people, now you are God's people — belonging is not something you achieved but something you received from the one who claimed you." }
+        ],
         "reflection": "Peter writes to scattered and marginalized believers and gives them an identity summary that would have been shocking to anyone in the first century hearing it applied to Gentiles. \"You are a chosen race, a royal priesthood, a holy nation, a people for his own possession.\" This language was drawn directly from Exodus 19 — what God said about Israel at Sinai — and Peter is applying it to these scattered, ordinary, socially invisible people. The identity Peter is naming is entirely derived from relationship. They are chosen because he chose them. They are royal because of whose kingdom they belong to. They are holy because he is holy and they have been set apart for him. The passage includes the purpose of this identity: \"that you may proclaim the excellencies of him who called you out of darkness into his marvelous light.\" The identity is not just for the individual — it has a direction. You were given this identity so that you would declare the God who gave it. Peter then adds the before and after that makes this concrete: \"Once you were not a people, but now you are God's people; once you had not received mercy, but now you have received mercy.\" This is not theoretical. It is a before and after that every believer lives inside.",
         "reflectionQ1": "If you are honest about where you most often locate your sense of identity and worth in a given week — what does that reveal about whether the identity Peter describes here is something you are actually living from, or just something you intellectually affirm?",
         "reflectionQ2": "Peter says you are chosen, royal, and holy — identities that exist entirely because of God's choosing, not your performance. Name the specific place in your life where you are still acting as if your worth depends on something other than what God has already declared over you.",
@@ -350,7 +494,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 3,
         "chapter": "Ephesians 1:3-10",
         "theme": "Before the Foundation of the World",
-        "studyNotes": [],
+        "passageContext": "Paul opens with one breathless sentence tracing your standing with God all the way back to before creation existed.",
+        "studyNotes": [
+          { "verse_ref": "v3–4", "note": "God chose you in Christ before the foundation of the world — your place in his family was not a reaction to your good behavior but a plan older than time itself." },
+          { "verse_ref": "v5–6", "note": "He predestined you for adoption according to the purpose of his will — you were not merely tolerated into the family but wanted, to the praise of his glorious grace." },
+          { "verse_ref": "v7–10", "note": "In him you have redemption through his blood — every spiritual blessing is already yours, which means you live from God's acceptance, not toward it." }
+        ],
         "reflection": "Ephesians 1 is one of the densest passages in Paul's writing — a sustained doxology that unpacks what God has done in Christ, and it begins with a phrase that should stop every reader cold: \"he chose us in him before the foundation of the world.\" This is not a statement about your decision to follow God. It is a statement about God's decision regarding you, made before anything existed. The choosing is located in eternity past, in God's own counsel, before time, before creation, before you were born, before you had done anything good or bad. Paul's purpose in saying this is not to generate theological debate. It is to produce security and praise. The blessings Paul goes on to describe — adoption, redemption, forgiveness, an inheritance — are all located in Christ, not in the believer's performance. What this means is that your standing before God is not a real-time transaction based on how you are doing this week. It was settled before the foundation of the world, in the person of Christ, by the will of God alone. The security this is meant to produce is not complacency — it is the freedom to live from a place of having already been chosen, rather than striving to become chosen.",
         "reflectionQ1": "How much does the reality that God chose you before the foundation of the world actually stabilize you when you fail, when you feel unworthy, or when your performance has been poor — and what does your level of instability in those moments reveal?",
         "reflectionQ2": "Paul says every spiritual blessing is already yours in Christ — but you are living as if you are still trying to earn access to what has already been given. Name the specific blessing or standing before God that you are still trying to work your way toward rather than receiving by faith.",
@@ -360,7 +509,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 4,
         "chapter": "Romans 8:28-30",
         "theme": "The Chain That Cannot Be Broken",
-        "studyNotes": [],
+        "passageContext": "Paul lays out an unbreakable chain from God's foreknowledge to your final glory — meant to steady you when everything feels uncertain.",
+        "studyNotes": [
+          { "verse_ref": "v28", "note": "God works all things together for good for those he called — not that all things are good, but that nothing is wasted in the hands of the one who chose you." },
+          { "verse_ref": "v29", "note": "Those he foreknew he predestined to be conformed to the image of his Son — the goal of your life was never comfort but Christ formed in you." },
+          { "verse_ref": "v30", "note": "Everyone God foreknew, he also glorified — the end is as certain as the beginning, so you can stop bracing for God to finally drop you." }
+        ],
         "reflection": "Romans 8:28 is one of the most quoted and most misunderstood verses in the New Testament. \"We know that for those who love God all things work together for good, for those who are called according to his purpose.\" Paul is not promising that everything will feel good or resolve quickly. He is making a theological claim about the sovereign direction of a God who is working all things — including the hard ones — toward a specific end. The verses that follow give the structure: foreknown, predestined, called, justified, glorified — five links in a chain that cannot be broken. Paul writes \"those whom he glorified\" in the past tense, as if it is already done. He is writing from God's eternal perspective, where the completion of your salvation is as certain as its beginning. What this chain does for the person reading it is provide a kind of cosmic security that nothing in the present situation can undermine. The worst thing that happens to you is not outside this chain. The most painful, the most confusing, the most apparently senseless thing in your life is inside the purposes of the God who called you according to his purpose. That does not remove the pain. It gives it a trajectory.",
         "reflectionQ1": "What is happening in your life right now that you are struggling to believe is inside God's purposes — and what does your inability to trust him with it reveal about how much of Romans 8 you actually believe rather than just know?",
         "reflectionQ2": "Paul says everyone God foreknew he also glorified — the end is as certain as the beginning. Name the specific situation in your life where you are acting as if the outcome is uncertain and God might drop you, and ask what it would mean to actually believe this passage today.",
@@ -370,7 +524,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 5,
         "chapter": "John 15:16-19",
         "theme": "You Did Not Choose Me",
-        "studyNotes": [],
+        "passageContext": "On the last night before the cross, Jesus reminds his friends that the relationship started with his initiative, not theirs.",
+        "studyNotes": [
+          { "verse_ref": "v16", "note": "You did not choose me, but I chose you — the relationship you're in was never your idea or your achievement, which means it was never yours to lose." },
+          { "verse_ref": "v17–18", "note": "Jesus pairs the command to love with a warning that the world will hate you — being chosen by him sometimes costs you belonging everywhere else." },
+          { "verse_ref": "v19", "note": "You are not of the world because he chose you out of it — the sense of not quite fitting in is not a flaw but evidence of whose you are." }
+        ],
         "reflection": "Jesus says something in the upper room that his disciples would not have been able to fully process in the moment: \"You did not choose me, but I chose you and appointed you that you should go and bear fruit.\" In the first century, the relationship between rabbi and disciple worked in the opposite direction — a student chose which rabbi he wanted to follow. What Jesus is inverting is the entire framework of spiritual pursuit. These disciples did not evaluate Jesus and decide he was the best option. He went to them, called them by name, and appointed them to a purpose they had not initiated. The choosing comes first. The fruitfulness flows from it. This matters because it means your relationship with God does not begin with your seeking. It begins with his finding. Every person who comes to faith in Christ does so because God was already at work before they were looking. The security this is meant to produce is exactly what Jesus names: \"that you should go and bear fruit, and that your fruit should abide.\" The appointed fruitfulness does not depend on your initiative. It depends on your remaining in the one who chose you.",
         "reflectionQ1": "Where do you still think of your relationship with God primarily in terms of what you chose — your decision, your commitment, your effort to maintain it — rather than what he initiated, and what does that tell you about where you are actually standing?",
         "reflectionQ2": "Jesus says he chose you and appointed you to bear fruit — but you are living as if the fruit is your job to produce through effort rather than the overflow of remaining in him. Name the specific area of your life where you are striving to produce what only comes from abiding.",
@@ -380,7 +539,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 6,
         "chapter": "Isaiah 43:1-7",
         "theme": "I Have Called You by Name",
-        "studyNotes": [],
+        "passageContext": "God speaks to a people about to walk through exile and fear, and grounds them in who they are to him before the hard road begins.",
+        "studyNotes": [
+          { "verse_ref": "v1–2", "note": "Fear not, I have called you by name, you are mine — God's claim on you doesn't remove the floods and fire but promises his presence through them." },
+          { "verse_ref": "v3–4", "note": "You are precious in my eyes, and honored, and I love you — this is spoken with no condition attached, to people who had done nothing to earn it." },
+          { "verse_ref": "v5–7", "note": "He gathers his children from the ends of the earth, everyone called by his name — you were created for his glory, and he will not lose track of you." }
+        ],
         "reflection": "Isaiah 43 is God speaking directly to a people in exile — people who have been displaced, stripped of everything that gave them national identity, living as conquered subjects in a foreign land. Into that context God says: \"Fear not, for I have redeemed you; I have called you by name, you are mine.\" The calling by name in the ancient world was significant — to know someone's name was to have a relationship with them, to have a claim on them. God is asserting personal, individual, relational knowledge: I know your name. You are mine. The passage then makes a series of promises about what God will do for those who are his — passing through water, fire, flood — not that these things won't come, but that God will be with them when they do. \"You shall not be burned, and the flame shall not consume you.\" Not exemption from the fire but presence in the fire. The reason God gives for all of this is stunning in its simplicity: \"Because you are precious in my eyes, and honored, and I love you.\" No condition. No performance metric. You are precious because God says you are precious. That is the whole argument.",
         "reflectionQ1": "When you pass through water or fire — when the difficult seasons come — does your sense of God's presence and your own preciousness to him remain stable, or does it erode with the circumstances, and what does that reveal?",
         "reflectionQ2": "God says \"you are precious in my eyes\" without any condition — but you are still trying to become precious to God rather than receiving that you already are. Name the specific thing you are doing right now to earn God's favor that he has already freely given you.",
@@ -390,7 +554,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 7,
         "chapter": "Galatians 3:26-29",
         "theme": "There Is No Other Category You're In",
-        "studyNotes": [],
+        "passageContext": "Paul tears down every label people use to rank themselves and replaces them all with one.",
+        "studyNotes": [
+          { "verse_ref": "v26–27", "note": "In Christ you are a child of God, having clothed yourself with Christ — the deepest fact about you is not your role or résumé but that you are in him." },
+          { "verse_ref": "v28", "note": "Neither Jew nor Greek, slave nor free, male nor female — every category you use to feel superior or inferior collapses under the one identity that actually counts." },
+          { "verse_ref": "v29", "note": "If you are Christ's, you are Abraham's offspring and heir — the inheritance does not depend on your background but on whose you've become." }
+        ],
         "reflection": "Paul's argument in Galatians 3 is aimed at a church being pressured to add Jewish identity markers to their faith — circumcision, law observance, ethnic and social categories. His response is one of the most radical statements of social and spiritual equality in the ancient world: \"There is neither Jew nor Greek, there is neither slave nor free, there is no male and female, for you are all one in Christ Jesus.\" Paul is not erasing the reality of ethnic, social, or gender distinction. He is saying that in Christ, these distinctions no longer determine standing, access, or worth before God. The category that matters — the one that overrides every other — is being in Christ. This is made possible by the prior verse: \"in Christ Jesus you are all sons of God through faith.\" The identity that carries weight before God is not your nationality, your gender, your social status, your religious heritage, or your performance. It is your union with Christ. What this means practically is that every division in the church that is based on anything other than Christ is a denial of this verse — and every hierarchy of worth based on ethnicity, gender, or background is a theological contradiction of what happened at baptism.",
         "reflectionQ1": "Where are you still allowing your sense of worth or belonging before God to be shaped by a category other than being in Christ — your performance, your background, your social standing, your gender, your ethnicity — and what has that alternate identity cost you?",
         "reflectionQ2": "Paul says there is only one identity that determines standing before God — being in Christ. Name the specific category you most fall back on for your sense of worth when you feel small or overlooked, and ask what it would mean to release it for the only category that counts.",
@@ -400,7 +569,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 8,
         "chapter": "Colossians 3:12-17",
         "theme": "Put On Who You Already Are",
-        "studyNotes": [],
+        "passageContext": "Paul tells believers how to live, but grounds every command in an identity God already gave before asking for any behavior.",
+        "studyNotes": [
+          { "verse_ref": "v12–13", "note": "Put on compassion and patience as God's chosen ones — the choosing comes first, so you live out kindness as someone already loved, not someone earning the right to be." },
+          { "verse_ref": "v14–15", "note": "Above all put on love, and let Christ's peace rule your heart — the new wardrobe of character is held together by love and governed by a peace you receive, not manufacture." },
+          { "verse_ref": "v16–17", "note": "Let the word of Christ dwell in you richly, doing everything in his name — your ordinary words and work become worship when they flow from who you already are in him." }
+        ],
         "reflection": "Paul's instruction in Colossians 3 has a specific sequence that is easy to miss. He does not say \"become compassionate people.\" He says \"put on, as God's chosen ones, holy and beloved, compassionate hearts.\" The identity comes first — chosen, holy, beloved — and the behavior flows from it. You do not become chosen by becoming compassionate. You put on compassion because you are already chosen. This order is not a small theological technicality. It is the difference between Christianity and moralism. Moralism tells you to become a better person. Paul tells you to become who you already are. The behaviors he lists — compassion, kindness, humility, meekness, patience, forgiveness, love — are not the means of earning God's favor. They are the wardrobe of someone who already has it. The metaphor of clothing is intentional. You put on clothing deliberately. You make a choice each morning about what you wear. Paul is describing the daily intentional practice of living out of your identity rather than against it. The final phrase ties everything together: \"whatever you do, in word or deed, do everything in the name of the Lord Jesus, giving thanks to God the Father through him.\" Everything flows from that center.",
         "reflectionQ1": "Where in your life are you trying to produce Christian character through discipline and effort rather than living from the identity you have already been given — and what does the exhaustion or failure of that effort tell you about the source you are drawing from?",
         "reflectionQ2": "Paul says \"put on, as God's chosen ones\" — the choosing comes before the behavior. Name the specific character quality you most need to put on right now, and ask what it would mean to put it on as someone who is already chosen rather than as someone trying to become worthy of being chosen.",
@@ -410,7 +584,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 9,
         "chapter": "2 Corinthians 5:17-21",
         "theme": "You Are a New Creation Walking in an Old Story",
-        "studyNotes": [],
+        "passageContext": "Paul announces that anyone in Christ has been so changed that the old self is genuinely gone — even when it doesn't feel that way.",
+        "studyNotes": [
+          { "verse_ref": "v17", "note": "If anyone is in Christ, the new creation has come and the old has passed — the version of you that existed before Christ no longer defines you, however familiar it feels." },
+          { "verse_ref": "v18–19", "note": "God reconciled you to himself and handed you the ministry of reconciliation — you are not only made new but enlisted to carry that same news to others." },
+          { "verse_ref": "v20–21", "note": "God made the sinless one to be sin so you might become his righteousness — your standing before God rests entirely on an exchange you could never make yourself." }
+        ],
         "reflection": "Paul's declaration in 2 Corinthians 5 is as absolute as language allows: \"If anyone is in Christ, he is a new creation. The old has passed away; behold, the new has come.\" The language is creation language — the same category used in Genesis 1. God is not renovating the old self. He is bringing a new one into existence. This is not a description of moral improvement or religious progress. It is an ontological claim about what happens in union with Christ. The person who is in Christ is not a better version of what they were. They are a new kind of thing entirely. What makes this passage both extraordinary and practically confusing is the gap between the declaration and the experience. Most Christians feel more like a renovation project than a new creation. The old patterns reassert themselves. The old fears return. The old idols have not quietly died. What Paul is establishing is the theological foundation: the new creation is not the goal. It is the reality. You are living from it, not toward it. The behavior that follows should be the expression of what is already true, not the means of making it true.",
         "reflectionQ1": "What old story — old pattern, old identity, old label — are you still living out of as if the new creation Paul describes has not actually arrived in you, and what has holding onto that old story cost you?",
         "reflectionQ2": "Paul says you are a new creation and the old has passed away — but you are still identifying with the version of yourself that existed before Christ. Name the specific old identity or old sin pattern you keep reaching for as if it still defines you, and ask what it would mean to actually believe you are new.",
@@ -420,7 +599,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 10,
         "chapter": "Romans 11:1-6",
         "theme": "The Remnant Chosen by Grace",
-        "studyNotes": [],
+        "passageContext": "Paul confronts the fear that God might give up on his people, using Elijah's story to show grace, not performance, secures your place.",
+        "studyNotes": [
+          { "verse_ref": "v1–2", "note": "God has not rejected his people whom he foreknew — your worst season does not cancel a relationship God established by his own initiative." },
+          { "verse_ref": "v3–4", "note": "Elijah thought he was alone, but God had kept seven thousand — even when you feel like the last faithful one, God is sustaining more grace than you can see." },
+          { "verse_ref": "v5–6", "note": "The remnant is chosen by grace, and if by grace then no longer by works — measuring your standing by recent performance forgets the only basis you ever had." }
+        ],
         "reflection": "Paul's argument in Romans 11 is dense and specific, but the principle at its center is simple and universal. He invokes Elijah — the prophet who ran from Jezebel into the wilderness and told God he was the last faithful person left. God's response was to correct his self-pity with reality: \"I have kept for myself seven thousand men who have not bowed the knee to Baal.\" The remnant Elijah couldn't see was already there. Paul applies this to the present situation and then lands the decisive sentence: \"But if it is by grace, it is no longer on the basis of works; otherwise grace would no longer be grace.\" The remnant is not the remnant because they worked hard enough or stayed faithful enough. They are the remnant because they were chosen — and the choosing was by grace, which means it was entirely undeserved. This is Paul's answer to despair and isolation: you are not alone, the remnant is larger than you can see, and the condition of membership in it is not your performance. It is God's grace. If you are looking at yourself and seeing only failure, and at the world and seeing only unbelief, this passage is the correction.",
         "reflectionQ1": "Where are you in an Elijah moment right now — convinced that you are the last one, that your faith is uniquely isolated, that faithfulness is not working — and what is that isolation doing to your relationship with God and with others?",
         "reflectionQ2": "Paul says the remnant is chosen by grace, not by works — but you are measuring your standing before God by your recent performance. Name the specific failure or inadequacy you are using to question whether you belong, and ask what Paul's argument about grace means for that specific doubt.",
@@ -430,7 +614,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 11,
         "chapter": "Ephesians 2:11-22",
         "theme": "You Were the Outsider He Brought In",
-        "studyNotes": [],
+        "passageContext": "Paul reminds Gentile believers exactly how far outside they once were, and how completely Christ brought them in.",
+        "studyNotes": [
+          { "verse_ref": "v11–12", "note": "Remember you were once separated, strangers, without hope and without God — naming how far out you were makes the grace that reached you impossible to take for granted." },
+          { "verse_ref": "v13–18", "note": "You who were far off have been brought near by the blood of Christ — the dividing wall is torn down, and access to God is no longer earned but opened." },
+          { "verse_ref": "v19–22", "note": "You are no longer strangers but members of God's household — belonging is not probationary but permanent, built into a temple where God himself lives." }
+        ],
         "reflection": "Paul's language in Ephesians 2 is striking in its specificity about what life outside of Christ looked like: \"alienated from the commonwealth of Israel, strangers to the covenants of promise, having no hope and without God in the world.\" He is describing the Gentiles — the outsiders, the people with no claim on the covenants, no access to the promises, no standing before the God of Israel. And then: \"But now in Christ Jesus you who once were far off have been brought near by the blood of Christ.\" The distance has been collapsed. The wall that divided Jew and Gentile — and by extension the wall that divided humanity from God — has been broken down in Christ's body. Paul's word for what has been created is striking: \"one new man\" — a third thing, neither Jew nor Gentile, but the new humanity formed in Christ. And the building metaphor he uses is exact — Christ himself is the cornerstone, and the whole structure is joined together and grows into a holy temple in the Lord. You are not a satellite of the household of God. You are built into it. Your belonging to the body of Christ is not provisional or peripheral. You were brought near by the blood of Christ, and that nearness is permanent.",
         "reflectionQ1": "Where do you still feel like an outsider before God — like someone who is tolerated rather than welcomed, on the edges rather than built in — and what does that feeling tell you about what you actually believe about what Christ did?",
         "reflectionQ2": "Paul says you have been brought near by the blood of Christ and built into the household of God — but you are still relating to God as if you need to earn your place. Name the specific thing you are doing to try to secure your belonging, and ask what it would mean to stop.",
@@ -440,7 +629,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 12,
         "chapter": "1 Thessalonians 1:4-10",
         "theme": "A Life That Proves the Calling",
-        "studyNotes": [],
+        "passageContext": "Paul tells a young church how he knows God chose them — not by their words, but by the visible change in how they live.",
+        "studyNotes": [
+          { "verse_ref": "v4–5", "note": "Paul knows they are chosen because the gospel came not in word only but in power — a real calling shows up as more than belief you can recite." },
+          { "verse_ref": "v6–8", "note": "They became an example to every believer in the region without trying — a genuinely changed life is its own visible proclamation, seen before it is ever spoken." },
+          { "verse_ref": "v9–10", "note": "They turned from idols to serve the living God and wait for his Son — being chosen reorders both what you live for and what you are waiting on." }
+        ],
         "reflection": "Paul writes to the Thessalonians and names the evidence that makes him confident of their election: \"we know, brothers loved by God, that he has chosen you, because our gospel came to you not only in words, but also in power and in the Holy Spirit and with full conviction.\" The word was received under pressure, with joy from the Holy Spirit, and it produced a life that became visible to the whole region. Paul says they became an example to all the believers in Macedonia and Achaia, and that the word of the Lord has sounded forth from them everywhere. Their election is not something he infers from their theology. He knows it because of what happened in and through them. This passage raises a question that is harder than most doctrinal questions: is your faith producing anything that would make someone else confident of your election? Not in a performance sense — not whether you are impressive, but whether the word came to you in power and produced something real that is now moving outward. The Thessalonians were not trying to be examples. They were simply living a changed life with enough consistency that other people noticed.",
         "reflectionQ1": "If someone who knows you well were asked whether the gospel has clearly come to you in power and not just in words — what would they say, and what does your honest guess about their answer reveal about the state of your faith?",
         "reflectionQ2": "Paul says the Thessalonians became an example to every believer in the region without apparently trying to — their changed life was simply visible. Name the specific person in your life who should be able to see the reality of your faith in how you live, and ask whether they actually can.",
@@ -450,7 +644,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 13,
         "chapter": "Hebrews 12:1-3",
         "theme": "You Are Running in a Crowded Stadium",
-        "studyNotes": [],
+        "passageContext": "After a chapter naming heroes of faith, the writer pictures you running a race surrounded by those who finished before you.",
+        "studyNotes": [
+          { "verse_ref": "v1", "note": "Lay aside every weight and the sin that clings, and run with endurance — the race is a long obedience, which means dropping what slows you down before it stops you." },
+          { "verse_ref": "v2", "note": "Fix your eyes on Jesus, the founder and perfecter of your faith — where your attention goes determines whether you finish, and it was never meant to stay on yourself." },
+          { "verse_ref": "v3", "note": "Consider him who endured such hostility so you won't grow weary — when you're tempted to quit, the antidote is not willpower but looking again at what he endured for you." }
+        ],
         "reflection": "Hebrews 12 opens with one of the most stirring images in all of Scripture — a great cloud of witnesses, the entire company of faith from chapter 11, surrounding the runner. The image is athletic: a stadium, a race, and the runner is surrounded by everyone who has already finished their leg of it. Abraham is there. Moses is there. Rahab is there. The witnesses are not passive observers — the word for \"witnesses\" in the Greek has the sense of those who can testify. They have run this race, they know what it costs, and their presence is meant to be both encouragement and context. The instruction that follows is precise: lay aside every weight and the sin that clings closely. Not just obvious sin — weight. Things that are not necessarily sinful but that slow you down. And the direction you run: \"fixing our eyes on Jesus, the founder and perfecter of our faith.\" The race you are running has a direction, and the direction is a person. What Hebrews 12 does is locate your personal struggle in the largest possible context. You are not running alone. You are not running without precedent. And you are not running without a destination.",
         "reflectionQ1": "What weight — not necessarily a named sin, but something you are carrying that is slowing you down — have you been unwilling to lay aside, and what has carrying it cost you in your ability to run with endurance?",
         "reflectionQ2": "Hebrews says to fix your eyes on Jesus, the founder and perfecter of your faith — but in practice, your eyes are fixed on something else. Name the specific thing your eyes most often drift to — a comparison, a fear, a goal — and ask what it would take to fix them back where they belong.",
@@ -460,7 +659,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 14,
         "chapter": "Revelation 7:9-17",
         "theme": "The Story Ends With Everyone He Chose",
-        "studyNotes": [],
+        "passageContext": "The plan closes where it always pointed — the full, countless family God chose, gathered safe before the throne at the end of all things.",
+        "studyNotes": [
+          { "verse_ref": "v9–10", "note": "A multitude no one could number, from every nation, stands before the throne — the choosing that began before time ends with a family too large to count, and you are in it." },
+          { "verse_ref": "v11–12", "note": "Every voice ascribes salvation to God and the Lamb — no one in that crowd takes any credit, because every person there was chosen and brought by grace." },
+          { "verse_ref": "v13–17", "note": "These came through great tribulation, and God himself wipes every tear — the road was hard, but the One who chose you also keeps you all the way home." }
+        ],
         "reflection": "The final day brings us back to Revelation 7 — the scene of the great multitude that no one could number, from every nation, tribe, people, and language, standing before the throne. This is the end toward which every day of this plan has been oriented: the completion of the choosing, the full gathering of every person from every generation who has received the mercy of God through the blood of the Lamb. The elder's explanation is the final word on what chosen people have in common: \"These are the ones coming out of the great tribulation. They have washed their robes and made them white in the blood of the Lamb.\" The white robes are not earned through nobility. They are washed — cleaned through the sacrifice of the one who was slain. And the promises that follow are the undoing of every hardship the chosen have endured: no hunger, no thirst, no scorching heat, the Lamb as shepherd, water from the springs of life, and God himself wiping every tear. This is the future you were chosen into before the foundation of the world. Every passage in this plan — every truth about election, grace, identity, nearness, and belonging — was pointing here. You are chosen. The story of your being chosen ends in this room.",
         "reflectionQ1": "As you come to the end of this plan, what has shifted in how you understand your identity — and where are you still struggling to believe that you are one of the people in this passage, chosen and being brought home?",
         "reflectionQ2": "Revelation 7 describes the great multitude that came through tribulation — their robes were washed, not earned. Name the specific tribulation or failure in your own story that you have been using to question your belonging, and ask what it means that the robes are washed, not merited.",
@@ -481,6 +685,7 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 1,
         "chapter": "Ephesians 1:3–6",
         "theme": "Before you were born, you were chosen",
+        "passageContext": "Paul opens his letter by stepping all the way back to before time began — and says the family of God wasn't an afterthought but a plan, chosen in love before the foundation of the world.",
         "studyNotes": [
           {
             "note": "The choice was made before the world existed, which means it was never based on what you would do or become — you cannot fall out of a love that was settled before you ever entered it.",
@@ -500,6 +705,7 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 2,
         "chapter": "Ephesians 1:15–19",
         "theme": "Pray for the people God has given you",
+        "passageContext": "Paul tells the Ephesians how he prays for them — a window into what it actually looks like to carry the people God has put in your life before him.",
         "studyNotes": [
           {
             "note": "Paul prays not for their circumstances but for their perception — what you see about God determines everything else, and it takes God himself to open those eyes.",
@@ -519,6 +725,7 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 3,
         "chapter": "Ephesians 2:4–9",
         "theme": "You did not earn your way in",
+        "passageContext": "Paul names what you were before grace found you, and what God did anyway — the most freeing sentence about how anyone gets in: not earned, given.",
         "studyNotes": [
           {
             "note": "God acted first — while you were still dead, not recovering, not improving — which means the ground of mercy is entirely his initiative and none of yours.",
@@ -538,6 +745,7 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 4,
         "chapter": "Ephesians 2:19–22",
         "theme": "Your home is a temple under construction",
+        "passageContext": "Paul shifts the picture from individuals to a building — strangers becoming family, joined together into a place where God himself comes to live.",
         "studyNotes": [
           {
             "note": "A cornerstone sets the angle for every wall that follows — if Christ is not the actual reference point your home aligns to, every wall will be slightly off.",
@@ -557,6 +765,7 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 5,
         "chapter": "Ephesians 4:29–32",
         "theme": "Your words are either building material or demolition tools",
+        "passageContext": "Paul gets specific about the ordinary thing that builds or tears down a home — the words you use on the people closest to you.",
         "studyNotes": [
           {
             "note": "Corrupt speech is not just profanity — it is any word that takes something from the person hearing it rather than giving — your home is being shaped by what is spoken in it daily.",
@@ -576,6 +785,7 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 6,
         "chapter": "Ephesians 6:1–4",
         "theme": "God put authority in the home for a reason",
+        "passageContext": "Paul speaks directly into the home — to children and to fathers — about the kind of authority that forms a person rather than crushes them.",
         "studyNotes": [
           {
             "note": "Honor is not agreement — a child can submit to a parent without approving every decision — which means it is a posture of the heart, not a verdict on the parent.",
@@ -595,6 +805,7 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 7,
         "chapter": "Ephesians 6:10–17",
         "theme": "Your home is in a fight whether you know it or not",
+        "passageContext": "Paul ends the letter by naming the unseen battle every home is in, and the armor God gives you to stand your ground in it.",
         "studyNotes": [
           {
             "note": "The enemy is not the person across the table from you — he is a spiritual force using the people you love as terrain — fighting your family is losing the real war.",
@@ -625,7 +836,11 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 1,
         "chapter": "Psalm 127:3-5",
         "theme": "Children Are Not Your Project",
-        "studyNotes": [],
+        "passageContext": "A short psalm steps back from all our striving to call children what they actually are — a gift handed to you, not an achievement you produce.",
+        "studyNotes": [
+          { "verse_ref": "v3", "note": "Children are a heritage and reward from the Lord, not a project you manufacture — which frees you from the crushing job of guaranteeing outcomes that were never yours to control." },
+          { "verse_ref": "v4–5", "note": "Children are like arrows in a warrior's hand, meant to be aimed and then released — your job is to point them well, not to hold onto them forever." }
+        ],
         "reflection": "Psalm 127 opens with a confrontation most parents aren't ready for — unless God builds the house, the labor is worthless. The psalmist is not giving a parenting tip. He is reorienting the entire enterprise. Children are described here as a heritage — something entrusted to you from God, not something produced by you for God. That is a different relationship entirely. What it means is that the child in your home does not belong to you in the way you instinctively feel they do — you are steward, not owner. The temptation every mother knows is to treat the child as a project: to manage the outcome, to engineer the faith, to control the result. That instinct comes from love, but it slowly becomes exhausting and unliveable. The passage quietly strips that posture away. You cannot build a soul. You can love one, model for one, pray for one — but the building belongs to God. If you are carrying the weight of who your child becomes entirely on your own shoulders, this verse is meant to be relief, not rebuke. Set the weight down. The builder already showed up.",
         "reflectionQ1": "Where in your relationship with your child are you carrying responsibility that belongs to God — and what has that weight cost you in peace, presence, or joy?",
         "reflectionQ2": "Psalm 127 says children are a heritage given by God, not a project you produce — name one specific way you are trying to manage or control your child's outcome rather than trusting them to the God who gave them to you.",
@@ -635,7 +850,11 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 2,
         "chapter": "Isaiah 40:9-11",
         "theme": "He Leads the Ones Who Are Nursing",
-        "studyNotes": [],
+        "passageContext": "In a chapter about God's overwhelming power, Isaiah lands on a tender image — the same mighty God gently leading mothers with young.",
+        "studyNotes": [
+          { "verse_ref": "v9–10", "note": "The God coming with a mighty arm to rule is the same God described in the very next breath as a shepherd — his strength and his gentleness are not in tension." },
+          { "verse_ref": "v11", "note": "He gently leads those who are with young — God moves at the pace of the exhausted and the nursing, which means he is not asking you to keep up with anyone else's stride." }
+        ],
         "reflection": "Isaiah 40 is one of the most majestic passages in all of Scripture about the character of God. The prophet describes a God who measures the oceans in the hollow of his hand and weighs the mountains in a balance, before whom the nations are like a drop in a bucket. And then in verse 11, in a single breath, the tone shifts completely — this same God carries the lambs in his arms and gently leads those who are nursing their young. That transition is not accidental. Isaiah wants you to hold both things at the same time: the God of infinite cosmic power, and the God who moderates his pace for a nursing mother. The word translated \"gently\" here suggests careful attention, a conscious slowing down, a shepherd matching his stride to the most vulnerable in the flock. God does not expect the same pace from a nursing mother that he expects from someone without that weight. He knows what you are carrying. He adjusts. The exhaustion you feel is not invisible to the God who formed you — it registers with him, and his response is not to push harder but to walk slower.",
         "reflectionQ1": "What has the relentlessness of the season you are in cost you — in your sense of self, your relationship with God, your ability to feel anything other than depletion?",
         "reflectionQ2": "Isaiah says God gently leads those who are nursing — but you are treating yourself with no such gentleness. Name one specific expectation you are holding yourself to right now that God is not holding you to.",
@@ -645,7 +864,11 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 3,
         "chapter": "Exodus 2:1-10",
         "theme": "Letting Go Is an Act of Faith",
-        "studyNotes": [],
+        "passageContext": "A mother in an impossible situation does the bravest, hardest thing — she prepares what she can and entrusts her son to God and the river.",
+        "studyNotes": [
+          { "verse_ref": "v1–4", "note": "Jochebed hides her son as long as she can, then builds a basket and lets the river carry him — faith sometimes looks like doing everything in your power and then releasing what you can't control." },
+          { "verse_ref": "v5–10", "note": "God works through Pharaoh's own daughter to save the child and even return him to his mother — the surrender you fear most can be the place God does what you never could." }
+        ],
         "reflection": "Jochebed's story is told in ten verses, and almost nothing is said about what it cost her. She hid her son for three months, then built an ark, and placed her baby in the Nile. The text moves quickly. Life doesn't. What she did in that moment is one of the most extreme acts of maternal trust in Scripture — she could not keep him safe, so she committed him to a river and a God she could not see working. We should not rush past how impossible that was. The basket is a picture of what every mother eventually has to do in some form — release the child into a world that you cannot protect them from. The control you want to maintain, the outcomes you need to guarantee, the dangers you need to pre-empt — none of it is ultimately in your hands. Jochebed made a waterproof basket, which is the work you do: you prepare, you protect what you can, you make provision. And then you put the basket in the water. What the story shows is that God was already there — in the reeds, in Pharaoh's daughter, in the arrangement that brought Jochebed back to nurse her own son. The God who protected Moses in the basket is the same God watching over your children in the places you cannot go.",
         "reflectionQ1": "What situation involving your child are you refusing to place in the water — and what does your grip on it reveal about where you actually believe God is?",
         "reflectionQ2": "Jochebed prepared what she could and then entrusted the rest to God — name the one thing you are still trying to control about your child's life that you need to release today.",
@@ -655,7 +878,11 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 4,
         "chapter": "Luke 1:26-38",
         "theme": "The Yes Before You Understood",
-        "studyNotes": [],
+        "passageContext": "An angel hands a young woman a calling far bigger than her understanding, and she says yes before any of the questions are answered.",
+        "studyNotes": [
+          { "verse_ref": "v26–33", "note": "Mary is told she'll carry the Son of God with no roadmap for how — God's biggest callings usually arrive with far more mystery than explanation." },
+          { "verse_ref": "v34–38", "note": "Let it be to me according to your word is surrender spoken before the cost is clear — Mary trusts the character of the God calling her more than the details she doesn't yet have." }
+        ],
         "reflection": "Mary's response to the angel is one of the most studied moments in Scripture, and it still catches people off guard if they read it slowly. She doesn't say yes immediately — she asks a question. \"How will this be?\" She is not doubting, but she is thinking. And what Gabriel gives her is not a full explanation — he gives her enough. Enough of who God is, enough of what God has done, enough to step forward without seeing the full picture. Her final answer is stunning in its simplicity: \"I am the servant of the Lord; let it be to me according to your word.\" She said yes to something that would cost her everything she had planned — her reputation, her relationship, her safety, her future as she understood it. Motherhood often begins with a version of this — a calling into something you did not plan, do not fully understand, and cannot control. What Mary's yes teaches is that trust is not the absence of questions. It is the willingness to move forward with the God who is bigger than your questions. Every mother has a moment where she has to decide whether the God who called her into this is big enough for what it requires.",
         "reflectionQ1": "Where in your experience of motherhood are you still holding back your full yes — and what is it costing you in peace and in presence with your children?",
         "reflectionQ2": "Mary said yes before she understood the full cost — what specific act of trust or surrender is God asking from you as a mother right now that you keep deferring because you don't have enough information yet?",
@@ -665,7 +892,11 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 5,
         "chapter": "Deuteronomy 6:4-9",
         "theme": "Faith Is Passed in the Ordinary",
-        "studyNotes": [],
+        "passageContext": "Moses tells parents how faith actually gets handed down — not in grand events but woven into the ordinary moments of a normal day.",
+        "studyNotes": [
+          { "verse_ref": "v4–6", "note": "Love God with everything, and let these words be on your own heart first — you can only pass down a faith you actually carry, not one you merely perform." },
+          { "verse_ref": "v7–9", "note": "Talk of God when you sit, walk, lie down, and rise — faith is transmitted in the unremarkable rhythms of life, which makes your most ordinary moments the real classroom." }
+        ],
         "reflection": "The Shema is the central confession of Jewish faith, and what immediately follows it is not a call to formal religious instruction — it is a call to live the conversation. Talk about these things when you sit, when you walk, when you lie down, when you rise up. This is not Sunday school. This is the kitchen table, the car ride, the bedtime routine. Moses is telling parents that the primary arena for passing on faith is not a program — it is ordinary life, lived with intentional attention to God's presence in it. The passage assumes that the faith of the parent is already alive enough to talk about. You cannot give what you do not have. The calling here is not first to find the right curriculum; it is to return to your own love for God and let that overflow into the everyday rhythms with your children. What this means for a mother is that the most significant spiritual formation happening in your home is not happening in the moments you design. It is happening in the unplanned moments — the way you respond to bad news, the way you pray when you don't feel like it, the way you speak about God when nothing in life feels spiritual. Your children are watching all of it, and they are learning whether faith is real.",
         "reflectionQ1": "What do the unscripted moments of your daily life — the way you react under pressure, the way you talk about God when things are hard — teach your children about whether faith is worth having?",
         "reflectionQ2": "Deuteronomy 6 says faith is passed in the ordinary rhythms of life — name one specific daily moment you share with your children that you are not using to point them toward God, and decide what that could look like starting today.",
@@ -675,7 +906,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 6,
         "chapter": "Proverbs 31:25-30",
         "theme": "Strength Is Not What You Think",
-        "studyNotes": [],
+        "passageContext": "The famous portrait of a strong woman ends by relocating the source of her strength somewhere most people never look.",
+        "studyNotes": [
+          { "verse_ref": "v25–27", "note": "She is clothed with strength and laughs at the days to come — her steadiness isn't naïve optimism but confidence rooted in something sturdier than her circumstances." },
+          { "verse_ref": "v28–29", "note": "Her children rise and call her blessed — the unseen, unpraised work of mothering is seen and honored, even when it feels invisible in the moment." },
+          { "verse_ref": "v30", "note": "Charm is deceptive and beauty fleeting, but a woman who fears the Lord is praised — the thing worth building your identity on is the one thing that won't fade." }
+        ],
         "reflection": "Proverbs 31 has done more damage to mothers than almost any other passage, not because of what it says but because of what people have done with it. Read carefully, the woman described here is not an impossible performance standard — she is a picture of character, not a checklist of tasks. The specific verses that close the portrait are striking: \"Strength and dignity are her clothing, and she laughs at the time to come.\" What gives her that laughter is not that she has everything under control. It is that her fear is settled. Her confidence is in the Lord, not in her capacity to manage outcomes. The passage explicitly says that charm is deceitful and beauty is vain, but a woman who fears the Lord shall be praised. This is the inverse of what culture tells mothers — that you earn worth through performance, appearance, and how your children turn out. The Proverbs 31 woman's strength is not efficiency. It is settled identity in God that makes her unafraid of the future. That is available to any mother who is willing to locate her worth in the right place.",
         "reflectionQ1": "Where are you performing motherhood for an audience — real or imagined — and what has the exhaustion of that performance cost you in actually being present with your children?",
         "reflectionQ2": "Proverbs 31 says a woman who fears the Lord shall be praised — but you are working for the praise of people instead. Name the specific person or group whose approval you are most working to secure as a mother, and ask yourself what it would look like to stop.",
@@ -685,7 +921,11 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 7,
         "chapter": "2 Timothy 1:3-7",
         "theme": "The Faith You Pass Down",
-        "studyNotes": [],
+        "passageContext": "Paul reminds a young pastor where his faith came from — handed to him through the ordinary faithfulness of his mother and grandmother.",
+        "studyNotes": [
+          { "verse_ref": "v3–5", "note": "Paul traces Timothy's sincere faith back to Lois and Eunice — the way you live your faith in front of your children is shaping a legacy you may never fully see." },
+          { "verse_ref": "v6–7", "note": "God gave a spirit not of fear but of power, love, and self-control — the fearfulness you feel as a parent is not from God, and there is more in you than you think." }
+        ],
         "reflection": "Paul writes to Timothy and does something remarkable — he names the women who gave Timothy his faith before he names himself. Lois and Eunice are credited with planting a sincere faith in this young man who would go on to shake cities. Paul calls it a sincere faith — not a performed faith, not an inherited religion, but the genuine article. What Timothy received from his grandmother and mother was real enough to hold when everything else fell apart. Paul does not describe what Lois and Eunice did to accomplish this. He names the result. We can assume it was exactly what Deuteronomy 6 describes — faith lived in the ordinary, passed through relationship, made credible by consistency. What this passage says to every mother is that the faith you carry has a trajectory beyond you. The sincere faith you cultivate, fight for, and live in front of your children is a seed that has a harvest you will not always live to see. This is both a weight and a hope. It is a weight because sincerity matters — you cannot fake it at close range. It is a hope because God uses faithful mothers in ways they never know.",
         "reflectionQ1": "If someone asked your children right now whether your faith is sincere — whether what you say you believe actually shows in how you live — what would they honestly say, and what would that answer cost you to hear?",
         "reflectionQ2": "Paul says the sincere faith in Timothy came first from his mother and grandmother — name one specific thing about how you live your faith in front of your children that you know needs to change, and decide what you are going to do about it today.",
@@ -695,7 +935,11 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 8,
         "chapter": "Matthew 15:21-28",
         "theme": "She Would Not Stop",
-        "studyNotes": [],
+        "passageContext": "A desperate mother refuses to be brushed off, pressing in for her suffering child until Jesus calls her faith great.",
+        "studyNotes": [
+          { "verse_ref": "v21–26", "note": "Jesus' silence and hard words don't drive her away — sometimes the delay you read as rejection is the very thing that reveals how much you actually trust him." },
+          { "verse_ref": "v27–28", "note": "Jesus praises her great faith and heals her daughter — persistent, undignified prayer for your child is not a lack of faith but its fiercest form." }
+        ],
         "reflection": "The Canaanite woman's encounter with Jesus is one of the most uncomfortable passages in the Gospels, and it is one of the most important for mothers. She is a Gentile, she is desperate, and when she cries out to Jesus, he does not answer. The disciples ask him to send her away. Jesus himself tells her that his mission is to the lost sheep of Israel. And she keeps asking. She is not put off by silence. She is not put off by apparent rejection. She persists with a faith that is almost aggressive — and when Jesus tests her one more time with a statement that sounds dismissive, she does not retreat. She turns it into an argument for mercy. Jesus' response is direct: \"Woman, great is your faith. Let it be done for you as you desire.\" What Jesus is praising is not persistence as a technique. He is praising faith that refuses to accept that God is done. This woman believed that no matter how the situation looked, Jesus was still capable and still willing. For a mother praying for a child, this passage is permission to keep asking — loudly, persistently, and without apology.",
         "reflectionQ1": "Where have you quietly given up praying for one of your children — accepted that things are the way they are, stopped believing God is still moving — and what did that resignation cost the child and cost you?",
         "reflectionQ2": "This woman refused to be sent away — she kept pressing in for her child. Name the specific situation involving your child that you have stopped bringing to God with urgency, and bring it to him again today.",
@@ -705,7 +949,11 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 9,
         "chapter": "Luke 2:19",
         "theme": "She Treasured All These Things",
-        "studyNotes": [],
+        "passageContext": "In the middle of chaos and shepherds and a baby in a feeding trough, one verse pauses to show us how Mary held it all.",
+        "studyNotes": [
+          { "verse_ref": "v19a", "note": "Mary treasured up all these things — she didn't rush to explain or control what she didn't understand, but held it, which is its own quiet kind of faith." },
+          { "verse_ref": "v19b", "note": "She pondered them in her heart — the holy response to bewilderment about your child is not anxiety or management, but a trusting, unhurried wait." }
+        ],
         "reflection": "Luke records twice that Mary \"treasured all these things in her heart.\" Once after the shepherds' announcement at the birth, and once after finding the twelve-year-old Jesus in the temple. These are two wildly different emotional moments — the first is wonder, the second is fear that turned to bewilderment. And in both cases, Mary's response is the same: she takes the moment inward, holds it, turns it over. She does not perform certainty she does not have. She does not explain away what she cannot understand. She keeps it. What Luke is showing is a kind of interior spiritual practice essential for anyone navigating mystery — and motherhood is full of mystery. You will have moments with your children that you do not understand, cannot explain, and cannot resolve. The practice Mary models is not passive acceptance. It is active holding — bringing the unresolved thing before God and staying with it rather than demanding resolution. Every mother has a Mary moment she is carrying: something she does not understand about her child, her calling, or God's plan. The invitation is the same — treasure it, stay with it, let God be the interpreter.",
         "reflectionQ1": "What is the unresolved thing about your child or your season of motherhood that you have not been able to make peace with — and what does the fact that you are still carrying it tell you about where you need God to meet you?",
         "reflectionQ2": "Mary's response to bewilderment was to treasure and wait — but you have responded to confusion about your child with anxiety, distance, or control. Name the specific thing about your child's life or future that you are refusing to sit with, and ask what it would mean to treasure it instead.",
@@ -715,7 +963,11 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 10,
         "chapter": "Romans 8:26-27",
         "theme": "The Spirit Prays What You Cannot",
-        "studyNotes": [],
+        "passageContext": "Paul speaks to the moments when you're too overwhelmed or empty to even know what to pray, and tells you what God does then.",
+        "studyNotes": [
+          { "verse_ref": "v26", "note": "The Spirit helps you in your weakness, interceding with groanings too deep for words — when you can't find the words for your child, your wordless ache is already being carried to God." },
+          { "verse_ref": "v27", "note": "God searches hearts and knows the mind of the Spirit — your prayers don't have to be eloquent or even coherent to be heard exactly as they are meant." }
+        ],
         "reflection": "Romans 8 is Paul's most comprehensive statement about life in the Spirit, and verse 26 lands in the middle of it like a lifeline for the exhausted: \"the Spirit helps us in our weakness; for we do not know how to pray as we ought, but the Spirit himself intercedes for us with groanings too deep for words.\" Paul is writing to people who know how to pray — and he is telling them there are moments when words fail and need exceeds language, and in those moments the Spirit takes over. This is not a verse about spiritual failure. It is a verse about the God who closes the gap between what you can bring and what is needed. Every mother knows the prayer that has no words — the 3 a.m. sitting by a sick child, the tears in the car after a conversation that went wrong, the fear that has no name attached to it. In those moments, you are not failing to pray well. You are precisely where this verse lives. The Spirit is interceding on your behalf according to the will of God — which means the prayer you cannot form is still being offered, and it is being offered perfectly. Your weakness is not the last word. It is the starting point.",
         "reflectionQ1": "What is the weight you are carrying for your child right now that has no words — the fear or grief or confusion you don't even know how to bring to God — and what has carrying it alone cost you?",
         "reflectionQ2": "Romans 8 says the Spirit intercedes for you when you don't know how to pray — but you are still trying to manage this situation with your own strength. Name the specific thing you are white-knuckling right now and decide to stop managing it alone.",
@@ -725,7 +977,11 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 11,
         "chapter": "1 Kings 3:16-28",
         "theme": "Love That Would Give Everything",
-        "studyNotes": [],
+        "passageContext": "Solomon settles a dispute between two mothers, and the real mother is revealed by what she's willing to give up.",
+        "studyNotes": [
+          { "verse_ref": "v16–22", "note": "Two women claim one child, and the truth has to be uncovered — love is proven not by what it claims but by what it is willing to sacrifice." },
+          { "verse_ref": "v23–28", "note": "The real mother would rather lose her son than see him harmed — sometimes the most loving thing is to release your grip on what you most want to hold." }
+        ],
         "reflection": "Solomon's famous judgment between the two mothers is not primarily a story about wisdom — it is a story about what genuine love is willing to do. The real mother's willingness to give up her son rather than see him die is the proof that exposes her. Her love is not possessive. It does not insist on itself. It would rather lose the thing it loves most than destroy it. Solomon recognizes this immediately — only a real mother's love looks like that. What this passage exposes is the difference between love that serves the lover and love that serves the beloved. Possessive love holds on because releasing hurts too much. Sacrificial love releases because holding on would cause harm. Every mother eventually faces a version of this — a moment where what is best for your child costs you something real: comfort, control, presence, the relationship you imagined. Real love, the kind Solomon identified, is willing to pay that price. It is not dramatic martyrdom. It is the daily small choices to serve your child's actual good rather than your need to feel needed, secure, or right.",
         "reflectionQ1": "Where in your relationship with your child are you holding on in a way that serves your need rather than their good — and what has your grip cost them?",
         "reflectionQ2": "The real mother was willing to give up her son to protect him — name one specific way you are clinging to something about your child or your relationship with them that you need to release for their sake, and what it would actually look like to let go.",
@@ -735,7 +991,11 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 12,
         "chapter": "Psalm 46:1-7",
         "theme": "God in the Middle of the Mess",
-        "studyNotes": [],
+        "passageContext": "A psalm written for shaking, chaotic times insists that God is not distant from the upheaval but present right in the center of it.",
+        "studyNotes": [
+          { "verse_ref": "v1–3", "note": "God is a very present help in trouble, so we won't fear though the earth gives way — his presence is not a reward for calm but a refuge precisely when everything is falling apart." },
+          { "verse_ref": "v4–7", "note": "There is a river that gladdens the city of God, and God is in her midst — the steadiness you need is not the absence of chaos but the presence of God inside it." }
+        ],
         "reflection": "Psalm 46 was written for crisis — real, earth-shaking crisis. The imagery is of mountains being thrown into the sea, nations raging, kingdoms tottering. The psalmist is not describing a manageable inconvenience. He is describing the world coming apart. And the refrain is a statement, not a question: \"God is our refuge and strength, a very present help in trouble.\" The phrase \"very present\" in the Hebrew suggests proximity — not just that God exists and is theoretically available, but that he is right here, close in, accessible in the place where the chaos is. The chaos of motherhood rarely looks like mountains falling into the sea. It looks like a toddler's tantrum and a deadline and no sleep and a marriage under strain and a question you don't know how to answer. But the emotional reality of that chaos is the same: the sense that things are beyond you. What the psalm offers is not resolution of the chaos. It is the presence of God in the middle of it. \"Be still and know that I am God\" is not a command to feel peaceful — it is a command to stop your striving long enough to register who is actually in the room.",
         "reflectionQ1": "What in your current season as a mother is making you feel like things are beyond you — and what has your inability to be still cost you in your awareness of God's presence in the middle of it?",
         "reflectionQ2": "Psalm 46 says God is a very present help in trouble — but you are looking for help everywhere except in his presence. Name the one specific place in your life right now where you need to stop striving and be still before God, and what you would need to put down to do it.",
@@ -745,7 +1005,11 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 13,
         "chapter": "Philippians 4:4-9",
         "theme": "Peace in the Uncontrollable",
-        "studyNotes": [],
+        "passageContext": "Paul, writing from prison, gives the actual mechanism for trading anxiety for a peace that doesn't depend on your circumstances.",
+        "studyNotes": [
+          { "verse_ref": "v4–7", "note": "Bring everything to God with thanksgiving, and his peace will guard your heart — peace comes not from solving the worry but from handing the specific thing over." },
+          { "verse_ref": "v8–9", "note": "Dwell on what is true, lovely, and good — what you let your mind circle determines whether anxiety or peace settles in, so where your thoughts land is never neutral." }
+        ],
         "reflection": "Paul writes Philippians from prison, which is the first thing to remember when he tells you to rejoice always. He is not writing from a place of ease. He is writing from chains. The peace he describes in verse 7 — \"the peace of God, which surpasses all understanding\" — is not the peace of having things figured out. It is the peace of having handed things over. The mechanism Paul gives is specific: present your requests to God with thanksgiving, and the peace of God will guard your heart and mind. The sequence matters. The peace is not the reward for having the right circumstances. It is the result of the transaction — bringing the anxiety, making the request, and releasing it to God. Mothers live in a constant stream of uncontrollable variables: a child's choices, health, relationships, spiritual life. No amount of vigilance can secure every outcome. What Philippians 4 offers is not a way to control the variables. It is a way to live at peace in the presence of them, because the God who receives your requests is bigger than every variable you cannot control. The guard Paul describes is not an absence of concern. It is a presence of God that stands at the door of your mind and does not let anxiety build a permanent home there.",
         "reflectionQ1": "What is the specific uncontrollable thing in your life as a mother that has set up permanent residence in your mind — and what has its presence there cost you in your ability to be fully present with your family?",
         "reflectionQ2": "Paul says the peace of God comes through bringing your anxiety to God with thanksgiving and releasing it — name the one specific worry about your child that you have been turning over in your mind rather than laying at God's feet, and do the thing Paul describes right now.",
@@ -755,7 +1019,12 @@ export const PLANS: PlanSeed[] = [
         "dayNumber": 14,
         "chapter": "Lamentations 3:22-33",
         "theme": "New Every Morning for the Exhausted",
-        "studyNotes": [],
+        "passageContext": "From the depths of grief and exhaustion, the writer reaches for the one thing that holds — God's mercies that reset with every sunrise.",
+        "studyNotes": [
+          { "verse_ref": "v22–24", "note": "His mercies are new every morning, great is his faithfulness — you don't have to carry today's failures into tomorrow, because grace resets while you sleep." },
+          { "verse_ref": "v25–30", "note": "The Lord is good to those who wait for him — in seasons of exhaustion, quiet waiting on God is not passivity but the deepest kind of strength." },
+          { "verse_ref": "v31–33", "note": "He does not afflict from his heart, and his compassion is sure — even when the season is heavy, it is not because God has stopped being tender toward you." }
+        ],
         "reflection": "Lamentations is the most honest book in the Bible about suffering. Jeremiah is sitting in the ruins of Jerusalem and he is not pretending. He describes God as someone who has driven him into darkness, who has made him sit in shadows, who has afflicted him. He does not skip the pain to get to the comfort. And then in the middle of the grief, three verses arrive that have sustained the people of God for thousands of years: \"The steadfast love of the Lord never ceases; his mercies never come to an end; they are new every morning; great is your faithfulness.\" What makes these verses powerful is where they appear — not at the end of a resolved story, but in the middle of devastation. The steadfast love Jeremiah is clinging to is not a feeling. It is a theological conviction about the character of God, held in place when nothing felt true. For any mother ending a hard season or sitting in the middle of one, this passage is not a dismissal of the struggle. It is the assertion that the God whose mercies are new every morning has not changed — and that tomorrow morning, the same God who met you yesterday will meet you again. The exhaustion is real. The mercy is more real.",
         "reflectionQ1": "What season of motherhood have you gone through — or are in right now — that has tested your belief that God's steadfast love is real, and what has the testing cost you in your relationship with him?",
         "reflectionQ2": "Lamentations 3 says his mercies are new every morning — but you are starting tomorrow carrying the weight of today. Name one specific thing from this season of motherhood you need to lay down before you sleep tonight instead of carrying into tomorrow.",

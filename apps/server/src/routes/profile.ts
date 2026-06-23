@@ -13,10 +13,24 @@ import {
 } from "../db/schema.js";
 import { requireAuth, type AppEnv } from "../middleware/auth.js";
 import type { MembershipTier } from "../lib/tiers.js";
+import { clientDateString, effectiveStreak } from "../lib/localday.js";
 
 export const profile = new Hono<AppEnv>();
 
 profile.use("*", requireAuth);
+
+/**
+ * Return the profile row with `streakCount` resolved to its *live* value for
+ * the requester's local day — the stored count only moves on submission, so a
+ * lapsed streak must read 0 here rather than freezing at its last value.
+ */
+function withLiveStreak<T extends { streakCount: number; lastStreakDate: string | null }>(
+  row: T | undefined,
+  today: string
+): T | undefined {
+  if (!row) return row;
+  return { ...row, streakCount: effectiveStreak(row.streakCount, row.lastStreakDate, today) };
+}
 
 const FAMILY_CODE_CHARSET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 function generateFamilyCode(): string {
@@ -48,6 +62,7 @@ profile.get("/search", async (c) => {
 // here instead of via a signup trigger.)
 profile.get("/", async (c) => {
   const { id: userId, email, name } = c.var.user;
+  const today = clientDateString(c);
 
   const [existing] = await db
     .select()
@@ -62,9 +77,9 @@ profile.get("/", async (c) => {
         .set({ familyCode: generateFamilyCode(), updatedAt: new Date() })
         .where(eq(profiles.userId, userId))
         .returning();
-      return c.json({ profile: updated ?? existing });
+      return c.json({ profile: withLiveStreak(updated ?? existing, today) });
     }
-    return c.json({ profile: existing });
+    return c.json({ profile: withLiveStreak(existing, today) });
   }
 
   const displayName = name?.trim() || email?.split("@")[0] || "Friend";
@@ -74,7 +89,7 @@ profile.get("/", async (c) => {
     .onConflictDoNothing()
     .returning();
 
-  if (created) return c.json({ profile: created });
+  if (created) return c.json({ profile: withLiveStreak(created, today) });
 
   // Lost a race — fetch the row the other request created.
   const [row] = await db
@@ -82,7 +97,7 @@ profile.get("/", async (c) => {
     .from(profiles)
     .where(eq(profiles.userId, userId))
     .limit(1);
-  return c.json({ profile: row });
+  return c.json({ profile: withLiveStreak(row, today) });
 });
 
 // POST /api/profile/redeem-promo → validate a promo code and upgrade membership.

@@ -87,6 +87,11 @@ export const devotionalDays = pgTable(
     dayNumber: integer("day_number").notNull(),
     chapter: text("chapter").notNull(),
     theme: text("theme"),
+    // Per-day passage setup shown in the "Passage Context" drawer. Inline on the
+    // day (not the shared book/chapter passageNotes table) so two days on the same
+    // chapter can carry different context. Both this and studyNotes are required
+    // for every day of a new plan — see generate.ts validation.
+    passageContext: text("passage_context"),
     studyNotes: jsonb("study_notes").notNull().default([]),
     reflection: text("reflection"),
     reflectionQ1: text("reflection_q1").notNull(),

@@ -98,7 +98,7 @@ function SkeletonLines({ count = 3 }: { count?: number }) {
 
 // ─── Feature 1: Passage Context Drawer ───────────────────────────────────────
 
-function PassageContextDrawer({ passageRef }: { passageRef: string }) {
+function PassageContextDrawer({ passageRef, inlineContext }: { passageRef: string; inlineContext?: string | null }) {
   const cardBg = useThemeColor("card");
   const mutedBg = useThemeColor("muted");
   const borderColor = useThemeColor("border");
@@ -117,16 +117,19 @@ function PassageContextDrawer({ passageRef }: { passageRef: string }) {
     chevronAnim.setValue(0);
   }, [passageRef]);
 
-  const { data, isLoading } = useQuery({
+  // Prefer the per-day context stored on the day itself. Only fall back to the
+  // legacy book/chapter passageNotes table when a day has none (older content).
+  const { data, isLoading: fetching } = useQuery({
     queryKey: ["passageNotes", passageRef],
     queryFn: () =>
       parsed
         ? ApiClient.getPassageNotes(parsed.book, parsed.chapter)
         : Promise.resolve({ passageNotes: null }),
-    enabled: !!parsed && open,
+    enabled: !inlineContext && !!parsed && open,
   });
 
-  const context = data?.passageNotes?.context ?? null;
+  const context = inlineContext ?? data?.passageNotes?.context ?? null;
+  const isLoading = !inlineContext && fetching;
 
   const toggle = () => {
     const toOpen = !open;
@@ -1171,12 +1174,12 @@ export default function DevotionalReader() {
               overflow: "hidden",
             }}
           >
-            <PassageContextDrawer passageRef={day?.chapter ?? ""} />
+            <PassageContextDrawer passageRef={day?.chapter ?? ""} inlineContext={day?.passageContext ?? null} />
             <View style={{ height: 1, backgroundColor: borderColor }} />
             <StudyNotesDrawer passageRef={day?.chapter ?? ""} notes={day?.studyNotes ?? []} />
           </View>
 
-          {/* Reflect, Apply, Prayer, Submit */}
+          {/* Reflect, Act, Prayer, Submit */}
           <View className="gap-2">
               <Text className="font-sans-semibold text-base text-foreground">
                 Reflect
@@ -1205,7 +1208,7 @@ export default function DevotionalReader() {
 
             <View className="gap-2">
               <Text className="font-sans-semibold text-base text-foreground">
-                Apply
+                Act
               </Text>
               <Text className="text-sm leading-relaxed text-muted-foreground">
                 {day?.reflectionQ2}

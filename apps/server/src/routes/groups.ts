@@ -12,7 +12,7 @@ import {
 } from "../db/schema.js";
 import { requireAuth, type AppEnv } from "../middleware/auth.js";
 import { TIER_LIMITS, TIER_NAMES, type MembershipTier } from "../lib/tiers.js";
-import { clientDateString, clientDayWindow } from "../lib/localday.js";
+import { clientDateString, clientDayWindow, effectiveStreak } from "../lib/localday.js";
 
 export const groupsRoute = new Hono<AppEnv>();
 groupsRoute.use("*", requireAuth);
@@ -31,6 +31,7 @@ groupsRoute.get("/", async (c) => {
   // day (x-timezone-offset header) so checks don't clear in the evening when the
   // UTC day rolls over ahead of the user's calendar day.
   const { start: todayStart, end: tomorrowStart } = clientDayWindow(c);
+  const today = clientDateString(c);
 
   const memberships = await db
     .select({ group: groups, membership: groupMembers, plan: devotionalPlans })
@@ -92,7 +93,7 @@ groupsRoute.get("/", async (c) => {
         groupType: group.groupType,
         inviteCode: group.inviteCode,
         currentDay: group.currentDay,
-        streakCount: group.streakCount,
+        streakCount: effectiveStreak(group.streakCount, group.lastStreakDate, today),
         displayOrder: membership.displayOrder,
         plan: plan
           ? {
@@ -107,7 +108,7 @@ groupsRoute.get("/", async (c) => {
           userId: m.userId,
           memberRole: m.memberRole,
           doneToday: doneUserIds.has(m.userId),
-          streakCount: m.streakCount,
+          streakCount: effectiveStreak(m.streakCount, m.lastStreakDate, today),
           displayName: p?.displayName ?? "Member",
           avatarUrl: p?.avatarUrl ?? null,
         })),
