@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { Hono } from "hono";
-import { and, eq, ilike, ne, or, sql } from "drizzle-orm";
+import { and, eq, ilike, inArray, ne, or, sql } from "drizzle-orm";
 import { db } from "../db/index.js";
 import {
   profiles,
@@ -9,11 +9,15 @@ import {
   groupMembers,
   discipleRelationships,
   disciplerNotes,
+  customQuestions,
+  flaggedResponses,
+  mailboxMessages,
   devotionalPlans,
 } from "../db/schema.js";
 import { requireAuth, type AppEnv } from "../middleware/auth.js";
 import type { MembershipTier } from "../lib/tiers.js";
 import { clientDateString, effectiveStreak } from "../lib/localday.js";
+import { isAdmin } from "../lib/admin.js";
 
 export const profile = new Hono<AppEnv>();
 
@@ -30,6 +34,19 @@ function withLiveStreak<T extends { streakCount: number; lastStreakDate: string 
 ): T | undefined {
   if (!row) return row;
   return { ...row, streakCount: effectiveStreak(row.streakCount, row.lastStreakDate, today) };
+}
+
+/**
+ * Attach the derived `isAdmin` flag (founder authoring rights) so the app can
+ * conditionally surface the Community Devotional admin tools. Derived from the
+ * ADMIN_USER_IDS env allowlist — never stored on the row.
+ */
+function withAdmin<T extends object>(
+  row: T | undefined,
+  userId: string
+): (T & { isAdmin: boolean }) | undefined {
+  if (!row) return row;
+  return { ...row, isAdmin: isAdmin(userId) };
 }
 
 const FAMILY_CODE_CHARSET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
@@ -77,9 +94,9 @@ profile.get("/", async (c) => {
         .set({ familyCode: generateFamilyCode(), updatedAt: new Date() })
         .where(eq(profiles.userId, userId))
         .returning();
-      return c.json({ profile: withLiveStreak(updated ?? existing, today) });
+      return c.json({ profile: withAdmin(withLiveStreak(updated ?? existing, today), userId) });
     }
-    return c.json({ profile: withLiveStreak(existing, today) });
+    return c.json({ profile: withAdmin(withLiveStreak(existing, today), userId) });
   }
 
   const displayName = name?.trim() || email?.split("@")[0] || "Friend";
@@ -89,7 +106,7 @@ profile.get("/", async (c) => {
     .onConflictDoNothing()
     .returning();
 
-  if (created) return c.json({ profile: withLiveStreak(created, today) });
+  if (created) return c.json({ profile: withAdmin(withLiveStreak(created, today), userId) });
 
   // Lost a race — fetch the row the other request created.
   const [row] = await db
@@ -97,7 +114,7 @@ profile.get("/", async (c) => {
     .from(profiles)
     .where(eq(profiles.userId, userId))
     .limit(1);
-  return c.json({ profile: withLiveStreak(row, today) });
+  return c.json({ profile: withAdmin(withLiveStreak(row, today), userId) });
 });
 
 // POST /api/profile/redeem-promo → validate a promo code and upgrade membership.
@@ -212,7 +229,7 @@ profile.patch("/", async (c) => {
       .returning();
   }
 
-  return c.json({ profile: row });
+  return c.json({ profile: withAdmin(row, userId) });
 });
 
 // POST /api/profile/push-token  → register or update the device push token
@@ -278,7 +295,7 @@ profile.post("/family/join", async (c) => {
     .where(eq(profiles.userId, userId))
     .returning();
 
-  return c.json({ profile: row });
+  return c.json({ profile: withAdmin(row, userId) });
 });
 
 // DELETE /api/profile  → permanently delete the account and all associated data.
@@ -292,6 +309,20 @@ profile.delete("/", async (c) => {
     await tx.delete(disciplerNotes).where(
       or(eq(disciplerNotes.fromUserId, userId), eq(disciplerNotes.toUserId, userId))
     );
+    // Discipleship Kit children. They'd cascade from disciple_relationships, but
+    // delete them explicitly first so ordering can't bite us.
+    const rels = await tx
+      .select({ id: discipleRelationships.id })
+      .from(discipleRelationships)
+      .where(
+        or(eq(discipleRelationships.disciplerId, userId), eq(discipleRelationships.discipleId, userId))
+      );
+    const relIds = rels.map((r) => r.id);
+    if (relIds.length > 0) {
+      await tx.delete(customQuestions).where(inArray(customQuestions.discipleshipRelationshipId, relIds));
+      await tx.delete(flaggedResponses).where(inArray(flaggedResponses.discipleshipRelationshipId, relIds));
+      await tx.delete(mailboxMessages).where(inArray(mailboxMessages.discipleshipRelationshipId, relIds));
+    }
     await tx.delete(discipleRelationships).where(
       or(eq(discipleRelationships.disciplerId, userId), eq(discipleRelationships.discipleId, userId))
     );
