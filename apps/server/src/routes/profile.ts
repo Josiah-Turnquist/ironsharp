@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { Hono } from "hono";
+import { z } from "zod";
 import { and, eq, ilike, inArray, ne, or, sql } from "drizzle-orm";
 import { db } from "../db/index.js";
 import {
@@ -22,6 +23,36 @@ import { isAdmin } from "../lib/admin.js";
 export const profile = new Hono<AppEnv>();
 
 profile.use("*", requireAuth);
+
+const patchProfileSchema = z.object({
+  displayName: z.string().nullish(),
+  avatarUrl: z.string().nullish(),
+  churchName: z.string().nullish(),
+  primaryRole: z.enum(["discipler", "disciple", "partner"]).optional(),
+  surveyName: z.string().nullish(),
+  surveyAgeRange: z.string().nullish(),
+  surveyGender: z.string().nullish(),
+  surveyState: z.string().nullish(),
+  surveyCity: z.string().nullish(),
+  surveyEducation: z.string().nullish(),
+  surveyHasChurch: z.boolean().nullish(),
+  surveyChurchName: z.string().nullish(),
+  surveyDevotionalRating: z.number().nullish(),
+  surveyFaithJourney: z.string().nullish(),
+  surveyGoals: z.array(z.string()).nullish(),
+  surveyRelationshipStatus: z.string().nullish(),
+  surveyHasKids: z.boolean().nullish(),
+  surveyCompleted: z.boolean().optional(),
+});
+const promoSchema = z.object({ code: z.string().trim().min(1).max(64) });
+const pushTokenSchema = z.object({ token: z.string().min(1) });
+const notifPrefsSchema = z.object({
+  notifMorningReminder: z.boolean().optional(),
+  notifPartnerDone: z.boolean().optional(),
+  notifDailyNudge: z.boolean().optional(),
+  notifGroupComplete: z.boolean().optional(),
+});
+const familyJoinSchema = z.object({ code: z.string().trim().min(1) });
 
 /**
  * Return the profile row with `streakCount` resolved to its *live* value for
@@ -142,8 +173,9 @@ const PROMO_CODES: Record<string, PromoReward> = {
 
 profile.post("/redeem-promo", async (c) => {
   const userId = c.var.user.id;
-  const { code } = await c.req.json().catch(() => ({ code: "" }));
-  const normalized = (code as string).trim().toUpperCase();
+  const parsed = promoSchema.safeParse(await c.req.json().catch(() => ({})));
+  if (!parsed.success) return c.json({ error: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
+  const normalized = parsed.data.code.trim().toUpperCase();
   const reward = PROMO_CODES[normalized];
   if (!reward) return c.json({ error: "Invalid promo code." }, 400);
 
@@ -175,7 +207,9 @@ profile.post("/redeem-promo", async (c) => {
 // PATCH /api/profile  → update editable profile fields
 profile.patch("/", async (c) => {
   const userId = c.var.user.id;
-  const body = await c.req.json().catch(() => ({}));
+  const parsed = patchProfileSchema.safeParse(await c.req.json().catch(() => ({})));
+  if (!parsed.success) return c.json({ error: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
+  const body = parsed.data as Record<string, unknown>;
 
   // Only allow a safe subset of fields to be written by the client.
   const updatable: Record<string, unknown> = {};
@@ -235,8 +269,9 @@ profile.patch("/", async (c) => {
 // POST /api/profile/push-token  → register or update the device push token
 profile.post("/push-token", async (c) => {
   const userId = c.var.user.id;
-  const { token } = await c.req.json().catch(() => ({ token: "" }));
-  if (!token || typeof token !== "string") return c.json({ error: "token required" }, 400);
+  const parsed = pushTokenSchema.safeParse(await c.req.json().catch(() => ({})));
+  if (!parsed.success) return c.json({ error: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
+  const { token } = parsed.data;
 
   await db
     .update(profiles)
@@ -249,7 +284,9 @@ profile.post("/push-token", async (c) => {
 // PATCH /api/profile/notification-prefs  → update notification preferences
 profile.patch("/notification-prefs", async (c) => {
   const userId = c.var.user.id;
-  const body = await c.req.json().catch(() => ({}));
+  const parsed = notifPrefsSchema.safeParse(await c.req.json().catch(() => ({})));
+  if (!parsed.success) return c.json({ error: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
+  const body = parsed.data as Record<string, unknown>;
 
   const allowed = ["notifMorningReminder", "notifPartnerDone", "notifDailyNudge", "notifGroupComplete"] as const;
   const updates: Record<string, unknown> = { updatedAt: new Date() };
@@ -278,8 +315,9 @@ profile.get("/family/validate", async (c) => {
 // POST /api/profile/family/join  → link the current user's profile to a family account
 profile.post("/family/join", async (c) => {
   const userId = c.var.user.id;
-  const { code } = await c.req.json().catch(() => ({ code: "" }));
-  const normalized = (code as string).trim().toUpperCase();
+  const parsed = familyJoinSchema.safeParse(await c.req.json().catch(() => ({})));
+  if (!parsed.success) return c.json({ error: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
+  const normalized = parsed.data.code.trim().toUpperCase();
 
   const [family] = await db
     .select({ userId: profiles.userId })

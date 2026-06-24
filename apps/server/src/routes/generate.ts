@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { z } from "zod";
 import { and, eq, or } from "drizzle-orm";
 import Anthropic from "@anthropic-ai/sdk";
 import { db } from "../db/index.js";
@@ -11,6 +12,15 @@ export const generate = new Hono<AppEnv>();
 generate.use("*", requireAuth);
 
 const WINDOW_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+const generateSchema = z.object({
+  bookOrTopic: z.string().trim().min(1),
+  inputType: z.enum(["book", "topic"]),
+  days: z.number().int().min(1).max(30),
+  themeFocus: z.string().trim().min(1),
+  who: z.enum(["just-me", "friend", "small-group", "discipleship"]),
+  context: z.string().optional(),
+});
 
 // ─── System prompt (cached by Anthropic — static across all generations) ───────
 
@@ -237,31 +247,9 @@ generate.get("/tokens", async (c) => {
 generate.post("/", async (c) => {
   const userId = c.var.user.id;
 
-  const body = await c.req.json().catch(() => ({})) as {
-    bookOrTopic: string;
-    inputType: "book" | "topic";
-    days: number;
-    themeFocus: string;
-    who: string;
-    context?: string;
-  };
-
-  const { bookOrTopic, inputType, days, themeFocus, who, context } = body;
-  if (!bookOrTopic || !inputType || !days || !themeFocus || !who) {
-    return c.json({ error: "Missing required fields" }, 400);
-  }
-
-  if (!["book", "topic"].includes(inputType)) {
-    return c.json({ error: "inputType must be 'book' or 'topic'" }, 400);
-  }
-
-  if (!Number.isInteger(days) || days < 1 || days > 30) {
-    return c.json({ error: "days must be a whole number between 1 and 30" }, 400);
-  }
-
-  if (!["just-me", "friend", "small-group", "discipleship"].includes(who)) {
-    return c.json({ error: "Invalid value for 'who'" }, 400);
-  }
+  const parsed = generateSchema.safeParse(await c.req.json().catch(() => ({})));
+  if (!parsed.success) return c.json({ error: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
+  const { bookOrTopic, inputType, days, themeFocus, who, context } = parsed.data;
 
   if (inputType === "book" && !isValidBibleBook(bookOrTopic)) {
     return c.json({ error: "Please enter a single book of the Bible (e.g. Romans, Psalms, 1 Corinthians)." }, 400);
