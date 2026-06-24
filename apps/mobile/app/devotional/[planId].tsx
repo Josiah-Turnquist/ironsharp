@@ -1105,8 +1105,6 @@ export default function DevotionalReader() {
                   </Text>
                 </View>
               </Pressable>
-
-              {/* Commute Mode — hidden until dev build is ready */}
             </View>
           </Pressable>
         </Modal>
