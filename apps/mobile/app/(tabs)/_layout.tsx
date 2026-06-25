@@ -98,6 +98,13 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
+        name="home"
+        options={{
+          title: "Home",
+          tabBarIcon: ({ focused }) => <TabIcon Icon={Home} focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
         name="groups"
         options={{
           title: "Groups",
@@ -109,13 +116,6 @@ export default function TabsLayout() {
         options={{
           title: "Community",
           tabBarIcon: ({ focused }) => <TabIcon Icon={Globe} focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="home"
-        options={{
-          title: "Home",
-          tabBarIcon: ({ focused }) => <TabIcon Icon={Home} focused={focused} />,
         }}
       />
       <Tabs.Screen
