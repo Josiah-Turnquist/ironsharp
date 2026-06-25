@@ -277,6 +277,28 @@ export function hsl(themeName: ThemeName, token: string): string {
   return triple ? `hsl(${triple})` : "#000";
 }
 
+/**
+ * Apply an alpha (0–1) to a resolved color string. Handles this project's
+ * `hsl(H S% L%)` theme strings (→ `hsla(... / a)`) and `#RRGGBB` hex
+ * (→ `#RRGGBBAA`).
+ *
+ * Use this instead of concatenating a hex-alpha onto a color: `someColor + "15"`
+ * is only valid when `someColor` is 6-digit hex. For an `hsl(...)` string (which
+ * is what `useThemeColor` returns), React Native matches the `hsl(...)` and
+ * ignores the trailing digits, rendering the color FULLY OPAQUE.
+ */
+export function withAlpha(color: string, alpha: number): string {
+  const m = color.match(/^hsl\((.+)\)$/);
+  if (m) return `hsla(${m[1]} / ${alpha})`;
+  if (/^#[0-9a-fA-F]{6}$/.test(color)) {
+    const a = Math.round(Math.max(0, Math.min(1, alpha)) * 255)
+      .toString(16)
+      .padStart(2, "0");
+    return color + a;
+  }
+  return color;
+}
+
 // Whether a theme has a dark background — drives status-bar icon contrast so
 // the status bar follows the in-app theme rather than the OS appearance.
 export function isDarkTheme(themeName: ThemeName): boolean {

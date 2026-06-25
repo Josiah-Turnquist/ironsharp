@@ -16,6 +16,7 @@ import { Screen } from "@/components/Screen";
 import { Header } from "@/components/Header";
 import { ErrorState } from "@/components/ErrorState";
 import { useThemeColor } from "@/components/useThemeColor";
+import { withAlpha } from "@/theme/themes";
 import { usePlansByCategory, useProgress, useGroups, useProfile } from "@/lib/queries";
 import { ApiClient, ApiError, type Group } from "@/lib/api";
 import { categoryLabel } from "@/lib/categories";
@@ -282,7 +283,7 @@ export default function PlanList() {
                     width: 36,
                     height: 36,
                     borderRadius: 18,
-                    backgroundColor: primary + "1A",
+                    backgroundColor: withAlpha(primary, 0.1),
                     alignItems: "center",
                     justifyContent: "center",
                   }}

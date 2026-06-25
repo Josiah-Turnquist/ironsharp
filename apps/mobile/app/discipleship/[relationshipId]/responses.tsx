@@ -7,6 +7,7 @@ import { Screen } from "@/components/Screen";
 import { Header } from "@/components/Header";
 import { ErrorState } from "@/components/ErrorState";
 import { useThemeColor } from "@/components/useThemeColor";
+import { withAlpha } from "@/theme/themes";
 import { useToast } from "@/components/Toast";
 import { useDiscipleResponses } from "@/lib/queries";
 import { ApiClient, ApiError, type DiscipleResponse, type QuestionType } from "@/lib/api";
@@ -101,7 +102,7 @@ export default function DiscipleResponsesScreen() {
                   <Pressable
                     key={w}
                     onPress={() => setWhen(w)}
-                    style={{ borderWidth: 1.5, borderColor: sel ? primary : border, backgroundColor: sel ? primary + "18" : "transparent", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 6 }}
+                    style={{ borderWidth: 1.5, borderColor: sel ? primary : border, backgroundColor: sel ? withAlpha(primary, 0.1) : "transparent", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 6 }}
                   >
                     <Text style={{ color: sel ? primary : fg, fontFamily: "DMSans_500Medium", fontSize: 13, textTransform: "capitalize" }}>{w}</Text>
                   </Pressable>

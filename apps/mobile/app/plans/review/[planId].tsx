@@ -4,6 +4,7 @@ import { CheckCircle2 } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
 import { Header } from "@/components/Header";
 import { useThemeColor } from "@/components/useThemeColor";
+import { withAlpha } from "@/theme/themes";
 import { useDays, usePlan, useProgress } from "@/lib/queries";
 
 export default function CompletedPlanReview() {
@@ -51,7 +52,7 @@ export default function CompletedPlanReview() {
             <View className="mb-1 flex-row items-center gap-2">
               <View
                 className="h-6 w-6 items-center justify-center rounded-full"
-                style={{ backgroundColor: primary + "1A" }}
+                style={{ backgroundColor: withAlpha(primary, 0.1) }}
               >
                 <Text className="font-sans-semibold text-[11px] text-primary">
                   {d.dayNumber}

@@ -4,6 +4,7 @@ import { Check, Globe } from "lucide-react-native";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { useThemeColor } from "@/components/useThemeColor";
+import { withAlpha } from "@/theme/themes";
 import {
   ApiClient,
   ApiError,
@@ -75,7 +76,7 @@ function FeedCard({
             width: 26,
             height: 26,
             borderRadius: 13,
-            backgroundColor: primary + "22",
+            backgroundColor: withAlpha(primary, 0.13),
             alignItems: "center",
             justifyContent: "center",
           }}
@@ -141,7 +142,7 @@ function FeedCard({
                 gap: 4,
                 borderWidth: 1,
                 borderColor: mine ? primary : border,
-                backgroundColor: mine ? primary + "18" : "transparent",
+                backgroundColor: mine ? withAlpha(primary, 0.1) : "transparent",
                 borderRadius: 16,
                 paddingHorizontal: 10,
                 paddingVertical: 5,
@@ -287,7 +288,7 @@ export function CommunityDevotionalView({
           alignItems: "center",
           gap: 7,
           marginBottom: 16,
-          backgroundColor: primary + "12",
+          backgroundColor: withAlpha(primary, 0.08),
           borderRadius: 8,
           paddingHorizontal: 10,
           paddingVertical: 9,

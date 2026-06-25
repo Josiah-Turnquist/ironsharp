@@ -40,6 +40,7 @@ import { Screen } from "@/components/Screen";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { ErrorState } from "@/components/ErrorState";
 import { useThemeColor } from "@/components/useThemeColor";
+import { withAlpha } from "@/theme/themes";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { ConfirmModal } from "@/components/ConfirmModal";
@@ -257,7 +258,7 @@ function MemberSearch({
               width: 32,
               height: 32,
               borderRadius: 16,
-              backgroundColor: accent + "22",
+              backgroundColor: withAlpha(accent, 0.13),
               alignItems: "center",
               justifyContent: "center",
             }}
@@ -405,7 +406,7 @@ function DiscipleChip({
   return (
     <Pressable
       onPress={onPress}
-      style={{ borderWidth: 1, borderColor: color, borderRadius: 8, backgroundColor: color + "15" }}
+      style={{ borderWidth: 1, borderColor: color, borderRadius: 8, backgroundColor: withAlpha(color, 0.12) }}
       className="flex-row items-center gap-1.5 px-3 py-2"
     >
       <Icon size={13} color={color} />
