@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -17,7 +17,7 @@ import { Screen } from "@/components/Screen";
 import { Header } from "@/components/Header";
 import { ErrorState } from "@/components/ErrorState";
 import { useThemeColor } from "@/components/useThemeColor";
-import { useMailbox, useProfile } from "@/lib/queries";
+import { useDiscipleships, useMailbox, useProfile } from "@/lib/queries";
 import { ApiClient, ApiError } from "@/lib/api";
 
 function formatTime(iso: string): string {
@@ -31,6 +31,9 @@ export default function MailboxScreen() {
   const messages = useMailbox(id);
   const profile = useProfile();
   const myId = profile.data?.userId;
+  const relationships = useDiscipleships();
+  const counterpart = (relationships.data ?? []).find((r) => r.id === id)?.counterpart;
+  const scrollRef = useRef<ScrollView>(null);
 
   const primary = useThemeColor("primary");
   const muted = useThemeColor("muted-foreground");
@@ -58,7 +61,7 @@ export default function MailboxScreen() {
 
   return (
     <Screen edges={["top"]}>
-      <Header title="Mailbox" subtitle="Discipleship" />
+      <Header title={counterpart?.displayName ?? "Mailbox"} subtitle="Mailbox" />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -72,6 +75,8 @@ export default function MailboxScreen() {
           <ErrorState message="We couldn't load the mailbox." onRetry={() => messages.refetch()} />
         ) : (
           <ScrollView
+            ref={scrollRef}
+            onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: false })}
             contentContainerClassName="mx-auto w-full max-w-lg px-4 py-4"
             showsVerticalScrollIndicator={false}
           >

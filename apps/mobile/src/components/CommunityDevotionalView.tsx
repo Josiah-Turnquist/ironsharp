@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, Text, TextInput, View } from "react-native";
+import { Check } from "lucide-react-native";
 import { useThemeColor } from "@/components/useThemeColor";
 import {
   ApiClient,
@@ -14,6 +15,20 @@ const REACTIONS: { type: CommunityReactionType; label: string }[] = [
   { type: "hit_me", label: "💥 Hit me" },
   { type: "fire", label: "🔥 Fire" },
 ];
+
+function timeAgo(iso: string): string {
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return "";
+  const s = Math.max(0, Math.round((Date.now() - then) / 1000));
+  if (s < 45) return "just now";
+  const m = Math.round(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.round(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.round(h / 24);
+  if (d < 7) return `${d}d ago`;
+  return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
 
 function Label({ children }: { children: string }) {
   return (
@@ -104,6 +119,9 @@ function FeedCard({
         <Text style={{ flex: 1, fontFamily: "DMSans_700Bold", fontSize: 14, color: fg }}>
           {item.displayName}
           {item.isOwn ? " (you)" : ""}
+        </Text>
+        <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 11, color: muted }}>
+          {timeAgo(item.updatedAt)}
         </Text>
       </View>
 
@@ -201,6 +219,13 @@ export function CommunityDevotionalView({
   const [q2Private, setQ2Private] = useState(mine?.q2Private ?? false);
   const [prayerPrivate, setPrayerPrivate] = useState(mine?.prayerPrivate ?? true);
   const [saving, setSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
+
+  useEffect(() => {
+    if (!justSaved) return;
+    const t = setTimeout(() => setJustSaved(false), 2800);
+    return () => clearTimeout(t);
+  }, [justSaved]);
 
   const inputStyle = {
     borderWidth: 1,
@@ -228,7 +253,7 @@ export function CommunityDevotionalView({
         prayerPrivate,
       });
       onRefetch();
-      Alert.alert("Shared", "Your response has been saved.");
+      setJustSaved(true);
     } catch (err) {
       Alert.alert("Couldn't save", err instanceof ApiError ? err.message : "Please try again.");
     } finally {
@@ -354,6 +379,15 @@ export function CommunityDevotionalView({
           </Text>
         )}
       </Pressable>
+
+      {justSaved ? (
+        <View className="mt-3 flex-row items-center justify-center gap-2">
+          <Check size={15} color={primary} />
+          <Text style={{ color: primary, fontFamily: "DMSans_500Medium", fontSize: 13 }}>
+            Shared with the community
+          </Text>
+        </View>
+      ) : null}
 
       <View style={{ height: 1, backgroundColor: border, marginVertical: 24 }} />
 

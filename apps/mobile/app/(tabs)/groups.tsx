@@ -512,7 +512,13 @@ function DiscipleshipSection({
   let body: ReactNode;
   if (!rel) {
     body = other ? (
-      <DiscipleChip icon={HeartHandshake} label="Start discipleship" color={accent} onPress={handleInvite} />
+      <>
+        <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted, lineHeight: 17 }}>
+          Walk one-on-one — you'll see {other.displayName}'s responses as they submit, can send a daily
+          question, and message privately.
+        </Text>
+        <DiscipleChip icon={HeartHandshake} label="Start discipleship" color={accent} onPress={handleInvite} />
+      </>
     ) : (
       <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted, fontStyle: "italic" }}>
         Add the other person to this group to start discipleship.
