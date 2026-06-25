@@ -28,7 +28,7 @@ export function Header({
       </Pressable>
       <View className="flex-1 mr-2">
         {subtitle ? (
-          <Text className="text-[11px] uppercase tracking-wider text-muted-foreground">
+          <Text className="text-sm uppercase tracking-wider text-muted-foreground">
             {subtitle}
           </Text>
         ) : null}

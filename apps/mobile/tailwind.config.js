@@ -13,6 +13,7 @@ module.exports = {
         "sans-semibold": ["DMSans_700Bold"],
         "sans-bold": ["DMSans_700Bold"],
         serif: ["PlayfairDisplay_700Bold"],
+        "serif-regular": ["PlayfairDisplay_400Regular"],
         "serif-italic": ["PlayfairDisplay_400Regular_Italic"],
       },
       colors: {

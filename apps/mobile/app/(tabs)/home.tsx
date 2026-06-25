@@ -111,7 +111,7 @@ export default function HomeScreen() {
         >
           <View className="mb-3 flex-row items-center gap-2">
             <Sun size={22} color={primary} />
-            <Text className="text-base font-sans-semibold uppercase tracking-wider text-muted-foreground">
+            <Text className="text-sm font-sans-semibold uppercase tracking-wider text-muted-foreground">
               My Time with God
             </Text>
           </View>

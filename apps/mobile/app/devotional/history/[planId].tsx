@@ -106,7 +106,7 @@ function DayCard({
               {day.dayNumber}
             </Text>
           </View>
-          <Text style={{ fontFamily: "PlayfairDisplay_700Bold", fontSize: 15, color: fg, flex: 1 }}>
+          <Text style={{ fontFamily: "PlayfairDisplay_700Bold", fontSize: 18, color: fg, flex: 1 }}>
             {day.chapter}
           </Text>
         </View>

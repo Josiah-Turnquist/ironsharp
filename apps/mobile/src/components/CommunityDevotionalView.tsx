@@ -263,7 +263,7 @@ export function CommunityDevotionalView({
           style={{
             color: fg,
             fontFamily: "DMSans_400Regular",
-            fontSize: 15,
+            fontSize: 14,
             lineHeight: 23,
             marginTop: 16,
           }}
@@ -349,7 +349,7 @@ export function CommunityDevotionalView({
         {saving ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text className="font-semibold text-primary-foreground">
+          <Text className="text-base font-semibold text-primary-foreground">
             {mine ? "Update Response" : "Share Response"}
           </Text>
         )}

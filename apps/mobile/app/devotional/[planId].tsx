@@ -186,7 +186,7 @@ function PassageContextDrawer({ passageRef, inlineContext }: { passageRef: strin
             <SkeletonLines count={3} />
           ) : context ? (
             <Text
-              className="font-serif"
+              className="font-serif-regular"
               style={{ color: fgColor, fontSize: 14, lineHeight: 25 }}
             >
               {context}
@@ -300,7 +300,7 @@ function StudyNotesDrawer({ passageRef, notes }: { passageRef: string; notes: St
                   {entry.verse_ref}
                 </Text>
                 <Text
-                  className="font-serif"
+                  className="font-serif-regular"
                   style={{ color: fgColor, fontSize: 12, lineHeight: 21 }}
                 >
                   {entry.note}
@@ -463,7 +463,7 @@ function BiblePassageCard({ passageRef, onPageChange, passageRead, onMarkRead }:
                   <Text style={{ fontSize: 9, color: accent, fontFamily: "DMSans_700Bold", minWidth: 16, paddingTop: 2 }}>
                     {startVerseNum + startIndex + i}
                   </Text>
-                  <Text className="font-serif flex-1" style={{ color: fgColor, fontSize: 13, lineHeight: 22 }}>
+                  <Text className="font-serif-regular flex-1" style={{ color: fgColor, fontSize: 13, lineHeight: 22 }}>
                     {verseText}
                   </Text>
                 </View>
