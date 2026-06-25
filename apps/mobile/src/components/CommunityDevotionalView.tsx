@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, Text, TextInput, View } from "react-native";
+import { Alert, Pressable, Text, View } from "react-native";
 import { Check } from "lucide-react-native";
+import { Button } from "@/components/Button";
+import { Input } from "@/components/Input";
 import { useThemeColor } from "@/components/useThemeColor";
 import {
   ApiClient,
@@ -12,8 +14,8 @@ import {
 
 const REACTIONS: { type: CommunityReactionType; label: string }[] = [
   { type: "amen", label: "🙏 Amen" },
-  { type: "hit_me", label: "💥 Hit me" },
-  { type: "fire", label: "🔥 Fire" },
+  { type: "hit_me", label: "💥 Convicted" },
+  { type: "fire", label: "🔥 Inspired" },
 ];
 
 function timeAgo(iso: string): string {
@@ -207,7 +209,6 @@ export function CommunityDevotionalView({
   const muted = useThemeColor("muted-foreground");
   const border = useThemeColor("border");
   const primary = useThemeColor("primary");
-  const card = useThemeColor("card");
 
   const devotional = data.devotional!;
   const mine = data.myResponse;
@@ -226,19 +227,6 @@ export function CommunityDevotionalView({
     const t = setTimeout(() => setJustSaved(false), 2800);
     return () => clearTimeout(t);
   }, [justSaved]);
-
-  const inputStyle = {
-    borderWidth: 1,
-    borderColor: border,
-    borderRadius: 10,
-    padding: 12,
-    color: fg,
-    backgroundColor: card,
-    fontSize: 14,
-    fontFamily: "DMSans_400Regular" as const,
-    minHeight: 72,
-    textAlignVertical: "top" as const,
-  };
 
   const save = async () => {
     setSaving(true);
@@ -331,54 +319,25 @@ export function CommunityDevotionalView({
       <Text className="mb-4 font-serif text-lg font-bold text-foreground">Your Response</Text>
 
       <Label>{devotional.reflectionQ1}</Label>
-      <TextInput
-        value={response1}
-        onChangeText={setResponse1}
-        multiline
-        placeholder="Write your reflection…"
-        placeholderTextColor={muted}
-        style={inputStyle}
-      />
+      <Input value={response1} onChangeText={setResponse1} multiline placeholder="Write your reflection…" />
       <PrivacyToggle value={q1Private} onChange={setQ1Private} accent={primary} />
 
       <View style={{ height: 14 }} />
       <Label>{devotional.reflectionQ2}</Label>
-      <TextInput
-        value={response2}
-        onChangeText={setResponse2}
-        multiline
-        placeholder="Write your reflection…"
-        placeholderTextColor={muted}
-        style={inputStyle}
-      />
+      <Input value={response2} onChangeText={setResponse2} multiline placeholder="Write your reflection…" />
       <PrivacyToggle value={q2Private} onChange={setQ2Private} accent={primary} />
 
       <View style={{ height: 14 }} />
       <Label>Prayer (optional)</Label>
-      <TextInput
-        value={prayer}
-        onChangeText={setPrayer}
-        multiline
-        placeholder="Write a prayer…"
-        placeholderTextColor={muted}
-        style={inputStyle}
-      />
+      <Input value={prayer} onChangeText={setPrayer} multiline placeholder="Write a prayer…" />
       <PrivacyToggle value={prayerPrivate} onChange={setPrayerPrivate} accent={primary} />
 
-      <Pressable
+      <Button
+        title={mine ? "Update Response" : "Share Response"}
         onPress={save}
-        disabled={saving}
-        style={{ opacity: saving ? 0.6 : 1, marginTop: 18 }}
-        className="h-12 items-center justify-center rounded-xl bg-primary"
-      >
-        {saving ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text className="text-base font-semibold text-primary-foreground">
-            {mine ? "Update Response" : "Share Response"}
-          </Text>
-        )}
-      </Pressable>
+        loading={saving}
+        style={{ marginTop: 18 }}
+      />
 
       {justSaved ? (
         <View className="mt-3 flex-row items-center justify-center gap-2">

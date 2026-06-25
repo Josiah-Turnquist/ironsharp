@@ -40,6 +40,9 @@ import { Screen } from "@/components/Screen";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { ErrorState } from "@/components/ErrorState";
 import { useThemeColor } from "@/components/useThemeColor";
+import { Button } from "@/components/Button";
+import { Input } from "@/components/Input";
+import { ConfirmModal } from "@/components/ConfirmModal";
 import { useGroups, useActiveDevotional, useDiscipleships, useProfile } from "@/lib/queries";
 import { useLocalDoneToday } from "@/lib/useLocalDoneToday";
 import { PopIn } from "@/components/PopIn";
@@ -429,7 +432,9 @@ function DiscipleChip({
   );
 }
 
-// Discipleship entry points rendered inside an expanded one-on-one card.
+// Per-group discipleship: the *invite* lives here, because this is where you
+// pick the person. Once a relationship exists it's managed in the top-level
+// Discipleship hub, so the card just points there.
 function DiscipleshipSection({
   group,
   rel,
@@ -442,19 +447,10 @@ function DiscipleshipSection({
   accent: string;
 }) {
   const qc = useQueryClient();
-  const router = useRouter();
   const muted = useThemeColor("muted-foreground");
   const border = useThemeColor("border");
-  const [showNotice, setShowNotice] = useState(false);
-  const [busy, setBusy] = useState(false);
 
   const other = group.members.find((m) => m.userId !== myUserId);
-
-  const refresh = () =>
-    Promise.all([
-      qc.invalidateQueries({ queryKey: ["discipleship"] }),
-      qc.invalidateQueries({ queryKey: ["groups"] }),
-    ]);
 
   const handleInvite = () => {
     if (!other) return;
@@ -466,47 +462,19 @@ function DiscipleshipSection({
         {
           text: "Send invite",
           onPress: async () => {
-            setBusy(true);
             try {
               await ApiClient.inviteDisciple(group.id, other.userId);
-              await refresh();
+              await Promise.all([
+                qc.invalidateQueries({ queryKey: ["discipleship"] }),
+                qc.invalidateQueries({ queryKey: ["groups"] }),
+              ]);
             } catch (err) {
               Alert.alert("Couldn't invite", err instanceof ApiError ? err.message : "Please try again.");
-            } finally {
-              setBusy(false);
             }
           },
         },
       ]
     );
-  };
-
-  const handleAccept = async () => {
-    if (!rel) return;
-    setBusy(true);
-    try {
-      await ApiClient.acceptDiscipleship(rel.id);
-      await refresh();
-      setShowNotice(false);
-    } catch (err) {
-      Alert.alert("Couldn't accept", err instanceof ApiError ? err.message : "Please try again.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleDecline = async () => {
-    if (!rel) return;
-    setBusy(true);
-    try {
-      await ApiClient.declineDiscipleship(rel.id);
-      await refresh();
-      setShowNotice(false);
-    } catch (err) {
-      Alert.alert("Couldn't decline", err instanceof ApiError ? err.message : "Please try again.");
-    } finally {
-      setBusy(false);
-    }
   };
 
   let body: ReactNode;
@@ -524,26 +492,14 @@ function DiscipleshipSection({
         Add the other person to this group to start discipleship.
       </Text>
     );
-  } else if (rel.status === "pending") {
-    body =
-      rel.role === "disciple" ? (
-        <DiscipleChip icon={HeartHandshake} label="Review discipleship invite" color={accent} onPress={() => setShowNotice(true)} />
-      ) : (
-        <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted, fontStyle: "italic" }}>
-          Invite sent — waiting for {rel.counterpart.displayName} to accept.
-        </Text>
-      );
-  } else if (rel.status === "active") {
-    body =
-      rel.role === "discipler" ? (
-        <View className="flex-row flex-wrap gap-2">
-          <DiscipleChip icon={Eye} label={`${rel.counterpart.displayName}'s responses`} color={accent} onPress={() => router.push(`/discipleship/${rel.id}/responses`)} />
-          <DiscipleChip icon={Flag} label="Flagged" color={accent} onPress={() => router.push(`/discipleship/${rel.id}/flagged`)} />
-          <DiscipleChip icon={MessageSquare} label="Mailbox" color={accent} badge={rel.unreadCount} onPress={() => router.push(`/discipleship/${rel.id}/mailbox`)} />
-        </View>
-      ) : (
-        <DiscipleChip icon={MessageSquare} label="Mailbox" color={accent} badge={rel.unreadCount} onPress={() => router.push(`/discipleship/${rel.id}/mailbox`)} />
-      );
+  } else {
+    body = (
+      <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted, fontStyle: "italic" }}>
+        {rel.status === "pending"
+          ? "Invite pending — manage it in Discipleship at the top of this tab."
+          : "Active — open responses, flags, and the mailbox from Discipleship at the top of this tab."}
+      </Text>
+    );
   }
 
   return (
@@ -552,9 +508,120 @@ function DiscipleshipSection({
         Discipleship
       </Text>
       {body}
+    </View>
+  );
+}
+
+// Top-level discipleship hub: lists every relationship (pending + active) with
+// its entry points, so active discipleships aren't buried inside an expanded
+// group card. Accepting or declining an invite happens right here too.
+function DiscipleshipHub({
+  relationships,
+  onStartOneOnOne,
+  accent,
+}: {
+  relationships: DiscipleshipRelationship[];
+  onStartOneOnOne: () => void;
+  accent: string;
+}) {
+  const qc = useQueryClient();
+  const router = useRouter();
+  const muted = useThemeColor("muted-foreground");
+  const border = useThemeColor("border");
+  const card = useThemeColor("card");
+  const fg = useThemeColor("foreground");
+  const [reviewRel, setReviewRel] = useState<DiscipleshipRelationship | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  // "ended" relationships shouldn't clutter the hub.
+  const live = relationships.filter((r) => r.status !== "ended");
+
+  const refresh = () =>
+    Promise.all([
+      qc.invalidateQueries({ queryKey: ["discipleship"] }),
+      qc.invalidateQueries({ queryKey: ["groups"] }),
+    ]);
+
+  const handleAccept = async () => {
+    if (!reviewRel) return;
+    setBusy(true);
+    try {
+      await ApiClient.acceptDiscipleship(reviewRel.id);
+      await refresh();
+      setReviewRel(null);
+    } catch (err) {
+      Alert.alert("Couldn't accept", err instanceof ApiError ? err.message : "Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDecline = async () => {
+    if (!reviewRel) return;
+    setBusy(true);
+    try {
+      await ApiClient.declineDiscipleship(reviewRel.id);
+      await refresh();
+      setReviewRel(null);
+    } catch (err) {
+      Alert.alert("Couldn't decline", err instanceof ApiError ? err.message : "Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <View>
+      <SectionLabel label="Discipleship" />
+      {live.length === 0 ? (
+        <View style={{ borderWidth: 1, borderColor: border, borderRadius: 12, backgroundColor: card, padding: 16 }}>
+          <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 14, color: muted, lineHeight: 21, marginBottom: 14 }}>
+            Walk with one person, one-on-one — see each other's responses, send a daily question, and
+            message privately. Start by creating a one-on-one group together.
+          </Text>
+          <Button title="Start a one-on-one" variant="outline" onPress={onStartOneOnOne} />
+        </View>
+      ) : (
+        live.map((rel) => {
+          const isDiscipler = rel.role === "discipler";
+          return (
+            <View
+              key={rel.id}
+              style={{ borderWidth: 1, borderColor: border, borderRadius: 12, backgroundColor: card, padding: 14, marginBottom: 8 }}
+            >
+              <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 15, color: fg }}>
+                {rel.counterpart.displayName}
+              </Text>
+              <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted, marginTop: 1, marginBottom: 10 }}>
+                {isDiscipler ? "You're discipling them" : "They're discipling you"}
+                {rel.status === "pending" ? " · pending" : ""}
+              </Text>
+
+              {rel.status === "pending" ? (
+                isDiscipler ? (
+                  <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 13, color: muted, fontStyle: "italic" }}>
+                    Waiting for {rel.counterpart.displayName} to accept your invite.
+                  </Text>
+                ) : (
+                  <DiscipleChip icon={HeartHandshake} label="Review invite" color={accent} onPress={() => setReviewRel(rel)} />
+                )
+              ) : isDiscipler ? (
+                <View className="flex-row flex-wrap gap-2">
+                  <DiscipleChip icon={Eye} label="Responses" color={accent} onPress={() => router.push(`/discipleship/${rel.id}/responses`)} />
+                  <DiscipleChip icon={Flag} label="Flagged" color={accent} onPress={() => router.push(`/discipleship/${rel.id}/flagged`)} />
+                  <DiscipleChip icon={MessageSquare} label="Mailbox" color={accent} badge={rel.unreadCount} onPress={() => router.push(`/discipleship/${rel.id}/mailbox`)} />
+                </View>
+              ) : (
+                <DiscipleChip icon={MessageSquare} label="Mailbox" color={accent} badge={rel.unreadCount} onPress={() => router.push(`/discipleship/${rel.id}/mailbox`)} />
+              )}
+            </View>
+          );
+        })
+      )}
+
       <PrivacyNoticeModal
-        visible={showNotice}
-        disciplerName={rel?.counterpart.displayName ?? "Someone"}
+        visible={!!reviewRel}
+        disciplerName={reviewRel?.counterpart.displayName ?? "Someone"}
         busy={busy}
         onAccept={handleAccept}
         onDecline={handleDecline}
@@ -616,6 +683,10 @@ export default function GroupsScreen() {
   const [joinCode, setJoinCode] = useState("");
   const [joining, setJoining] = useState(false);
 
+  // Delete group (type-to-confirm)
+  const [deleteTarget, setDeleteTarget] = useState<Group | null>(null);
+  const [deletingGroup, setDeletingGroup] = useState(false);
+
   const toggle = (id: string) => {
     // Animate the height change, and allow multiple groups open at once —
     // toggling one no longer auto-closes the others.
@@ -634,6 +705,15 @@ export default function GroupsScreen() {
     setNewName("");
     setNewType("small-group");
     setCreatedGroup(null);
+  };
+
+  // Open the create sheet pre-set to a one-on-one — the entry point for
+  // starting discipleship from the Discipleship hub.
+  const startOneOnOne = () => {
+    setCreateStep(1);
+    setNewName("");
+    setNewType("one-on-one");
+    setShowCreate(true);
   };
 
   const handleCreate = async () => {
@@ -697,27 +777,23 @@ export default function GroupsScreen() {
     }
   };
 
-  const handleDeleteGroup = (groupId: string, name: string) => {
-    Alert.alert("Delete group", `Delete "${name}"? This can't be undone.`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await ApiClient.deleteGroup(groupId);
-            await qc.invalidateQueries({ queryKey: ["groups"] });
-            setExpandedIds((prev) => {
-              const next = new Set(prev);
-              next.delete(groupId);
-              return next;
-            });
-          } catch (err) {
-            Alert.alert("Couldn't delete group", err instanceof ApiError ? err.message : "Please try again.");
-          }
-        },
-      },
-    ]);
+  const confirmDeleteGroup = async () => {
+    if (!deleteTarget) return;
+    setDeletingGroup(true);
+    try {
+      await ApiClient.deleteGroup(deleteTarget.id);
+      await qc.invalidateQueries({ queryKey: ["groups"] });
+      setExpandedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(deleteTarget.id);
+        return next;
+      });
+      setDeleteTarget(null);
+    } catch (err) {
+      Alert.alert("Couldn't delete group", err instanceof ApiError ? err.message : "Please try again.");
+    } finally {
+      setDeletingGroup(false);
+    }
   };
 
   const handleRemoveMember = (groupId: string, targetUserId: string, name: string) => {
@@ -814,6 +890,15 @@ export default function GroupsScreen() {
           ) : (
             <EmptyNote text="You don't have an active personal plan. Browse plans to start one." />
           )}
+
+          <Divider />
+
+          {/* ── Discipleship ───────────────────────────────────────────────────── */}
+          <DiscipleshipHub
+            relationships={discipleships.data ?? []}
+            onStartOneOnOne={startOneOnOne}
+            accent={primary}
+          />
 
           <Divider />
 
@@ -992,7 +1077,7 @@ export default function GroupsScreen() {
                         </Text>
                       </Pressable>
                       <Pressable
-                        onPress={() => handleDeleteGroup(group.id, group.name)}
+                        onPress={() => setDeleteTarget(group)}
                         style={{ borderWidth: 1, borderColor: destructiveBorder, borderRadius: 8, backgroundColor: destructiveBg }}
                         className="flex-row items-center gap-1.5 px-3 py-2"
                       >
@@ -1049,16 +1134,11 @@ export default function GroupsScreen() {
             {createStep === 1 ? (
               <>
                 <Text className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Group Name</Text>
-                <TextInput
+                <Input
                   value={newName}
                   onChangeText={setNewName}
                   placeholder="e.g. The Forge"
-                  placeholderTextColor={muted}
-                  style={{
-                    borderWidth: 1, borderColor: border, borderRadius: 10,
-                    padding: 12, color: fg, backgroundColor: card,
-                    marginBottom: 20, fontSize: 15, fontFamily: "DMSans_400Regular",
-                  }}
+                  style={{ marginBottom: 20 }}
                 />
 
                 <Text className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Group Type</Text>
@@ -1089,16 +1169,12 @@ export default function GroupsScreen() {
                   })}
                 </View>
 
-                <Pressable
+                <Button
+                  title="Create Group"
                   onPress={handleCreate}
-                  disabled={!newName.trim() || creating}
-                  style={{ opacity: !newName.trim() || creating ? 0.5 : 1 }}
-                  className="h-12 items-center justify-center rounded-xl bg-primary"
-                >
-                  <Text className="text-base font-semibold text-primary-foreground">
-                    {creating ? "Creating…" : "Create Group"}
-                  </Text>
-                </Pressable>
+                  disabled={!newName.trim()}
+                  loading={creating}
+                />
               </>
             ) : createdGroup ? (
               <ScrollView showsVerticalScrollIndicator={false}>
@@ -1121,12 +1197,7 @@ export default function GroupsScreen() {
                     onAdded={() => qc.invalidateQueries({ queryKey: ["groups"] })}
                   />
                 </View>
-                <Pressable
-                  onPress={closeCreate}
-                  className="h-12 items-center justify-center rounded-xl bg-primary"
-                >
-                  <Text className="text-base font-semibold text-primary-foreground">Done</Text>
-                </Pressable>
+                <Button title="Done" onPress={closeCreate} />
               </ScrollView>
             ) : null}
       </BottomSheet>
@@ -1147,26 +1218,18 @@ export default function GroupsScreen() {
 
             <ScrollView showsVerticalScrollIndicator={false}>
               <Text className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Group Name</Text>
-              <TextInput
+              <Input
                 value={editName}
                 onChangeText={setEditName}
-                placeholderTextColor={muted}
-                style={{
-                  borderWidth: 1, borderColor: border, borderRadius: 10,
-                  padding: 12, color: fg, backgroundColor: card,
-                  marginBottom: 16, fontSize: 15, fontFamily: "DMSans_400Regular",
-                }}
+                style={{ marginBottom: 16 }}
               />
-              <Pressable
+              <Button
+                title="Save Name"
                 onPress={handleSaveEdit}
-                disabled={!editName.trim() || saving}
-                style={{ opacity: !editName.trim() || saving ? 0.5 : 1 }}
-                className="mb-6 h-11 items-center justify-center rounded-xl bg-primary"
-              >
-                <Text className="text-base font-semibold text-primary-foreground">
-                  {saving ? "Saving…" : "Save Name"}
-                </Text>
-              </Pressable>
+                disabled={!editName.trim()}
+                loading={saving}
+                style={{ marginBottom: 24 }}
+              />
 
               <View style={{ height: 1, backgroundColor: border, marginBottom: 24 }} />
 
@@ -1229,17 +1292,32 @@ export default function GroupsScreen() {
               }}
             />
 
-            <Pressable
+            <Button
+              title="Join Group"
               onPress={handleJoin}
-              disabled={!joinCode.trim() || joining}
-              style={{ opacity: !joinCode.trim() || joining ? 0.5 : 1 }}
-              className="h-12 items-center justify-center rounded-xl bg-primary"
-            >
-              <Text className="text-base font-semibold text-primary-foreground">
-                {joining ? "Joining…" : "Join Group"}
-              </Text>
-            </Pressable>
+              disabled={!joinCode.trim()}
+              loading={joining}
+            />
       </BottomSheet>
+
+      {/* ── Delete group confirmation (type-to-confirm) ────────────────────── */}
+      <ConfirmModal
+        visible={!!deleteTarget}
+        title="Delete group"
+        message={
+          deleteTarget
+            ? `This permanently deletes "${deleteTarget.name}" for all ${deleteTarget.members.length} member${
+                deleteTarget.members.length === 1 ? "" : "s"
+              } and can't be undone.`
+            : ""
+        }
+        confirmLabel="Delete group"
+        confirmPhrase={deleteTarget?.name}
+        destructive
+        busy={deletingGroup}
+        onConfirm={confirmDeleteGroup}
+        onCancel={() => !deletingGroup && setDeleteTarget(null)}
+      />
     </Screen>
   );
 }

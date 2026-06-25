@@ -1,6 +1,6 @@
 import { ActivityIndicator, Pressable, Text, View, type PressableProps } from "react-native";
 
-type Variant = "primary" | "outline" | "dark";
+type Variant = "primary" | "outline" | "dark" | "destructive";
 
 type Props = PressableProps & {
   title: string;
@@ -13,12 +13,14 @@ const containerByVariant: Record<Variant, string> = {
   primary: "bg-primary border border-primary",
   outline: "bg-transparent border border-border",
   dark: "bg-black border border-black",
+  destructive: "bg-destructive border border-destructive",
 };
 
 const textByVariant: Record<Variant, string> = {
   primary: "text-primary-foreground",
   outline: "text-foreground",
   dark: "text-white",
+  destructive: "text-white",
 };
 
 export function Button({
@@ -30,6 +32,7 @@ export function Button({
   ...rest
 }: Props) {
   const isDisabled = disabled || loading;
+  const onDark = variant === "primary" || variant === "dark" || variant === "destructive";
   return (
     <Pressable
       accessibilityRole="button"
@@ -40,7 +43,7 @@ export function Button({
       {...rest}
     >
       {loading ? (
-        <ActivityIndicator color={variant === "primary" || variant === "dark" ? "#fff" : undefined} />
+        <ActivityIndicator color={onDark ? "#fff" : undefined} />
       ) : (
         <>
           {leftIcon ? <View>{leftIcon}</View> : null}
