@@ -255,7 +255,7 @@ export default function MembershipScreen() {
             >
               {redeeming
                 ? <ActivityIndicator color="#fff" />
-                : <Text className="font-semibold text-primary-foreground">Redeem</Text>
+                : <Text className="text-base font-semibold text-primary-foreground">Redeem</Text>
               }
             </Pressable>
           </Pressable>

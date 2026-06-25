@@ -22,14 +22,7 @@ import { categoryLabel } from "@/lib/categories";
 import { useUpgradePrompt } from "@/lib/useUpgradePrompt";
 import { UpgradePromptModal } from "@/components/UpgradePromptModal";
 import type { MembershipTier } from "@/lib/tiers";
-
-const GROUP_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
-  "one-on-one":  { label: "One-on-One",  color: "#89B4C9" },
-  "family":      { label: "Family",      color: "#7FAF8A" },
-  "small-group": { label: "Small Group", color: "#C49A78" },
-  "large-group": { label: "Large Group", color: "#9B8EC4" },
-  "community":   { label: "Church",      color: "#7A9EAF" },
-};
+import { GROUP_TYPE_CONFIG } from "@/lib/groupTypes";
 
 export default function PlanList() {
   const { category } = useLocalSearchParams<{ category: string }>();
@@ -155,7 +148,7 @@ export default function PlanList() {
         ) : (plans ?? []).length === 0 ? (
           <View className="items-center rounded-xl border border-border bg-card p-8">
             <BookOpen size={26} color={primary} />
-            <Text className="mt-3 font-serif text-lg font-semibold text-foreground">
+            <Text className="mt-3 font-serif text-xl font-semibold text-foreground">
               Coming Soon
             </Text>
             <Text className="mt-1 text-center text-sm text-muted-foreground">
@@ -189,7 +182,7 @@ export default function PlanList() {
                   </Text>
                   <View className="flex-row items-center gap-0.5 pt-1">
                     <Text
-                      className="text-[13px] font-sans-medium"
+                      className="text-xs font-sans-medium"
                       style={{ color: completed ? muted : primary }}
                     >
                       {completed ? "Completed ✓" : actionLabel}
@@ -313,7 +306,7 @@ export default function PlanList() {
                   <Text
                     style={{
                       fontFamily: "DMSans_700Bold",
-                      fontSize: 11,
+                      fontSize: 12,
                       color: muted,
                       letterSpacing: 1.2,
                       textTransform: "uppercase",

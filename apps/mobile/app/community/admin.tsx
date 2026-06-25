@@ -52,6 +52,7 @@ export default function CommunityAdmin() {
   const border = useThemeColor("border");
   const card = useThemeColor("card");
   const primary = useThemeColor("primary");
+  const destructive = useThemeColor("destructive");
 
   const [editing, setEditing] = useState<Editing>(null);
   const [form, setForm] = useState<CommunityDevotionalInput>(emptyForm());
@@ -152,7 +153,7 @@ export default function CommunityAdmin() {
       <Screen edges={["top"]}>
         <Header title="Author" subtitle="Community" />
         <View className="flex-1 items-center justify-center px-8">
-          <Text style={{ color: muted, fontFamily: "DMSans_400Regular", fontSize: 15, textAlign: "center" }}>
+          <Text style={{ color: muted, fontFamily: "DMSans_400Regular", fontSize: 14, textAlign: "center" }}>
             You don't have access to author Community Devotionals.
           </Text>
         </View>
@@ -237,7 +238,7 @@ export default function CommunityAdmin() {
                   style={[inputStyle, { flex: 1, marginBottom: 0 }]}
                 />
                 <Pressable onPress={() => removeNote(i)} hitSlop={8} accessibilityLabel="Remove note">
-                  <Trash2 size={16} color="#ef4444" />
+                  <Trash2 size={16} color={destructive} />
                 </Pressable>
               </View>
               <TextInput
@@ -311,7 +312,7 @@ export default function CommunityAdmin() {
         </View>
       ) : (list.data ?? []).length === 0 ? (
         <View className="flex-1 items-center justify-center px-8">
-          <Text style={{ color: muted, fontFamily: "DMSans_400Regular", fontSize: 15, textAlign: "center" }}>
+          <Text style={{ color: muted, fontFamily: "DMSans_400Regular", fontSize: 14, textAlign: "center" }}>
             No readings yet. Tap “New” to write the first one.
           </Text>
         </View>

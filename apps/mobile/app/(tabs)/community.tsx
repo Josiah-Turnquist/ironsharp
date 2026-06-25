@@ -71,11 +71,11 @@ export default function CommunityScreen() {
           <CommunityDevotionalView data={today.data} onRefetch={refetch} />
         ) : (
           <View style={{ alignItems: "center", paddingVertical: 48, paddingHorizontal: 16 }}>
-            <Text className="mb-2 text-center font-serif text-2xl font-bold text-foreground">
+            <Text className="mb-2 text-center font-serif text-xl font-bold text-foreground">
               No reading yet today
             </Text>
             <Text
-              style={{ color: muted, fontFamily: "DMSans_400Regular", fontSize: 15, textAlign: "center", lineHeight: 23 }}
+              style={{ color: muted, fontFamily: "DMSans_400Regular", fontSize: 14, textAlign: "center", lineHeight: 23 }}
             >
               Today's Community Devotional hasn't been posted. Check back soon — one reading, everyone in
               it together.

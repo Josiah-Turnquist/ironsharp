@@ -209,7 +209,7 @@ export default function ProfileScreen() {
             </View>
           </Pressable>
 
-          <Text className="font-serif text-2xl font-bold text-foreground">
+          <Text className="font-serif text-3xl font-bold text-foreground">
             {p?.displayName ?? "Your Profile"}
           </Text>
           {p?.churchName ? (

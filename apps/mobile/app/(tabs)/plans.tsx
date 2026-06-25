@@ -27,7 +27,7 @@ import { Screen } from "@/components/Screen";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { ErrorState } from "@/components/ErrorState";
 import { useThemeColor } from "@/components/useThemeColor";
-import { usePlans, useProgress, useGenerateTokens } from "@/lib/queries";
+import { usePlans, useGenerateTokens } from "@/lib/queries";
 import { CATEGORIES } from "@/lib/categories";
 
 function TokenCoins({ count, limit }: { count: number; limit: number }) {
@@ -61,20 +61,17 @@ function TokenCoins({ count, limit }: { count: number; limit: number }) {
 export default function PlansScreen() {
   const router = useRouter();
   const { data, isError, refetch } = usePlans();
-  const progress = useProgress();
   const tokens = useGenerateTokens();
   const white = "#FFFFFF";
   const muted = useThemeColor("muted-foreground");
 
   const countByCategory = data?.countByCategory ?? {};
-  const completedCount = (progress.data ?? []).filter((p) => p.completedAt).length;
   const tokensRemaining = tokens.data?.tokensRemaining ?? 0;
   const tierLimit = tokens.data?.tierLimit ?? 0;
   const resetsAt = tokens.data?.resetsAt;
 
-  const openCategory = (id: string, count: number) => {
-    if (count > 0) router.push(`/plans/${id}`);
-    else Alert.alert("Coming soon", "New plans for this category are on the way.");
+  const openCategory = (id: string) => {
+    router.push(`/plans/${id}`);
   };
 
   const openCreate = () => {
@@ -114,11 +111,7 @@ export default function PlansScreen() {
         <View className="flex-row flex-wrap justify-between">
           {/* Completed tile (pinned first) */}
           <Pressable
-            onPress={() =>
-              completedCount > 0
-                ? router.push("/plans/completed")
-                : Alert.alert("Nothing yet", "Finish a plan and it'll show up here.")
-            }
+            onPress={() => router.push("/plans/completed")}
             accessible={true}
             accessibilityRole="button"
             accessibilityLabel="Completed plans"
@@ -189,7 +182,7 @@ export default function PlansScreen() {
             return (
               <Pressable
                 key={cat.id}
-                onPress={() => openCategory(cat.id, count)}
+                onPress={() => openCategory(cat.id)}
                 accessible={true}
                 accessibilityRole="button"
                 accessibilityLabel={`${cat.title} devotionals`}

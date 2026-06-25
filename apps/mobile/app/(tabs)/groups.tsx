@@ -43,6 +43,7 @@ import { useThemeColor } from "@/components/useThemeColor";
 import { useGroups, useActiveDevotional, useDiscipleships, useProfile } from "@/lib/queries";
 import { useLocalDoneToday } from "@/lib/useLocalDoneToday";
 import { PopIn } from "@/components/PopIn";
+import { GROUP_TYPE_CONFIG, GROUP_TYPE_KEYS } from "@/lib/groupTypes";
 import {
   ApiClient,
   ApiError,
@@ -50,16 +51,6 @@ import {
   type UserSearchResult,
   type DiscipleshipRelationship,
 } from "@/lib/api";
-
-const GROUP_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
-  "one-on-one":  { label: "One-on-One",  color: "#89B4C9" },
-  "family":      { label: "Family",      color: "#7FAF8A" },
-  "small-group": { label: "Small Group", color: "#C49A78" },
-  "large-group": { label: "Large Group", color: "#9B8EC4" },
-  "community":   { label: "Church",      color: "#7A9EAF" },
-};
-
-const GROUP_TYPE_KEYS = Object.keys(GROUP_TYPE_CONFIG);
 
 // ─── Section helpers (ported from the former Devotionals tab) ─────────────────
 
@@ -113,7 +104,7 @@ function InviteCodeRow({
       <Text
         style={{
           fontFamily: "DMSans_700Bold",
-          fontSize: 11,
+          fontSize: 12,
           color: muted,
           letterSpacing: 1.2,
           textTransform: "uppercase",
@@ -228,7 +219,7 @@ function MemberSearch({
       <Text
         style={{
           fontFamily: "DMSans_700Bold",
-          fontSize: 11,
+          fontSize: 12,
           color: muted,
           letterSpacing: 1.2,
           textTransform: "uppercase",
@@ -551,7 +542,7 @@ function DiscipleshipSection({
 
   return (
     <View className="gap-2" style={{ borderTopWidth: 1, borderTopColor: border, paddingTop: 12 }}>
-      <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 10, color: muted, letterSpacing: 1, textTransform: "uppercase" }}>
+      <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 12, color: muted, letterSpacing: 1, textTransform: "uppercase" }}>
         Discipleship
       </Text>
       {body}
@@ -581,6 +572,9 @@ export default function GroupsScreen() {
   const bg = useThemeColor("background");
   const card = useThemeColor("card");
   const fg = useThemeColor("foreground");
+  const destructive = useThemeColor("destructive");
+  const destructiveBorder = useThemeColor("destructive", 0.25);
+  const destructiveBg = useThemeColor("destructive", 0.06);
 
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [refreshing, setRefreshing] = useState(false);
@@ -875,7 +869,7 @@ export default function GroupsScreen() {
                   {/* Up / Down order buttons */}
                   <View style={{ gap: 4 }}>
                     <Pressable
-                      onPress={(e) => { e.stopPropagation?.(); handleMove(group.id, "up"); }}
+                      onPress={(e) => { e.stopPropagation(); handleMove(group.id, "up"); }}
                       hitSlop={6}
                       disabled={isFirst}
                       style={{ opacity: isFirst ? 0.2 : 1 }}
@@ -885,7 +879,7 @@ export default function GroupsScreen() {
                       <ArrowUp size={16} color={muted} />
                     </Pressable>
                     <Pressable
-                      onPress={(e) => { e.stopPropagation?.(); handleMove(group.id, "down"); }}
+                      onPress={(e) => { e.stopPropagation(); handleMove(group.id, "down"); }}
                       hitSlop={6}
                       disabled={isLast}
                       style={{ opacity: isLast ? 0.2 : 1 }}
@@ -925,10 +919,10 @@ export default function GroupsScreen() {
                     {/* Members */}
                     <View className="gap-2">
                       <View className="flex-row items-center justify-between mb-1">
-                        <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 10, color: muted, letterSpacing: 1, textTransform: "uppercase" }}>
+                        <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 12, color: muted, letterSpacing: 1, textTransform: "uppercase" }}>
                           Members
                         </Text>
-                        <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 10, color: muted, letterSpacing: 1, textTransform: "uppercase" }}>
+                        <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 12, color: muted, letterSpacing: 1, textTransform: "uppercase" }}>
                           Completed
                         </Text>
                       </View>
@@ -993,11 +987,11 @@ export default function GroupsScreen() {
                       </Pressable>
                       <Pressable
                         onPress={() => handleDeleteGroup(group.id, group.name)}
-                        style={{ borderWidth: 1, borderColor: "#ef444440", borderRadius: 8, backgroundColor: "#ef444410" }}
+                        style={{ borderWidth: 1, borderColor: destructiveBorder, borderRadius: 8, backgroundColor: destructiveBg }}
                         className="flex-row items-center gap-1.5 px-3 py-2"
                       >
-                        <Trash2 size={13} color="#ef4444" />
-                        <Text style={{ color: "#ef4444", fontFamily: "DMSans_500Medium", fontSize: 12 }}>
+                        <Trash2 size={13} color={destructive} />
+                        <Text style={{ color: destructive, fontFamily: "DMSans_500Medium", fontSize: 12 }}>
                           Delete
                         </Text>
                       </Pressable>
@@ -1095,7 +1089,7 @@ export default function GroupsScreen() {
                   style={{ opacity: !newName.trim() || creating ? 0.5 : 1 }}
                   className="h-12 items-center justify-center rounded-xl bg-primary"
                 >
-                  <Text className="font-semibold text-primary-foreground">
+                  <Text className="text-base font-semibold text-primary-foreground">
                     {creating ? "Creating…" : "Create Group"}
                   </Text>
                 </Pressable>
@@ -1125,7 +1119,7 @@ export default function GroupsScreen() {
                   onPress={closeCreate}
                   className="h-12 items-center justify-center rounded-xl bg-primary"
                 >
-                  <Text className="font-semibold text-primary-foreground">Done</Text>
+                  <Text className="text-base font-semibold text-primary-foreground">Done</Text>
                 </Pressable>
               </ScrollView>
             ) : null}
@@ -1163,7 +1157,7 @@ export default function GroupsScreen() {
                 style={{ opacity: !editName.trim() || saving ? 0.5 : 1 }}
                 className="mb-6 h-11 items-center justify-center rounded-xl bg-primary"
               >
-                <Text className="font-semibold text-primary-foreground">
+                <Text className="text-base font-semibold text-primary-foreground">
                   {saving ? "Saving…" : "Save Name"}
                 </Text>
               </Pressable>
@@ -1235,7 +1229,7 @@ export default function GroupsScreen() {
               style={{ opacity: !joinCode.trim() || joining ? 0.5 : 1 }}
               className="h-12 items-center justify-center rounded-xl bg-primary"
             >
-              <Text className="font-semibold text-primary-foreground">
+              <Text className="text-base font-semibold text-primary-foreground">
                 {joining ? "Joining…" : "Join Group"}
               </Text>
             </Pressable>

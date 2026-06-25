@@ -36,7 +36,7 @@ export default function CommunityArchive() {
         <ErrorState message="We couldn't load past readings." onRetry={() => archive.refetch()} />
       ) : (archive.data ?? []).length === 0 ? (
         <View className="flex-1 items-center justify-center px-8">
-          <Text style={{ color: muted, fontFamily: "DMSans_400Regular", fontSize: 15, textAlign: "center" }}>
+          <Text style={{ color: muted, fontFamily: "DMSans_400Regular", fontSize: 14, textAlign: "center" }}>
             No past readings yet.
           </Text>
         </View>

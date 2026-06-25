@@ -20,6 +20,7 @@ export default function OnboardingWelcome() {
   const qc = useQueryClient();
   const { displayName, role, planId, survey } = useOnboarding();
   const primaryFg = useThemeColor("primary-foreground");
+  const muted = useThemeColor("muted-foreground");
 
   const [bannerVisible, setBannerVisible] = useState(false);
   const [bannerShownBefore, setBannerShownBefore] = useState<boolean | null>(null);
@@ -228,7 +229,7 @@ export default function OnboardingWelcome() {
                     </View>
 
                     {/* Price */}
-                    <Text style={{ color: "#888", fontSize: 13 }}>
+                    <Text style={{ color: muted, fontSize: 13 }}>
                       {display.monthlyPrice
                         ? `${display.monthlyPrice}/mo · ${display.annualTotal}`
                         : "Always free"}
@@ -252,7 +253,7 @@ export default function OnboardingWelcome() {
                           >
                             <Check size={9} color="#fff" strokeWidth={3} />
                           </View>
-                          <Text style={{ color: "#555", fontSize: 12, flex: 1, lineHeight: 17 }}>
+                          <Text style={{ color: muted, fontSize: 12, flex: 1, lineHeight: 17 }}>
                             {f}
                           </Text>
                         </View>

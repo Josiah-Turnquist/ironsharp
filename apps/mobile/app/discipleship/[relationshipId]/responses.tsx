@@ -116,7 +116,7 @@ export default function DiscipleResponsesScreen() {
           </View>
 
           {(responses.data ?? []).length === 0 ? (
-            <Text style={{ color: muted, fontFamily: "DMSans_400Regular", fontSize: 15, textAlign: "center", marginTop: 24 }}>
+            <Text style={{ color: muted, fontFamily: "DMSans_400Regular", fontSize: 14, textAlign: "center", marginTop: 24 }}>
               No responses yet. They'll appear here the moment your disciple submits.
             </Text>
           ) : (

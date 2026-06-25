@@ -1,4 +1,4 @@
-import { ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { CheckCircle2 } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
@@ -39,7 +39,7 @@ export default function CompletedPlanReview() {
           </View>
         ) : null}
 
-        <Text className="mb-2 px-1 text-[11px] font-sans-semibold uppercase tracking-wider text-muted-foreground">
+        <Text className="mb-2 px-1 text-xs font-sans-semibold uppercase tracking-wider text-muted-foreground">
           {(days.data?.length ?? plan.data?.totalDays ?? 0)} days
         </Text>
 
@@ -77,9 +77,7 @@ export default function CompletedPlanReview() {
         ))}
 
         {days.isLoading ? (
-          <Text className="mt-4 text-center text-sm text-muted-foreground">
-            Loading days…
-          </Text>
+          <ActivityIndicator color={primary} style={{ marginTop: 16 }} />
         ) : null}
       </ScrollView>
     </Screen>

@@ -39,7 +39,7 @@ export default function FlaggedNotesScreen() {
         <ErrorState message="We couldn't load flagged notes." onRetry={() => flags.refetch()} />
       ) : (flags.data ?? []).length === 0 ? (
         <View className="flex-1 items-center justify-center px-8">
-          <Text style={{ color: muted, fontFamily: "DMSans_400Regular", fontSize: 15, textAlign: "center" }}>
+          <Text style={{ color: muted, fontFamily: "DMSans_400Regular", fontSize: 14, textAlign: "center" }}>
             Nothing flagged yet. Flag a response to keep it here for later.
           </Text>
         </View>

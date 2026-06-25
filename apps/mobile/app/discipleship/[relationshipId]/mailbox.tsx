@@ -76,7 +76,7 @@ export default function MailboxScreen() {
             showsVerticalScrollIndicator={false}
           >
             {(messages.data ?? []).length === 0 ? (
-              <Text style={{ color: muted, fontFamily: "DMSans_400Regular", fontSize: 15, textAlign: "center", marginTop: 40 }}>
+              <Text style={{ color: muted, fontFamily: "DMSans_400Regular", fontSize: 14, textAlign: "center", marginTop: 40 }}>
                 No messages yet. Say hello.
               </Text>
             ) : (
