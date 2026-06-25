@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { AppState } from "react-native";
 import * as Updates from "expo-updates";
+import { logError } from "@/lib/logger";
 
 const RECHECK_MS = 60_000; // don't hammer the update server on rapid foregrounds
 const APPLY_AFTER_AWAY_MS = 20_000; // only auto-reload on a "real" return
@@ -38,8 +39,10 @@ export function useOtaUpdates() {
           await Updates.fetchUpdateAsync();
           if (!cancelled) pending.current = true;
         }
-      } catch {
-        // offline, no update, transient server error — never surface.
+      } catch (err) {
+        // offline, no update, transient server error — never surface to the
+        // user, but keep a trace so persistent failures are diagnosable.
+        logError("OTA", err);
       } finally {
         busy.current = false;
       }

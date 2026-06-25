@@ -2,10 +2,8 @@ import { useEffect, useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
   LayoutAnimation,
   Modal,
-  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -43,6 +41,7 @@ import { useThemeColor } from "@/components/useThemeColor";
 import { useGroups, useActiveDevotional, useDiscipleships, useProfile } from "@/lib/queries";
 import { useLocalDoneToday } from "@/lib/useLocalDoneToday";
 import { PopIn } from "@/components/PopIn";
+import { BottomSheet } from "@/components/BottomSheet";
 import { GROUP_TYPE_CONFIG, GROUP_TYPE_KEYS } from "@/lib/groupTypes";
 import {
   ApiClient,
@@ -295,48 +294,6 @@ function MemberSearch({
         </View>
       ))}
     </View>
-  );
-}
-
-// Bottom-sheet modal shared by the create / edit / join flows. Lifts above the
-// keyboard (so inputs aren't hidden), and tapping the dimmed backdrop closes it
-// while taps inside the sheet are absorbed by the inner Pressable.
-function BottomSheet({
-  visible,
-  onClose,
-  children,
-}: {
-  visible: boolean;
-  onClose: () => void;
-  children: ReactNode;
-}) {
-  const bg = useThemeColor("background");
-  return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
-      >
-        <Pressable
-          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}
-          onPress={onClose}
-        >
-          <Pressable
-            onPress={() => {}}
-            style={{
-              backgroundColor: bg,
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
-              padding: 24,
-              paddingBottom: 40,
-              maxHeight: "90%",
-            }}
-          >
-            {children}
-          </Pressable>
-        </Pressable>
-      </KeyboardAvoidingView>
-    </Modal>
   );
 }
 

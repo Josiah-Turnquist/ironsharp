@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Modal,
   Pressable,
   ScrollView,
   Text,
@@ -14,6 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { BookOpen, ChevronRight, User, Users } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
 import { Header } from "@/components/Header";
+import { BottomSheet } from "@/components/BottomSheet";
 import { ErrorState } from "@/components/ErrorState";
 import { useThemeColor } from "@/components/useThemeColor";
 import { usePlansByCategory, useProgress, useGroups, useProfile } from "@/lib/queries";
@@ -36,7 +36,6 @@ export default function PlanList() {
   const upgradePrompt = useUpgradePrompt(profile.data);
   const primary = useThemeColor("primary");
   const muted = useThemeColor("muted-foreground");
-  const bg = useThemeColor("background");
   const card = useThemeColor("card");
   const fg = useThemeColor("foreground");
   const border = useThemeColor("border");
@@ -207,184 +206,161 @@ export default function PlanList() {
       </ScrollView>
 
       {/* Assignment sheet */}
-      <Modal
-        visible={!!pendingPlanId}
-        transparent
-        animationType="slide"
-        onRequestClose={() => !assigning && setPendingPlanId(null)}
-      >
-        <Pressable
-          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}
-          onPress={() => !assigning && setPendingPlanId(null)}
+      <BottomSheet visible={!!pendingPlanId} onClose={() => !assigning && setPendingPlanId(null)}>
+        <View
+          style={{
+            width: 36,
+            height: 4,
+            backgroundColor: border,
+            borderRadius: 2,
+            alignSelf: "center",
+            marginBottom: 20,
+          }}
+        />
+
+        <Text
+          style={{
+            fontFamily: "PlayfairDisplay_700Bold",
+            fontSize: 18,
+            color: fg,
+            marginBottom: 4,
+          }}
         >
-          <Pressable onPress={(e) => e.stopPropagation()}>
-            <View
+          Who's reading this?
+        </Text>
+        <Text
+          style={{
+            fontFamily: "DMSans_400Regular",
+            fontSize: 13,
+            color: muted,
+            marginBottom: 20,
+          }}
+        >
+          Start it personally or assign it to a group.
+        </Text>
+
+        {/* Personal option */}
+        <Pressable
+          onPress={() => handleAssign(null)}
+          disabled={assigning}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 12,
+            backgroundColor: card,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: border,
+            padding: 14,
+            marginBottom: 10,
+            opacity: assigning ? 0.5 : 1,
+          }}
+        >
+          <View
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              backgroundColor: primary + "1A",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <User size={18} color={primary} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 15, color: fg }}>
+              Just me
+            </Text>
+            <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted }}>
+              Personal devotional
+            </Text>
+          </View>
+          <ChevronRight size={16} color={muted} />
+        </Pressable>
+
+        {/* Group options */}
+        {myGroups.length > 0 && (
+          <>
+            <Text
               style={{
-                backgroundColor: bg,
-                borderTopLeftRadius: 20,
-                borderTopRightRadius: 20,
-                paddingHorizontal: 20,
-                paddingTop: 20,
-                paddingBottom: 36,
+                fontFamily: "DMSans_700Bold",
+                fontSize: 12,
+                color: muted,
+                letterSpacing: 1.2,
+                textTransform: "uppercase",
+                marginBottom: 8,
+                marginTop: 4,
               }}
             >
-              <View
-                style={{
-                  width: 36,
-                  height: 4,
-                  backgroundColor: border,
-                  borderRadius: 2,
-                  alignSelf: "center",
-                  marginBottom: 20,
-                }}
-              />
-
-              <Text
-                style={{
-                  fontFamily: "PlayfairDisplay_700Bold",
-                  fontSize: 18,
-                  color: fg,
-                  marginBottom: 4,
-                }}
-              >
-                Who's reading this?
-              </Text>
-              <Text
-                style={{
-                  fontFamily: "DMSans_400Regular",
-                  fontSize: 13,
-                  color: muted,
-                  marginBottom: 20,
-                }}
-              >
-                Start it personally or assign it to a group.
-              </Text>
-
-              {/* Personal option */}
-              <Pressable
-                onPress={() => handleAssign(null)}
-                disabled={assigning}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 12,
-                  backgroundColor: card,
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: border,
-                  padding: 14,
-                  marginBottom: 10,
-                  opacity: assigning ? 0.5 : 1,
-                }}
-              >
-                <View
+              Your Groups
+            </Text>
+            {myGroups.map((group) => {
+              const config = GROUP_TYPE_CONFIG[group.groupType] ?? {
+                label: group.groupType,
+                color: primary,
+              };
+              return (
+                <Pressable
+                  key={group.id}
+                  onPress={() => handleAssign(group.id)}
+                  disabled={assigning}
                   style={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 18,
-                    backgroundColor: primary + "1A",
+                    flexDirection: "row",
                     alignItems: "center",
-                    justifyContent: "center",
+                    gap: 12,
+                    backgroundColor: card,
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: border,
+                    padding: 14,
+                    marginBottom: 10,
+                    opacity: assigning ? 0.5 : 1,
                   }}
                 >
-                  <User size={18} color={primary} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 15, color: fg }}>
-                    Just me
-                  </Text>
-                  <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted }}>
-                    Personal devotional
-                  </Text>
-                </View>
-                <ChevronRight size={16} color={muted} />
-              </Pressable>
-
-              {/* Group options */}
-              {myGroups.length > 0 && (
-                <>
-                  <Text
+                  <View
                     style={{
-                      fontFamily: "DMSans_700Bold",
-                      fontSize: 12,
-                      color: muted,
-                      letterSpacing: 1.2,
-                      textTransform: "uppercase",
-                      marginBottom: 8,
-                      marginTop: 4,
+                      width: 36,
+                      height: 36,
+                      borderRadius: 18,
+                      backgroundColor: config.color + "22",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
-                    Your Groups
-                  </Text>
-                  {myGroups.map((group) => {
-                    const config = GROUP_TYPE_CONFIG[group.groupType] ?? {
-                      label: group.groupType,
-                      color: primary,
-                    };
-                    return (
-                      <Pressable
-                        key={group.id}
-                        onPress={() => handleAssign(group.id)}
-                        disabled={assigning}
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                          gap: 12,
-                          backgroundColor: card,
-                          borderRadius: 12,
-                          borderWidth: 1,
-                          borderColor: border,
-                          padding: 14,
-                          marginBottom: 10,
-                          opacity: assigning ? 0.5 : 1,
-                        }}
-                      >
-                        <View
-                          style={{
-                            width: 36,
-                            height: 36,
-                            borderRadius: 18,
-                            backgroundColor: config.color + "22",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Users size={18} color={config.color} />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                          <Text
-                            style={{
-                              fontFamily: "DMSans_700Bold",
-                              fontSize: 15,
-                              color: fg,
-                            }}
-                          >
-                            {group.name}
-                          </Text>
-                          <Text
-                            style={{
-                              fontFamily: "DMSans_400Regular",
-                              fontSize: 12,
-                              color: muted,
-                            }}
-                          >
-                            {config.label}
-                          </Text>
-                        </View>
-                        <ChevronRight size={16} color={muted} />
-                      </Pressable>
-                    );
-                  })}
-                </>
-              )}
+                    <Users size={18} color={config.color} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        fontFamily: "DMSans_700Bold",
+                        fontSize: 15,
+                        color: fg,
+                      }}
+                    >
+                      {group.name}
+                    </Text>
+                    <Text
+                      style={{
+                        fontFamily: "DMSans_400Regular",
+                        fontSize: 12,
+                        color: muted,
+                      }}
+                    >
+                      {config.label}
+                    </Text>
+                  </View>
+                  <ChevronRight size={16} color={muted} />
+                </Pressable>
+              );
+            })}
+          </>
+        )}
 
-              {assigning && (
-                <ActivityIndicator color={primary} style={{ marginTop: 8 }} />
-              )}
-            </View>
-          </Pressable>
-        </Pressable>
-      </Modal>
+        {assigning && (
+          <ActivityIndicator color={primary} style={{ marginTop: 8 }} />
+        )}
+      </BottomSheet>
     </Screen>
   );
 }

@@ -1,9 +1,6 @@
-import { useState } from "react";
 import { Alert, Image, Pressable, ScrollView, Text, View, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
-import * as ImagePicker from "expo-image-picker";
-import * as ImageManipulator from "expo-image-manipulator";
 import {
   Palette,
   LogOut,
@@ -21,6 +18,7 @@ import { useProfile } from "@/lib/queries";
 import { ApiClient } from "@/lib/api";
 import { authClient, clearAuthToken } from "@/lib/auth-client";
 import { useSession } from "@/lib/session";
+import { useAvatarPicker } from "@/lib/useAvatarPicker";
 
 const TIER_LABELS: Record<string, string> = {
   free: "Free",
@@ -28,15 +26,6 @@ const TIER_LABELS: Record<string, string> = {
   sharpen: "Sharpen",
   family: "Family",
 };
-
-async function pickAndCompress(uri: string): Promise<string> {
-  const result = await ImageManipulator.manipulateAsync(
-    uri,
-    [{ resize: { width: 200, height: 200 } }],
-    { compress: 0.75, format: ImageManipulator.SaveFormat.JPEG, base64: true }
-  );
-  return `data:image/jpeg;base64,${result.base64}`;
-}
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -48,7 +37,7 @@ export default function ProfileScreen() {
   const card = useThemeColor("card");
   const destructive = useThemeColor("destructive");
 
-  const [uploading, setUploading] = useState(false);
+  const { uploading, pickPhoto: handleChangePhoto } = useAvatarPicker();
 
   const p = profile.data;
   const initials = (p?.displayName ?? "?")
@@ -57,62 +46,6 @@ export default function ProfileScreen() {
     .slice(0, 2)
     .join("")
     .toUpperCase();
-
-  const saveAvatar = async (uri: string) => {
-    setUploading(true);
-    try {
-      const avatarUrl = await pickAndCompress(uri);
-      await ApiClient.updateProfile({ avatarUrl });
-      await qc.invalidateQueries({ queryKey: ["profile"] });
-    } catch {
-      Alert.alert("Error", "Could not save your photo. Please try again.");
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleChangePhoto = () => {
-    Alert.alert("Profile Photo", "Choose how to set your photo.", [
-      {
-        text: "Take Photo",
-        onPress: async () => {
-          const { status } = await ImagePicker.requestCameraPermissionsAsync();
-          if (status !== "granted") {
-            Alert.alert("Permission needed", "Camera access is required to take a photo.");
-            return;
-          }
-          const result = await ImagePicker.launchCameraAsync({
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 0.8,
-          });
-          if (!result.canceled && result.assets[0]) {
-            await saveAvatar(result.assets[0].uri);
-          }
-        },
-      },
-      {
-        text: "Choose from Library",
-        onPress: async () => {
-          const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-          if (status !== "granted") {
-            Alert.alert("Permission needed", "Photo library access is required.");
-            return;
-          }
-          const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: "images",
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 0.8,
-          });
-          if (!result.canceled && result.assets[0]) {
-            await saveAvatar(result.assets[0].uri);
-          }
-        },
-      },
-      { text: "Cancel", style: "cancel" },
-    ]);
-  };
 
   const handleSignOut = () => {
     Alert.alert("Sign out", "Are you sure you want to sign out?", [

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Image, Pressable, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Camera } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
@@ -7,6 +7,7 @@ import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
 import { useThemeColor } from "@/components/useThemeColor";
 import { useProfile } from "@/lib/queries";
+import { useAvatarPicker } from "@/lib/useAvatarPicker";
 import { useOnboarding } from "./_layout";
 
 export default function CompleteProfile() {
@@ -16,6 +17,7 @@ export default function CompleteProfile() {
   const [name, setName] = useState(displayName);
   const [church, setChurch] = useState(survey.churchName);
   const iconColor = useThemeColor("muted-foreground");
+  const { uploading, pickPhoto } = useAvatarPicker();
 
   // Prefill from the profile we already have on the server (created at signup
   // for first-time users, or persisted from a prior onboarding pass).
@@ -39,8 +41,23 @@ export default function CompleteProfile() {
         Let your group know who you are
       </Text>
 
-      <Pressable className="mb-8 h-24 w-24 items-center justify-center rounded-full border-2 border-dashed border-border bg-card">
-        <Camera size={28} color={iconColor} />
+      <Pressable
+        onPress={pickPhoto}
+        disabled={uploading}
+        accessibilityRole="button"
+        accessibilityLabel="Add profile photo"
+        className="mb-8 h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-border bg-card"
+      >
+        {uploading ? (
+          <ActivityIndicator color={iconColor} />
+        ) : profile.data?.avatarUrl ? (
+          <Image
+            source={{ uri: profile.data.avatarUrl }}
+            style={{ width: 96, height: 96, borderRadius: 48 }}
+          />
+        ) : (
+          <Camera size={28} color={iconColor} />
+        )}
       </Pressable>
 
       <View className="w-full max-w-sm gap-4">

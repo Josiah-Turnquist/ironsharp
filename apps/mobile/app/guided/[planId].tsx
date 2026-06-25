@@ -250,6 +250,9 @@ export default function GuidedDevotional() {
                   </Text>
                 </View>
               ))}
+            {session.saveError ? (
+              <Text className="text-sm text-destructive">{session.saveError}</Text>
+            ) : null}
             <View className="mt-2 gap-3">
               <Button title="Save & finish" onPress={session.submit} />
             </View>

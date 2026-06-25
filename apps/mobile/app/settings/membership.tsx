@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Share, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, ScrollView, Share, Text, TextInput, View } from "react-native";
 import { Check, Copy, Tag } from "lucide-react-native";
 import { useQueryClient } from "@tanstack/react-query";
 import { Screen } from "@/components/Screen";
 import { Header } from "@/components/Header";
+import { BottomSheet } from "@/components/BottomSheet";
 import { useProfile } from "@/lib/queries";
 import { useThemeColor } from "@/components/useThemeColor";
 import { ApiClient, ApiError } from "@/lib/api";
@@ -199,69 +200,47 @@ export default function MembershipScreen() {
       </ScrollView>
 
       {/* ── Promo code modal ──────────────────────────────────────────────── */}
-      <Modal
-        visible={showPromo}
-        animationType="slide"
-        transparent
-        onRequestClose={() => !redeeming && setShowPromo(false)}
-      >
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
-        <Pressable
-          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}
-          onPress={() => !redeeming && setShowPromo(false)}
-        >
-          <Pressable
-            onPress={() => {}}
+      <BottomSheet visible={showPromo} onClose={() => !redeeming && setShowPromo(false)}>
+        <View style={{ gap: 16 }}>
+          <Text className="font-serif text-xl font-bold text-foreground">Promo Code</Text>
+          <TextInput
+            value={promoCode}
+            onChangeText={(t) => { setPromoCode(t.toUpperCase()); setPromoError(""); }}
+            placeholder="Enter code"
+            placeholderTextColor={muted}
+            autoCapitalize="characters"
+            autoCorrect={false}
             style={{
-              backgroundColor: bg,
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
-              padding: 24,
-              paddingBottom: 44,
-              gap: 16,
+              borderWidth: 1,
+              borderColor: promoError ? destructive : border,
+              borderRadius: 12,
+              padding: 14,
+              fontSize: 20,
+              fontFamily: "DMSans_700Bold",
+              letterSpacing: 3,
+              textAlign: "center",
+              color: fg,
+              backgroundColor: card,
             }}
+          />
+          {!!promoError && (
+            <Text style={{ color: destructive, fontSize: 13, textAlign: "center", marginTop: -8 }}>
+              {promoError}
+            </Text>
+          )}
+          <Pressable
+            onPress={handleRedeem}
+            disabled={!promoCode.trim() || redeeming}
+            style={{ opacity: !promoCode.trim() || redeeming ? 0.5 : 1 }}
+            className="h-12 items-center justify-center rounded-xl bg-primary"
           >
-            <Text className="font-serif text-xl font-bold text-foreground">Promo Code</Text>
-            <TextInput
-              value={promoCode}
-              onChangeText={(t) => { setPromoCode(t.toUpperCase()); setPromoError(""); }}
-              placeholder="Enter code"
-              placeholderTextColor={muted}
-              autoCapitalize="characters"
-              autoCorrect={false}
-              style={{
-                borderWidth: 1,
-                borderColor: promoError ? destructive : border,
-                borderRadius: 12,
-                padding: 14,
-                fontSize: 20,
-                fontFamily: "DMSans_700Bold",
-                letterSpacing: 3,
-                textAlign: "center",
-                color: fg,
-                backgroundColor: card,
-              }}
-            />
-            {!!promoError && (
-              <Text style={{ color: destructive, fontSize: 13, textAlign: "center", marginTop: -8 }}>
-                {promoError}
-              </Text>
-            )}
-            <Pressable
-              onPress={handleRedeem}
-              disabled={!promoCode.trim() || redeeming}
-              style={{ opacity: !promoCode.trim() || redeeming ? 0.5 : 1 }}
-              className="h-12 items-center justify-center rounded-xl bg-primary"
-            >
-              {redeeming
-                ? <ActivityIndicator color="#fff" />
-                : <Text className="text-base font-semibold text-primary-foreground">Redeem</Text>
-              }
-            </Pressable>
+            {redeeming
+              ? <ActivityIndicator color="#fff" />
+              : <Text className="text-base font-semibold text-primary-foreground">Redeem</Text>
+            }
           </Pressable>
-        </Pressable>
-        </KeyboardAvoidingView>
-      </Modal>
+        </View>
+      </BottomSheet>
     </Screen>
   );
 }
