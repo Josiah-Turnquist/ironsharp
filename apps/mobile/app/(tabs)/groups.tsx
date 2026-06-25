@@ -833,6 +833,23 @@ export default function GroupsScreen() {
         >
           <ScreenHeader eyebrow="Read together" title="Groups" />
 
+          {/* ── Your plans ─────────────────────────────────────────────────────── */}
+          <SectionLabel label="Your Plans" />
+          <Button title="Start a new plan" onPress={() => router.push("/plans")} />
+          <Pressable
+            onPress={() => router.push("/plans/completed")}
+            accessibilityRole="button"
+            accessibilityLabel="Completed plans"
+            className="mt-3 flex-row items-center justify-center gap-2 py-2"
+          >
+            <CheckCircle2 size={15} color={muted} />
+            <Text style={{ color: muted, fontFamily: "DMSans_500Medium", fontSize: 14 }}>
+              Completed plans
+            </Text>
+          </Pressable>
+
+          <Divider />
+
           {/* ── Discipleship ───────────────────────────────────────────────────── */}
           <DiscipleshipHub
             relationships={discipleships.data ?? []}

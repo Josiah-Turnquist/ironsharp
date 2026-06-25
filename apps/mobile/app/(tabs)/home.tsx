@@ -104,7 +104,7 @@ export default function HomeScreen() {
         <Pressable
           onPress={() =>
             router.push(
-              active ? `/devotional/${active.planId}` : "/(tabs)/plans"
+              active ? `/devotional/${active.planId}` : "/plans"
             )
           }
           className="mb-6 w-full rounded-2xl border border-border bg-card p-7"

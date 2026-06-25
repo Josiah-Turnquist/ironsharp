@@ -75,7 +75,7 @@ export const HELP_SECTIONS: HelpSection[] = [
       },
       {
         q: "Where can I see past devotionals?",
-        a: "Your active personal plan is on the Home tab. Group plans you're in show in the Groups tab — tap a group to open its devotional. Completed plans are in the Plans tab under Completed.",
+        a: "Your active personal plan is on the Home tab. Group plans you're in show in the Groups tab — tap a group to open its devotional. Completed plans are in the Groups tab under Your Plans.",
       },
       {
         q: "What happens if I miss a day?",
@@ -108,11 +108,11 @@ export const HELP_SECTIONS: HelpSection[] = [
       },
       {
         q: "How do I start a plan?",
-        a: "Go to the Plans tab, browse by category, and tap a plan. You'll be asked if it's just for you or for a group. If you have groups, you can assign it to one of them.",
+        a: "Open the Groups tab and tap Start a new plan. Browse by category and tap a plan — you'll be asked if it's just for you or for a group. If you have groups, you can assign it to one.",
       },
       {
         q: "Where do I find new plans?",
-        a: "Tap the Plans tab and browse the categories — Men's, Women's, Marriage, Family, General, and more. AI-generated plans tailored to your specific book or topic are also coming soon.",
+        a: "Open the Groups tab → Start a new plan and browse the categories — Men's, Women's, Marriage, Family, General, and more. AI-generated plans tailored to your specific book or topic are also coming soon.",
       },
       {
         q: "What happens when I finish a plan?",
@@ -149,7 +149,7 @@ export const HELP_SECTIONS: HelpSection[] = [
       },
       {
         q: "Can I assign a plan to my group?",
-        a: "Yes. When you tap a plan in the Plans tab, choose the group you want to read it with. If the group already has that plan assigned, it opens right to your current day without resetting progress.",
+        a: "Yes. When you start a new plan (Groups tab → Start a new plan) and tap a plan, choose the group you want to read it with. If the group already has that plan assigned, it opens right to your current day without resetting progress.",
       },
       {
         q: "Who can see my answers?",

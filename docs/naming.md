@@ -33,10 +33,14 @@ read (content) and who/how you read it (audience & format). Don't mix them.
 | Route | Label | Job |
 |---|---|---|
 | `home` | Home | Your personal devotional today + dashboard |
-| `plans` | Plans | Browse and start plans (the content library) |
-| `groups` | Groups | Your groups and discipleship |
+| `groups` | Groups | Your groups, discipleship, and starting/finding plans |
 | `community` | Community | The app-wide (everyone) devotional + public forum |
 | `profile` | Profile | Settings |
+
+There is **no Plans tab.** Getting a new plan is a flow at `/plans` ("Start a
+Plan" — browse the library or create one with AI), launched from the **Groups**
+tab ("Your Plans" → Start a new plan). Completed plans also live under
+Groups → Your Plans.
 
 Internal identifiers (route names like `groups`/`guided`, DB columns like
 `reflectionQ1`, the `community` group-type key) are intentionally *not* renamed — only
