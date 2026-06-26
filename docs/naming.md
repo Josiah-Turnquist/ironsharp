@@ -37,10 +37,12 @@ read (content) and who/how you read it (audience & format). Don't mix them.
 | `community` | Community | The app-wide (everyone) devotional + public forum |
 | `profile` | Profile | Settings |
 
-There is **no Plans tab.** Getting a new plan is a flow at `/plans` ("Start a
-Plan" — browse the library or create one with AI), launched from the **Groups**
-tab ("Your Plans" → Start a new plan). Completed plans also live under
-Groups → Your Plans.
+There is **no Plans tab.** A **group is the audience and a plan is the content**,
+so they're created together: the **New plan** entry in the **Groups** tab opens a
+flow at `/plans/new` — name the group → choose a plan (library or AI) → invite
+people. An existing plan-less group picks one via **Choose a plan** on its card.
+Personal (solo) plans still start from **Home → Start a plan** (`/plans`).
+Completed plans live under **Profile → Completed Plans**.
 
 Internal identifiers (route names like `groups`/`guided`, DB columns like
 `reflectionQ1`, the `community` group-type key) are intentionally *not* renamed — only

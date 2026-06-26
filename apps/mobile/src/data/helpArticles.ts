@@ -75,7 +75,7 @@ export const HELP_SECTIONS: HelpSection[] = [
       },
       {
         q: "Where can I see past devotionals?",
-        a: "Your active personal plan is on the Home tab. Group plans you're in show in the Groups tab — tap a group to open its devotional. Completed plans are in the Groups tab under Your Plans.",
+        a: "Your active personal plan is on the Home tab. Group plans show in the Groups tab — tap a group to open its devotional. Completed plans are under Profile → Completed Plans.",
       },
       {
         q: "What happens if I miss a day?",
@@ -108,11 +108,11 @@ export const HELP_SECTIONS: HelpSection[] = [
       },
       {
         q: "How do I start a plan?",
-        a: "Open the Groups tab and tap Start a new plan. Browse by category and tap a plan — you'll be asked if it's just for you or for a group. If you have groups, you can assign it to one.",
+        a: "For a personal plan, open Home and tap Start a plan. For a group, open the Groups tab and tap New plan — you'll name the group, choose its plan, and invite people, all in one flow.",
       },
       {
         q: "Where do I find new plans?",
-        a: "Open the Groups tab → Start a new plan and browse the categories — Men's, Women's, Marriage, Family, General, and more. AI-generated plans tailored to your specific book or topic are also coming soon.",
+        a: "Tap New plan in the Groups tab (or Start a plan on Home) to browse the library by category — Men's, Women's, Marriage, Family, General, and more — or generate your own with AI.",
       },
       {
         q: "What happens when I finish a plan?",
@@ -149,7 +149,7 @@ export const HELP_SECTIONS: HelpSection[] = [
       },
       {
         q: "Can I assign a plan to my group?",
-        a: "Yes. When you start a new plan (Groups tab → Start a new plan) and tap a plan, choose the group you want to read it with. If the group already has that plan assigned, it opens right to your current day without resetting progress.",
+        a: "Yes — it's built in. Tapping New plan creates the group and picks its plan together. For a group that doesn't have a plan yet, open it in the Groups tab and tap Choose a plan.",
       },
       {
         q: "Who can see my answers?",

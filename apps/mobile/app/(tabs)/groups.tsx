@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -9,7 +9,6 @@ import {
   Pressable,
   RefreshControl,
   ScrollView,
-  Share,
   Text,
   TextInput,
   View,
@@ -33,7 +32,6 @@ import {
   Pencil,
   Plus,
   Trash2,
-  UserPlus,
   X,
 } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
@@ -45,13 +43,13 @@ import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { ConfirmModal } from "@/components/ConfirmModal";
 import { useToast } from "@/components/Toast";
+import { InviteCodeRow, MemberSearch } from "@/components/GroupInvite";
 import { useGroups, useDiscipleships, useProfile } from "@/lib/queries";
-import { GROUP_TYPE_CONFIG, GROUP_TYPE_KEYS } from "@/lib/groupTypes";
+import { GROUP_TYPE_CONFIG } from "@/lib/groupTypes";
 import {
   ApiClient,
   ApiError,
   type Group,
-  type UserSearchResult,
   type DiscipleshipRelationship,
 } from "@/lib/api";
 
@@ -72,224 +70,7 @@ function Divider() {
 
 // ─── Shared sub-components ────────────────────────────────────────────────────
 
-function InviteCodeRow({
-  inviteCode,
-  accent,
-  muted,
-  border,
-  card,
-}: {
-  inviteCode: string;
-  accent: string;
-  muted: string;
-  border: string;
-  card: string;
-}) {
-  const shareCode = () =>
-    Share.share({
-      message: `Join my IronSharp group — enter code ${inviteCode} in the app.`,
-    });
-
-  return (
-    <View>
-      <Text
-        style={{
-          fontFamily: "DMSans_700Bold",
-          fontSize: 12,
-          color: muted,
-          letterSpacing: 1.2,
-          textTransform: "uppercase",
-          marginBottom: 8,
-        }}
-      >
-        Invite Code
-      </Text>
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          backgroundColor: card,
-          borderWidth: 1,
-          borderColor: border,
-          borderRadius: 10,
-          paddingHorizontal: 14,
-          paddingVertical: 12,
-          gap: 10,
-        }}
-      >
-        <Text
-          selectable
-          style={{
-            flex: 1,
-            fontFamily: "DMSans_700Bold",
-            fontSize: 22,
-            letterSpacing: 4,
-            color: accent,
-          }}
-        >
-          {inviteCode}
-        </Text>
-        <Pressable
-          onPress={shareCode}
-          hitSlop={10}
-          accessibilityRole="button"
-          accessibilityLabel="Share invite code"
-        >
-          <Link size={18} color={muted} />
-        </Pressable>
-      </View>
-      <Text
-        style={{
-          fontFamily: "DMSans_400Regular",
-          fontSize: 12,
-          color: muted,
-          marginTop: 6,
-        }}
-      >
-        Share this code or tap the link icon to send it.
-      </Text>
-    </View>
-  );
-}
-
-function MemberSearch({
-  groupId,
-  existingUserIds,
-  accent,
-  muted,
-  border,
-  card,
-  bg,
-  fg,
-  onAdded,
-}: {
-  groupId: string;
-  existingUserIds: Set<string>;
-  accent: string;
-  muted: string;
-  border: string;
-  card: string;
-  bg: string;
-  fg: string;
-  onAdded: () => void;
-}) {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<UserSearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [adding, setAdding] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (query.length < 2) { setResults([]); return; }
-    const t = setTimeout(async () => {
-      setSearching(true);
-      try {
-        const { users } = await ApiClient.searchUsers(query);
-        setResults(users.filter((u) => !existingUserIds.has(u.userId)));
-      } finally {
-        setSearching(false);
-      }
-    }, 300);
-    return () => clearTimeout(t);
-  }, [query, existingUserIds]);
-
-  const handleAdd = async (userId: string) => {
-    setAdding(userId);
-    try {
-      await ApiClient.addGroupMember(groupId, userId);
-      setResults((prev) => prev.filter((u) => u.userId !== userId));
-      onAdded();
-    } catch (err) {
-      Alert.alert("Error", err instanceof ApiError ? err.message : "Could not add member.");
-    } finally {
-      setAdding(null);
-    }
-  };
-
-  return (
-    <View>
-      <Text
-        style={{
-          fontFamily: "DMSans_700Bold",
-          fontSize: 12,
-          color: muted,
-          letterSpacing: 1.2,
-          textTransform: "uppercase",
-          marginBottom: 8,
-        }}
-      >
-        Add People
-      </Text>
-      <TextInput
-        value={query}
-        onChangeText={setQuery}
-        placeholder="Search by name…"
-        placeholderTextColor={muted}
-        style={{
-          borderWidth: 1,
-          borderColor: border,
-          borderRadius: 10,
-          paddingHorizontal: 12,
-          paddingVertical: 10,
-          color: fg,
-          backgroundColor: bg,
-          fontSize: 14,
-          fontFamily: "DMSans_400Regular",
-          marginBottom: 8,
-        }}
-      />
-      {searching && <ActivityIndicator size="small" color={accent} style={{ marginBottom: 8 }} />}
-      {results.map((user) => (
-        <View
-          key={user.userId}
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            backgroundColor: card,
-            borderWidth: 1,
-            borderColor: border,
-            borderRadius: 10,
-            padding: 12,
-            marginBottom: 6,
-            gap: 10,
-          }}
-        >
-          <View
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 16,
-              backgroundColor: withAlpha(accent, 0.13),
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 13, color: accent }}>
-              {user.displayName[0]?.toUpperCase()}
-            </Text>
-          </View>
-          <Text style={{ flex: 1, fontFamily: "DMSans_400Regular", fontSize: 14, color: fg }}>
-            {user.displayName}
-          </Text>
-          <Pressable
-            onPress={() => handleAdd(user.userId)}
-            disabled={adding === user.userId}
-            style={{ opacity: adding === user.userId ? 0.5 : 1 }}
-            accessibilityRole="button"
-            accessibilityLabel={`Add ${user.displayName} to group`}
-          >
-            {adding === user.userId ? (
-              <ActivityIndicator size="small" color={accent} />
-            ) : (
-              <UserPlus size={18} color={accent} />
-            )}
-          </Pressable>
-        </View>
-      ))}
-    </View>
-  );
-}
-
-// Bottom-sheet modal shared by the create / edit / join flows. Lifts above the
+// Bottom-sheet modal shared by the edit / join flows. Lifts above the
 // keyboard (so inputs aren't hidden), and tapping the dimmed backdrop closes it
 // while taps inside the sheet are absorbed by the inner Pressable.
 function BottomSheet({
@@ -651,14 +432,6 @@ export default function GroupsScreen() {
     setRefreshing(false);
   };
 
-  // Create flow
-  const [showCreate, setShowCreate] = useState(false);
-  const [createStep, setCreateStep] = useState<1 | 2>(1);
-  const [newName, setNewName] = useState("");
-  const [newType, setNewType] = useState("small-group");
-  const [creating, setCreating] = useState(false);
-  const [createdGroup, setCreatedGroup] = useState<Group | null>(null);
-
   // Edit flow
   const [editGroup, setEditGroup] = useState<Group | null>(null);
   const [editName, setEditName] = useState("");
@@ -685,46 +458,9 @@ export default function GroupsScreen() {
     });
   };
 
-  const closeCreate = () => {
-    setShowCreate(false);
-    setCreateStep(1);
-    setNewName("");
-    setNewType("small-group");
-    setCreatedGroup(null);
-  };
-
-  // Open the create sheet pre-set to a one-on-one — the entry point for
-  // starting discipleship from the Discipleship hub.
-  const startOneOnOne = () => {
-    setCreateStep(1);
-    setNewName("");
-    setNewType("one-on-one");
-    setShowCreate(true);
-  };
-
-  const handleCreate = async () => {
-    if (!newName.trim()) return;
-    setCreating(true);
-    try {
-      const { group } = await ApiClient.createGroup({ name: newName.trim(), groupType: newType });
-      await qc.invalidateQueries({ queryKey: ["groups"] });
-      // Prefer the fully-assembled row from the list (it includes members);
-      // fall back to the freshly-created group so step 2 always has the
-      // invite code even if the refetch hasn't landed yet.
-      const fresh = (await ApiClient.getGroups()).groups.find((g) => g.id === group.id) ?? null;
-      setCreatedGroup(fresh ?? { ...group, members: group.members ?? [] });
-      setCreateStep(2);
-    } catch (err) {
-      // Without this the failure was silent — the modal just sat on step 1
-      // with no feedback, which read as "create group is broken".
-      Alert.alert(
-        "Couldn't create group",
-        err instanceof ApiError ? err.message : "Something went wrong. Please try again."
-      );
-    } finally {
-      setCreating(false);
-    }
-  };
+  // Entry point for starting discipleship from the hub: opens the unified
+  // create flow pre-set to a one-on-one group.
+  const startOneOnOne = () => router.push("/plans/new?type=one-on-one");
 
   const handleSaveEdit = async () => {
     if (!editGroup || !editName.trim()) return;
@@ -833,32 +569,6 @@ export default function GroupsScreen() {
         >
           <ScreenHeader eyebrow="Read together" title="Groups" />
 
-          {/* ── Your plans ─────────────────────────────────────────────────────── */}
-          <SectionLabel label="Your Plans" />
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 20 }}>
-            <Pressable
-              onPress={() => router.push("/plans")}
-              className="flex-row items-center gap-1.5 py-3"
-              accessibilityRole="button"
-              accessibilityLabel="Start a new plan"
-            >
-              <Plus size={15} color={primary} />
-              <Text style={{ color: primary }} className="text-sm font-semibold">Start a new plan</Text>
-            </Pressable>
-            <Text style={{ color: border }}>·</Text>
-            <Pressable
-              onPress={() => router.push("/plans/completed")}
-              className="flex-row items-center gap-1.5 py-3"
-              accessibilityRole="button"
-              accessibilityLabel="Completed plans"
-            >
-              <CheckCircle2 size={15} color={primary} />
-              <Text style={{ color: primary }} className="text-sm font-semibold">Completed</Text>
-            </Pressable>
-          </View>
-
-          <Divider />
-
           {/* ── Discipleship ───────────────────────────────────────────────────── */}
           <DiscipleshipHub
             relationships={discipleships.data ?? []}
@@ -886,10 +596,10 @@ export default function GroupsScreen() {
               </Text>
               <View className="flex-row gap-3">
                 <Pressable
-                  onPress={() => setShowCreate(true)}
+                  onPress={() => router.push("/plans/new")}
                   className="h-11 items-center justify-center rounded-xl bg-primary px-6"
                 >
-                  <Text className="text-sm font-semibold text-primary-foreground">Create</Text>
+                  <Text className="text-sm font-semibold text-primary-foreground">New plan</Text>
                 </Pressable>
                 <Pressable
                   onPress={() => setShowJoin(true)}
@@ -1020,15 +730,26 @@ export default function GroupsScreen() {
 
                     {/* Actions row */}
                     <View className="flex-row gap-3">
-                      {group.plan && (
+                      {group.plan ? (
                         <Pressable
                           onPress={() => router.push(`/devotional/${group.plan!.id}?groupId=${group.id}`)}
-                          style={{ borderWidth: 1, borderColor: config.color, borderRadius: 8, backgroundColor: config.color + "15" }}
+                          style={{ borderWidth: 1, borderColor: config.color, borderRadius: 8, backgroundColor: withAlpha(config.color, 0.12) }}
                           className="flex-row items-center gap-1.5 px-3 py-2"
                         >
                           <BookOpen size={13} color={config.color} />
                           <Text style={{ color: config.color, fontFamily: "DMSans_500Medium", fontSize: 12 }}>
                             Open Devotional
+                          </Text>
+                        </Pressable>
+                      ) : (
+                        <Pressable
+                          onPress={() => router.push(`/plans/new?groupId=${group.id}&groupName=${encodeURIComponent(group.name)}`)}
+                          style={{ borderWidth: 1, borderColor: config.color, borderRadius: 8, backgroundColor: withAlpha(config.color, 0.12) }}
+                          className="flex-row items-center gap-1.5 px-3 py-2"
+                        >
+                          <BookOpen size={13} color={config.color} />
+                          <Text style={{ color: config.color, fontFamily: "DMSans_500Medium", fontSize: 12 }}>
+                            Choose a plan
                           </Text>
                         </Pressable>
                       )}
@@ -1062,11 +783,11 @@ export default function GroupsScreen() {
           {/* Footer actions */}
           <View style={{ marginTop: 8, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 20 }}>
             <Pressable
-              onPress={() => setShowCreate(true)}
+              onPress={() => router.push("/plans/new")}
               className="flex-row items-center gap-1.5 py-3"
             >
               <Plus size={15} color={primary} />
-              <Text style={{ color: primary }} className="text-sm font-semibold">New group</Text>
+              <Text style={{ color: primary }} className="text-sm font-semibold">New plan</Text>
             </Pressable>
             <Text style={{ color: border }}>·</Text>
             <Pressable
@@ -1080,93 +801,6 @@ export default function GroupsScreen() {
             </>
           )}
         </ScrollView>
-
-      {/* ── Create group modal ─────────────────────────────────────────────── */}
-      <BottomSheet visible={showCreate} onClose={() => !creating && closeCreate()}>
-            <View className="mb-5 flex-row items-center justify-between">
-              <Text className="font-serif text-xl font-bold text-foreground">
-                {createStep === 1 ? "New Group" : createdGroup?.name ?? "Group Created"}
-              </Text>
-              <Pressable
-                onPress={closeCreate}
-                hitSlop={12}
-                accessibilityRole="button"
-                accessibilityLabel="Close"
-              >
-                <X size={20} color={muted} />
-              </Pressable>
-            </View>
-
-            {createStep === 1 ? (
-              <>
-                <Text className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Group Name</Text>
-                <Input
-                  value={newName}
-                  onChangeText={setNewName}
-                  placeholder="e.g. The Forge"
-                  style={{ marginBottom: 20 }}
-                />
-
-                <Text className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Group Type</Text>
-                <View className="mb-6 gap-2">
-                  {GROUP_TYPE_KEYS.map((key) => {
-                    const val = GROUP_TYPE_CONFIG[key]!;
-                    const selected = newType === key;
-                    return (
-                      <Pressable
-                        key={key}
-                        onPress={() => setNewType(key)}
-                        accessibilityRole="radio"
-                        accessibilityState={{ selected }}
-                        style={{
-                          borderWidth: 1.5,
-                          borderColor: selected ? val.color : border,
-                          borderRadius: 10, padding: 12,
-                          flexDirection: "row", alignItems: "center", gap: 10,
-                          backgroundColor: selected ? val.color + "18" : "transparent",
-                        }}
-                      >
-                        <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: val.color }} />
-                        <Text style={{ color: selected ? val.color : fg, fontFamily: "DMSans_700Bold", fontSize: 14 }}>
-                          {val.label}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-
-                <Button
-                  title="Create Group"
-                  onPress={handleCreate}
-                  disabled={!newName.trim()}
-                  loading={creating}
-                />
-              </>
-            ) : createdGroup ? (
-              <ScrollView showsVerticalScrollIndicator={false}>
-                <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 14, color: muted, marginBottom: 20 }}>
-                  Your group is ready. Share the invite code or add people directly.
-                </Text>
-                <View style={{ marginBottom: 24 }}>
-                  <InviteCodeRow
-                    inviteCode={createdGroup.inviteCode}
-                    accent={GROUP_TYPE_CONFIG[createdGroup.groupType]?.color ?? primary}
-                    muted={muted} border={border} card={card}
-                  />
-                </View>
-                <View style={{ marginBottom: 24 }}>
-                  <MemberSearch
-                    groupId={createdGroup.id}
-                    existingUserIds={new Set(createdGroup.members.map((m) => m.userId))}
-                    accent={GROUP_TYPE_CONFIG[createdGroup.groupType]?.color ?? primary}
-                    muted={muted} border={border} card={card} bg={bg} fg={fg}
-                    onAdded={() => qc.invalidateQueries({ queryKey: ["groups"] })}
-                  />
-                </View>
-                <Button title="Done" onPress={closeCreate} />
-              </ScrollView>
-            ) : null}
-      </BottomSheet>
 
       {/* ── Edit group sheet ───────────────────────────────────────────────── */}
       <BottomSheet visible={!!editGroup} onClose={() => !saving && setEditGroup(null)}>

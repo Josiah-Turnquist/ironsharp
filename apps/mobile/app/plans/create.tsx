@@ -12,7 +12,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { BookOpen, MessageSquare, ChevronLeft, Sparkles } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
@@ -100,6 +100,9 @@ const DAY_OPTIONS = [7, 14, 21];
 export default function CreatePlan() {
   const router = useRouter();
   const qc = useQueryClient();
+  // When launched from the unified "New plan" flow, this generation is the
+  // content for a group — assign it there instead of starting it personally.
+  const { groupId } = useLocalSearchParams<{ groupId?: string }>();
 
   const primary = useThemeColor("primary");
   const muted = useThemeColor("muted-foreground");
@@ -163,13 +166,18 @@ export default function CreatePlan() {
         context: form.context.trim() || undefined,
       });
 
-      // Start the plan for this user.
-      await ApiClient.startPlan(planId);
-      await qc.invalidateQueries({ queryKey: ["progress"] });
-      await qc.invalidateQueries({ queryKey: ["progress", "active"] });
       await qc.invalidateQueries({ queryKey: ["generate", "tokens"] });
 
-      router.replace(`/devotional/${planId}`);
+      if (groupId) {
+        await ApiClient.assignPlanToGroup(groupId, planId);
+        await qc.invalidateQueries({ queryKey: ["groups"] });
+        router.replace("/(tabs)/groups");
+      } else {
+        await ApiClient.startPlan(planId);
+        await qc.invalidateQueries({ queryKey: ["progress"] });
+        await qc.invalidateQueries({ queryKey: ["progress", "active"] });
+        router.replace(`/devotional/${planId}`);
+      }
     } catch (err) {
       setGenerating(false);
       if (err instanceof ApiError && err.status === 429) {
