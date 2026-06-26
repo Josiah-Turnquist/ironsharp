@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react-native";
+import { Check, ChevronLeft, ChevronRight, Sparkles } from "lucide-react-native";
 
 const CATEGORY_IMAGES: Record<string, ImageSourcePropType> = {
   mens:           require("../../assets/images/categories/mens.jpg"),
@@ -33,7 +33,7 @@ import { Button } from "@/components/Button";
 import { useThemeColor } from "@/components/useThemeColor";
 import { withAlpha } from "@/theme/themes";
 import { InviteCodeRow, MemberSearch } from "@/components/GroupInvite";
-import { useGroups, usePlansByCategory } from "@/lib/queries";
+import { useGroups, usePlansByCategory, useProfile } from "@/lib/queries";
 import { ApiClient, ApiError, type Group } from "@/lib/api";
 import { CATEGORIES } from "@/lib/categories";
 import { GROUP_TYPE_KEYS, GROUP_TYPE_CONFIG } from "@/lib/groupTypes";
@@ -75,9 +75,16 @@ export default function NewPlanFlow() {
   const card = useThemeColor("card");
   const border = useThemeColor("border");
 
+  const myId = useProfile().data?.userId;
+
   const [createdGroup, setCreatedGroup] = useState<Group | null>(null);
-  const activeGroup = createdGroup ?? existingGroup;
-  const activeGroupId = activeGroup?.id ?? params.groupId ?? null;
+  const activeGroupId = createdGroup?.id ?? params.groupId ?? null;
+  // Derive from the live groups list so the roster reflects people as they're
+  // added; fall back to the freshly-created group before the refetch lands.
+  const activeGroup =
+    (activeGroupId ? (groups.data ?? []).find((g) => g.id === activeGroupId) : null) ??
+    createdGroup ??
+    existingGroup;
   const accent = activeGroup
     ? GROUP_TYPE_CONFIG[activeGroup.groupType]?.color ?? primary
     : primary;
@@ -317,6 +324,27 @@ export default function NewPlanFlow() {
               border={border}
               card={card}
             />
+            {activeGroup.members.length > 0 && (
+              <View>
+                <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 12, color: muted, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 8 }}>
+                  In this group · {activeGroup.members.length}
+                </Text>
+                {activeGroup.members.map((m) => (
+                  <View key={m.id} style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 7 }}>
+                    <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: withAlpha(accent, 0.13), alignItems: "center", justifyContent: "center" }}>
+                      <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 13, color: accent }}>
+                        {m.displayName[0]?.toUpperCase()}
+                      </Text>
+                    </View>
+                    <Text style={{ flex: 1, fontFamily: "DMSans_500Medium", fontSize: 14, color: fg }}>
+                      {m.displayName}
+                      {m.userId === myId ? " (you)" : ""}
+                    </Text>
+                    <Check size={16} color={accent} />
+                  </View>
+                ))}
+              </View>
+            )}
             <MemberSearch
               groupId={activeGroup.id}
               existingUserIds={new Set(activeGroup.members.map((m) => m.userId))}

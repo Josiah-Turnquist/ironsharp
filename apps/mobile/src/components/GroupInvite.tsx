@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, Share, Text, TextInput, View } from "react-native";
 import { Link, UserPlus } from "lucide-react-native";
 import { withAlpha } from "@/theme/themes";
+import { useToast } from "@/components/Toast";
 import { ApiClient, ApiError, type UserSearchResult } from "@/lib/api";
 
 /** The group's invite code with a system-share affordance. */
@@ -111,6 +112,7 @@ export function MemberSearch({
   const [results, setResults] = useState<UserSearchResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [adding, setAdding] = useState<string | null>(null);
+  const toast = useToast();
 
   useEffect(() => {
     if (query.length < 2) { setResults([]); return; }
@@ -127,11 +129,13 @@ export function MemberSearch({
   }, [query, existingUserIds]);
 
   const handleAdd = async (userId: string) => {
+    const name = results.find((u) => u.userId === userId)?.displayName ?? "them";
     setAdding(userId);
     try {
       await ApiClient.addGroupMember(groupId, userId);
       setResults((prev) => prev.filter((u) => u.userId !== userId));
       onAdded();
+      toast.show(`Added ${name}`);
     } catch (err) {
       Alert.alert("Error", err instanceof ApiError ? err.message : "Could not add member.");
     } finally {
