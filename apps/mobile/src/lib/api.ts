@@ -556,9 +556,9 @@ export const ApiClient = {
       `/api/submissions/group/day?planId=${planId}&dayNumber=${dayNumber}`
     ),
 
-  getSubmission: (planId: string, dayNumber: number) =>
+  getSubmission: (planId: string, dayNumber: number, groupId?: string | null) =>
     api<{ submission: Submission | null }>(
-      `/api/submissions/${planId}/${dayNumber}`
+      `/api/submissions/${planId}/${dayNumber}${groupId ? `?groupId=${groupId}` : ""}`
     ),
   getPlanSubmissions: (planId: string) =>
     api<{ submissions: Submission[] }>(`/api/submissions/plan/${planId}`),
@@ -576,6 +576,7 @@ export const ApiClient = {
     q3Private?: boolean;
     prayerPrivate?: boolean;
     submissionSource?: string;
+    groupId?: string | null;
   }) =>
     api<{ submission: Submission }>("/api/submissions", {
       method: "PUT",

@@ -785,9 +785,9 @@ export default function DevotionalReader() {
     enabled: !!planId,
   });
   const submissionQ = useQuery({
-    queryKey: ["submission", planId, currentDay],
+    queryKey: ["submission", planId, currentDay, groupId],
     queryFn: () =>
-      ApiClient.getSubmission(planId, currentDay).then((r) => r.submission),
+      ApiClient.getSubmission(planId, currentDay, groupId).then((r) => r.submission),
     enabled: !!planId,
   });
 
@@ -900,6 +900,7 @@ export default function DevotionalReader() {
         q3Private: q3 ? q3Private : undefined,
         prayerPrivate,
         submissionSource: "typed",
+        groupId,
       });
       if (groupId) {
         await ApiClient.updateGroupProgress(groupId, {

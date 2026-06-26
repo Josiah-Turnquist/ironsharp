@@ -257,6 +257,10 @@ export const devotionalSubmissions = pgTable(
       .notNull()
       .references(() => devotionalPlans.id, { onDelete: "cascade" }),
     dayNumber: integer("day_number").notNull(),
+    // Which group instance this submission belongs to. NULL = personal. A library
+    // plan is a shared template (same planId across personal + every group that
+    // picks it), so answers are scoped by instance, not just (user, plan, day).
+    groupId: uuid("group_id").references(() => groups.id, { onDelete: "cascade" }),
     response1: text("response1"),
     response2: text("response2"),
     // Optional Q3 — a custom question the discipler sets for the disciple.
@@ -275,11 +279,10 @@ export const devotionalSubmissions = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => ({
-    userPlanDayUnique: unique("devotional_submissions_unique").on(
-      t.userId,
-      t.planId,
-      t.dayNumber
-    ),
+    // Scoped lookup by (user, plan, day, instance). Uniqueness per scope is
+    // enforced in app code — a nullable groupId can't dedupe NULLs in a Postgres
+    // unique index.
+    scopeIdx: index("idx_submissions_scope").on(t.userId, t.planId, t.dayNumber, t.groupId),
     planDayIdx: index("idx_submissions_plan_day").on(t.planId, t.dayNumber),
     userIdx: index("idx_submissions_user").on(t.userId),
   })

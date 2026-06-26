@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { and, asc, count, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, count, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "../db/index.js";
 import {
   devotionalSubmissions,
@@ -37,6 +37,8 @@ const submissionSchema = z.object({
   prayerPrivate: z.boolean().optional(),
   voiceMemoPrivate: z.boolean().optional(),
   submissionSource: z.enum(["typed", "commute", "voice_memo", "voice"]).optional(),
+  // The group instance this answer belongs to. Omitted/null = personal.
+  groupId: z.string().uuid().nullish(),
 });
 
 // GET /api/submissions/group/day?planId=&dayNumber=
@@ -83,7 +85,9 @@ submissions.get("/group/day", async (c) => {
       and(
         inArray(devotionalSubmissions.userId, memberIds),
         eq(devotionalSubmissions.planId, planId),
-        eq(devotionalSubmissions.dayNumber, dayNumber)
+        eq(devotionalSubmissions.dayNumber, dayNumber),
+        // Only this group's answers — not members' personal copies of the same plan.
+        eq(devotionalSubmissions.groupId, membership.groupId)
       )
     );
 
@@ -142,6 +146,7 @@ submissions.get("/:planId/:dayNumber", async (c) => {
   const userId = c.var.user.id;
   const planId = c.req.param("planId");
   const dayNumber = Number(c.req.param("dayNumber"));
+  const groupId = c.req.query("groupId") || null;
 
   const [row] = await db
     .select()
@@ -150,7 +155,10 @@ submissions.get("/:planId/:dayNumber", async (c) => {
       and(
         eq(devotionalSubmissions.userId, userId),
         eq(devotionalSubmissions.planId, planId),
-        eq(devotionalSubmissions.dayNumber, dayNumber)
+        eq(devotionalSubmissions.dayNumber, dayNumber),
+        groupId
+          ? eq(devotionalSubmissions.groupId, groupId)
+          : isNull(devotionalSubmissions.groupId)
       )
     )
     .limit(1);
@@ -165,11 +173,9 @@ submissions.put("/", async (c) => {
   if (!parsed.success) return c.json({ error: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
   const body = parsed.data;
   const { planId, dayNumber } = body;
+  const groupId = body.groupId ?? null;
 
-  const values = {
-    userId,
-    planId,
-    dayNumber,
+  const fields = {
     response1: body.response1 ?? null,
     response2: body.response2 ?? null,
     response3: body.response3 ?? null,
@@ -186,33 +192,34 @@ submissions.put("/", async (c) => {
     updatedAt: new Date(),
   };
 
-  const [row] = await db
-    .insert(devotionalSubmissions)
-    .values(values)
-    .onConflictDoUpdate({
-      target: [
-        devotionalSubmissions.userId,
-        devotionalSubmissions.planId,
-        devotionalSubmissions.dayNumber,
-      ],
-      set: {
-        response1: values.response1,
-        response2: values.response2,
-        response3: values.response3,
-        prayer: values.prayer,
-        voiceMemoUrl: values.voiceMemoUrl,
-        audioQ1Url: values.audioQ1Url,
-        audioQ2Url: values.audioQ2Url,
-        q1Private: values.q1Private,
-        q2Private: values.q2Private,
-        q3Private: values.q3Private,
-        prayerPrivate: values.prayerPrivate,
-        voiceMemoPrivate: values.voiceMemoPrivate,
-        submissionSource: values.submissionSource,
-        updatedAt: values.updatedAt,
-      },
-    })
-    .returning();
+  // One submission per scope (user, plan, day, instance). groupId NULL = personal.
+  // Enforced in app code: a nullable groupId can't dedupe NULLs in a Postgres
+  // unique index, so find-then-update/insert instead of onConflict.
+  const scope = and(
+    eq(devotionalSubmissions.userId, userId),
+    eq(devotionalSubmissions.planId, planId),
+    eq(devotionalSubmissions.dayNumber, dayNumber),
+    groupId
+      ? eq(devotionalSubmissions.groupId, groupId)
+      : isNull(devotionalSubmissions.groupId)
+  );
+
+  const [existing] = await db
+    .select({ id: devotionalSubmissions.id })
+    .from(devotionalSubmissions)
+    .where(scope)
+    .limit(1);
+
+  const [row] = existing
+    ? await db
+        .update(devotionalSubmissions)
+        .set(fields)
+        .where(eq(devotionalSubmissions.id, existing.id))
+        .returning()
+    : await db
+        .insert(devotionalSubmissions)
+        .values({ userId, planId, dayNumber, groupId, ...fields })
+        .returning();
 
   // Background tasks — none of these block the response. `today` is the
   // submitter's LOCAL calendar day (x-timezone-offset header), not UTC.
