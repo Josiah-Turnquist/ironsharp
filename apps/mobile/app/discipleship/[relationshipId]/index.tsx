@@ -1,0 +1,506 @@
+import { useMemo, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { ChevronLeft, CornerUpLeft, Flag, Lock, Send, Star, X } from "lucide-react-native";
+import { Screen } from "@/components/Screen";
+import { Avatar } from "@/components/Avatar";
+import { ErrorState } from "@/components/ErrorState";
+import { useThemeColor } from "@/components/useThemeColor";
+import { withAlpha } from "@/theme/themes";
+import { useToast } from "@/components/Toast";
+import { useDiscipleships, useDiscipleResponses, useMailbox, useProfile } from "@/lib/queries";
+import { ApiClient, ApiError, type DiscipleResponse, type QuestionType } from "@/lib/api";
+
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+}
+
+function localDate(offsetDays = 0): string {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return d.toLocaleDateString("en-CA");
+}
+
+/**
+ * One person-centered screen for a discipleship relationship. Discipler sees a
+ * Responses ⇄ Messages segmented view; disciple sees Messages. Replaces the old
+ * separate responses / flagged / mailbox screens.
+ */
+export default function DiscipleshipScreen() {
+  const { relationshipId } = useLocalSearchParams<{ relationshipId: string }>();
+  const id = String(relationshipId);
+  const router = useRouter();
+  const relationships = useDiscipleships();
+  const profile = useProfile();
+  const myId = profile.data?.userId;
+
+  const fg = useThemeColor("foreground");
+  const muted = useThemeColor("muted-foreground");
+  const border = useThemeColor("border");
+  const card = useThemeColor("card");
+  const primary = useThemeColor("primary");
+
+  const rel = (relationships.data ?? []).find((r) => r.id === id);
+  const isDiscipler = rel?.role === "discipler";
+  const counterpartName = rel?.counterpart.displayName ?? "Discipleship";
+
+  const [tab, setTab] = useState<"responses" | "messages">("responses");
+  const effectiveTab = isDiscipler ? tab : "messages";
+
+  // Mailbox draft is lifted here so "reply" from a response can prefill it.
+  const [draft, setDraft] = useState("");
+
+  return (
+    <Screen edges={["top"]}>
+      {/* Identity header */}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 12,
+          paddingHorizontal: 12,
+          paddingVertical: 10,
+          borderBottomWidth: 1,
+          borderBottomColor: border,
+        }}
+      >
+        <Pressable onPress={() => router.back()} hitSlop={10} accessibilityRole="button" accessibilityLabel="Back" style={{ padding: 4 }}>
+          <ChevronLeft size={24} color={fg} />
+        </Pressable>
+        <Avatar name={counterpartName} url={rel?.counterpart.avatarUrl ?? null} accent={primary} />
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontFamily: "PlayfairDisplay_700Bold", fontSize: 19, color: fg }} numberOfLines={1}>
+            {counterpartName}
+          </Text>
+          <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted }}>
+            {isDiscipler ? "You're discipling them" : "Your discipler"}
+            {rel?.status === "pending" ? " · pending" : ""}
+          </Text>
+        </View>
+      </View>
+
+      {/* Segmented control (discipler only — disciple just messages) */}
+      {isDiscipler && (
+        <View style={{ flexDirection: "row", gap: 8, paddingHorizontal: 16, paddingTop: 12 }}>
+          {(["responses", "messages"] as const).map((t) => {
+            const active = tab === t;
+            return (
+              <Pressable
+                key={t}
+                onPress={() => setTab(t)}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: active }}
+                style={{
+                  flex: 1,
+                  alignItems: "center",
+                  paddingVertical: 9,
+                  borderRadius: 10,
+                  backgroundColor: active ? withAlpha(primary, 0.12) : "transparent",
+                  borderWidth: 1,
+                  borderColor: active ? primary : border,
+                }}
+              >
+                <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 13, color: active ? primary : muted }}>
+                  {t === "responses" ? "Responses" : "Messages"}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      )}
+
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+      >
+        {effectiveTab === "responses" ? (
+          <ResponsesPanel
+            id={id}
+            accent={primary}
+            onReply={(text) => {
+              setDraft(text);
+              setTab("messages");
+            }}
+          />
+        ) : (
+          <MessagesPanel id={id} myId={myId} accent={primary} draft={draft} setDraft={setDraft} />
+        )}
+      </KeyboardAvoidingView>
+    </Screen>
+  );
+}
+
+// ─── Responses (discipler reviews the disciple's answers) ─────────────────────
+
+function ResponsesPanel({
+  id,
+  accent,
+  onReply,
+}: {
+  id: string;
+  accent: string;
+  onReply: (prefill: string) => void;
+}) {
+  const qc = useQueryClient();
+  const responses = useDiscipleResponses(id);
+  const fg = useThemeColor("foreground");
+  const muted = useThemeColor("muted-foreground");
+  const border = useThemeColor("border");
+  const card = useThemeColor("card");
+  const primary = useThemeColor("primary");
+
+  const [flaggedOnly, setFlaggedOnly] = useState(false);
+  const [askOpen, setAskOpen] = useState(false);
+
+  const toggleFlag = async (responseId: string, type: QuestionType, flagged: boolean) => {
+    try {
+      if (flagged) await ApiClient.unflagResponse(id, responseId, type);
+      else await ApiClient.flagResponse(id, responseId, type);
+      await qc.invalidateQueries({ queryKey: ["discipleship", id, "responses"] });
+      await qc.invalidateQueries({ queryKey: ["discipleship", id, "flags"] });
+    } catch (err) {
+      Alert.alert("Couldn't update flag", err instanceof ApiError ? err.message : "Please try again.");
+    }
+  };
+
+  const fieldsFor = (r: DiscipleResponse) =>
+    [
+      { type: "q1" as const, label: "Reflect", text: r.response1, isPrivate: r.q1Private },
+      { type: "q2" as const, label: "Act", text: r.response2, isPrivate: r.q2Private },
+      ...(r.q3Question ? [{ type: "q3" as const, label: r.q3Question, text: r.response3, isPrivate: r.q3Private }] : []),
+      { type: "praise" as const, label: "Prayer & Praise", text: r.prayer, isPrivate: r.prayerPrivate },
+    ];
+
+  const all = responses.data ?? [];
+  const list = useMemo(
+    () => (flaggedOnly ? all.filter((r) => r.flagged.length > 0) : all),
+    [all, flaggedOnly]
+  );
+
+  if (responses.isLoading) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator color={primary} />
+      </View>
+    );
+  }
+  if (responses.isError) {
+    return <ErrorState message="We couldn't load responses." onRetry={() => responses.refetch()} />;
+  }
+
+  return (
+    <>
+      {/* Toolbar */}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: 16,
+          paddingTop: 12,
+          paddingBottom: 4,
+        }}
+      >
+        <Pressable
+          onPress={() => setFlaggedOnly((v) => !v)}
+          accessibilityRole="button"
+          accessibilityState={{ selected: flaggedOnly }}
+          className="flex-row items-center gap-1.5"
+          style={{
+            paddingHorizontal: 12,
+            paddingVertical: 7,
+            borderRadius: 999,
+            borderWidth: 1,
+            borderColor: flaggedOnly ? primary : border,
+            backgroundColor: flaggedOnly ? withAlpha(primary, 0.12) : "transparent",
+          }}
+        >
+          <Star size={13} color={flaggedOnly ? primary : muted} fill={flaggedOnly ? primary : "transparent"} />
+          <Text style={{ fontFamily: "DMSans_500Medium", fontSize: 13, color: flaggedOnly ? primary : muted }}>
+            Flagged
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => setAskOpen(true)}
+          accessibilityRole="button"
+          accessibilityLabel="Set a daily question"
+          className="flex-row items-center gap-1.5"
+          style={{ paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999, backgroundColor: withAlpha(primary, 0.12) }}
+        >
+          <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 13, color: primary }}>+ Daily question</Text>
+        </Pressable>
+      </View>
+
+      <ScrollView contentContainerClassName="mx-auto w-full max-w-lg px-4 py-3" showsVerticalScrollIndicator={false}>
+        {list.length === 0 ? (
+          <Text style={{ color: muted, fontFamily: "DMSans_400Regular", fontSize: 14, textAlign: "center", marginTop: 32 }}>
+            {flaggedOnly
+              ? "Nothing flagged yet. Tap the flag on a response to keep it here."
+              : "No responses yet. They'll appear here the moment your disciple submits."}
+          </Text>
+        ) : (
+          list.map((r) => (
+            <View key={r.id} style={{ borderWidth: 1, borderColor: border, borderRadius: 14, backgroundColor: card, padding: 16, marginBottom: 12 }}>
+              <View className="flex-row items-center justify-between" style={{ marginBottom: 12 }}>
+                <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 13, color: fg }}>
+                  Day {r.dayNumber}
+                  {r.chapter ? <Text style={{ color: muted, fontFamily: "DMSans_400Regular" }}>{`  ·  ${r.chapter}`}</Text> : null}
+                </Text>
+                <Pressable
+                  onPress={() => onReply(`Re: Day ${r.dayNumber} — `)}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Reply in messages"
+                  className="flex-row items-center gap-1"
+                >
+                  <CornerUpLeft size={13} color={primary} />
+                  <Text style={{ fontFamily: "DMSans_500Medium", fontSize: 12, color: primary }}>Reply</Text>
+                </Pressable>
+              </View>
+
+              {fieldsFor(r).map((f) => {
+                const flagged = r.flagged.includes(f.type);
+                return (
+                  <View key={f.type} style={{ marginBottom: 12 }}>
+                    <View className="flex-row items-center justify-between" style={{ marginBottom: 3, gap: 8 }}>
+                      <Text style={{ flex: 1, fontFamily: "DMSans_500Medium", fontSize: 12, color: muted }}>{f.label}</Text>
+                      {!f.isPrivate && f.text ? (
+                        <Pressable hitSlop={8} onPress={() => toggleFlag(r.id, f.type, flagged)} accessibilityRole="button" accessibilityLabel={flagged ? "Unflag" : "Flag"}>
+                          <Flag size={15} color={flagged ? primary : muted} fill={flagged ? primary : "transparent"} />
+                        </Pressable>
+                      ) : null}
+                    </View>
+                    {f.isPrivate ? (
+                      <View className="flex-row items-center gap-1.5">
+                        <Lock size={12} color={muted} />
+                        <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 13, color: muted, fontStyle: "italic" }}>Kept private</Text>
+                      </View>
+                    ) : f.text ? (
+                      <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 15, color: fg, lineHeight: 22 }}>{f.text}</Text>
+                    ) : (
+                      <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 13, color: muted, fontStyle: "italic" }}>No answer</Text>
+                    )}
+                  </View>
+                );
+              })}
+            </View>
+          ))
+        )}
+      </ScrollView>
+
+      <DailyQuestionSheet id={id} visible={askOpen} onClose={() => setAskOpen(false)} />
+    </>
+  );
+}
+
+function DailyQuestionSheet({ id, visible, onClose }: { id: string; visible: boolean; onClose: () => void }) {
+  const bg = useThemeColor("background");
+  const fg = useThemeColor("foreground");
+  const muted = useThemeColor("muted-foreground");
+  const border = useThemeColor("border");
+  const card = useThemeColor("card");
+  const primary = useThemeColor("primary");
+  const toast = useToast();
+
+  const [question, setQuestion] = useState("");
+  const [when, setWhen] = useState<"today" | "tomorrow">("today");
+  const [sending, setSending] = useState(false);
+
+  const send = async () => {
+    if (!question.trim()) return;
+    setSending(true);
+    try {
+      await ApiClient.setCustomQuestion(id, {
+        questionText: question.trim(),
+        forDate: when === "today" ? localDate(0) : localDate(1),
+      });
+      setQuestion("");
+      onClose();
+      toast.show(`Question sent — they'll see it ${when}.`);
+    } catch (err) {
+      Alert.alert("Couldn't send", err instanceof ApiError ? err.message : "Please try again.");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
+        <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }} onPress={onClose}>
+          <Pressable onPress={() => {}} style={{ backgroundColor: bg, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 22, paddingBottom: 36 }}>
+            <View className="mb-4 flex-row items-center justify-between">
+              <Text style={{ fontFamily: "PlayfairDisplay_700Bold", fontSize: 20, color: fg }}>Ask a question</Text>
+              <Pressable onPress={onClose} hitSlop={12} accessibilityRole="button" accessibilityLabel="Close">
+                <X size={20} color={muted} />
+              </Pressable>
+            </View>
+            <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 13, color: muted, marginBottom: 12 }}>
+              They'll see this with their next reading.
+            </Text>
+            <TextInput
+              value={question}
+              onChangeText={setQuestion}
+              placeholder="Ask something for their next reading…"
+              placeholderTextColor={muted}
+              multiline
+              textAlignVertical="top"
+              style={{ minHeight: 80, borderWidth: 1, borderColor: border, borderRadius: 12, padding: 12, color: fg, backgroundColor: card, fontFamily: "DMSans_400Regular", fontSize: 15, marginBottom: 12 }}
+            />
+            <View className="flex-row items-center gap-2" style={{ marginBottom: 16 }}>
+              {(["today", "tomorrow"] as const).map((w) => {
+                const sel = when === w;
+                return (
+                  <Pressable
+                    key={w}
+                    onPress={() => setWhen(w)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: sel }}
+                    style={{ borderWidth: 1.5, borderColor: sel ? primary : border, backgroundColor: sel ? withAlpha(primary, 0.1) : "transparent", borderRadius: 999, paddingHorizontal: 16, paddingVertical: 7 }}
+                  >
+                    <Text style={{ color: sel ? primary : fg, fontFamily: "DMSans_500Medium", fontSize: 13, textTransform: "capitalize" }}>{w}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <Pressable
+              onPress={send}
+              disabled={!question.trim() || sending}
+              style={{ opacity: !question.trim() || sending ? 0.5 : 1, backgroundColor: primary, height: 48, borderRadius: 12, alignItems: "center", justifyContent: "center" }}
+            >
+              <Text style={{ color: "#fff", fontFamily: "DMSans_700Bold", fontSize: 15 }}>{sending ? "Sending…" : "Send question"}</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+}
+
+// ─── Messages (the two-way mailbox) ───────────────────────────────────────────
+
+function MessagesPanel({
+  id,
+  myId,
+  accent,
+  draft,
+  setDraft,
+}: {
+  id: string;
+  myId?: string;
+  accent: string;
+  draft: string;
+  setDraft: (v: string) => void;
+}) {
+  const qc = useQueryClient();
+  const messages = useMailbox(id);
+  const fg = useThemeColor("foreground");
+  const muted = useThemeColor("muted-foreground");
+  const border = useThemeColor("border");
+  const card = useThemeColor("card");
+  const primary = useThemeColor("primary");
+
+  const [sending, setSending] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+
+  const send = async () => {
+    if (!draft.trim()) return;
+    setSending(true);
+    try {
+      await ApiClient.sendMailboxMessage(id, draft.trim());
+      setDraft("");
+      await qc.invalidateQueries({ queryKey: ["discipleship", id, "mailbox"] });
+      await qc.invalidateQueries({ queryKey: ["discipleship"] });
+    } catch (err) {
+      Alert.alert("Couldn't send", err instanceof ApiError ? err.message : "Please try again.");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <>
+      {messages.isLoading ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator color={primary} />
+        </View>
+      ) : messages.isError ? (
+        <ErrorState message="We couldn't load messages." onRetry={() => messages.refetch()} />
+      ) : (
+        <ScrollView
+          ref={scrollRef}
+          onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: false })}
+          contentContainerClassName="mx-auto w-full max-w-lg px-4 py-4"
+          showsVerticalScrollIndicator={false}
+        >
+          {(messages.data ?? []).length === 0 ? (
+            <Text style={{ color: muted, fontFamily: "DMSans_400Regular", fontSize: 14, textAlign: "center", marginTop: 40 }}>
+              No messages yet. Say hello.
+            </Text>
+          ) : (
+            (messages.data ?? []).map((m) => {
+              const mine = m.senderId === myId;
+              return (
+                <View key={m.id} style={{ alignSelf: mine ? "flex-end" : "flex-start", maxWidth: "82%", marginBottom: 10 }}>
+                  <View
+                    style={{
+                      backgroundColor: mine ? primary : card,
+                      borderWidth: mine ? 0 : 1,
+                      borderColor: border,
+                      borderRadius: 16,
+                      borderBottomRightRadius: mine ? 4 : 16,
+                      borderBottomLeftRadius: mine ? 16 : 4,
+                      paddingHorizontal: 14,
+                      paddingVertical: 10,
+                    }}
+                  >
+                    <Text style={{ color: mine ? "#fff" : fg, fontFamily: "DMSans_400Regular", fontSize: 15, lineHeight: 21 }}>
+                      {m.messageText}
+                    </Text>
+                  </View>
+                  <Text style={{ color: muted, fontFamily: "DMSans_400Regular", fontSize: 10, marginTop: 3, textAlign: mine ? "right" : "left" }}>
+                    {formatTime(m.createdAt)}
+                  </Text>
+                </View>
+              );
+            })
+          )}
+        </ScrollView>
+      )}
+
+      {/* Composer */}
+      <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 8, paddingHorizontal: 12, paddingVertical: 10, borderTopWidth: 1, borderTopColor: border }}>
+        <TextInput
+          value={draft}
+          onChangeText={setDraft}
+          placeholder="Message…"
+          placeholderTextColor={muted}
+          multiline
+          style={{ flex: 1, maxHeight: 120, minHeight: 40, borderWidth: 1, borderColor: border, borderRadius: 20, paddingHorizontal: 14, paddingTop: 10, paddingBottom: 10, color: fg, fontFamily: "DMSans_400Regular", fontSize: 15, backgroundColor: card }}
+        />
+        <Pressable
+          onPress={send}
+          disabled={!draft.trim() || sending}
+          style={{ opacity: !draft.trim() || sending ? 0.5 : 1, backgroundColor: primary, width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" }}
+          accessibilityRole="button"
+          accessibilityLabel="Send message"
+        >
+          <Send size={18} color="#fff" />
+        </Pressable>
+      </View>
+    </>
+  );
+}

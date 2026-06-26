@@ -21,6 +21,7 @@ import {
   BookOpen,
   CheckCircle2,
   ChevronDown,
+  ChevronRight,
   ChevronUp,
   Circle,
   Eye,
@@ -44,6 +45,7 @@ import { Input } from "@/components/Input";
 import { ConfirmModal } from "@/components/ConfirmModal";
 import { useToast } from "@/components/Toast";
 import { InviteCodeRow, MemberSearch } from "@/components/GroupInvite";
+import { Avatar } from "@/components/Avatar";
 import { useGroups, useDiscipleships, useProfile } from "@/lib/queries";
 import { GROUP_TYPE_CONFIG } from "@/lib/groupTypes";
 import {
@@ -355,37 +357,57 @@ function DiscipleshipHub({
       ) : (
         live.map((rel) => {
           const isDiscipler = rel.role === "discipler";
-          return (
-            <View
-              key={rel.id}
-              style={{ borderWidth: 1, borderColor: border, borderRadius: 12, backgroundColor: card, padding: 14, marginBottom: 8 }}
-            >
-              <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 15, color: fg }}>
-                {rel.counterpart.displayName}
-              </Text>
-              <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted, marginTop: 1, marginBottom: 10 }}>
-                {isDiscipler ? "You're discipling them" : "They're discipling you"}
-                {rel.status === "pending" ? " · pending" : ""}
-              </Text>
 
-              {rel.status === "pending" ? (
-                isDiscipler ? (
-                  <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 13, color: muted, fontStyle: "italic" }}>
-                    Waiting for {rel.counterpart.displayName} to accept your invite.
+          // Pending: not yet a live relationship — review/accept or wait here.
+          if (rel.status === "pending") {
+            return (
+              <View
+                key={rel.id}
+                style={{ flexDirection: "row", alignItems: "center", gap: 12, borderWidth: 1, borderColor: border, borderRadius: 12, backgroundColor: card, padding: 12, marginBottom: 8 }}
+              >
+                <Avatar name={rel.counterpart.displayName} url={rel.counterpart.avatarUrl} accent={accent} />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 15, color: fg }} numberOfLines={1}>
+                    {rel.counterpart.displayName}
                   </Text>
-                ) : (
-                  <DiscipleChip icon={HeartHandshake} label="Review invite" color={accent} onPress={() => setReviewRel(rel)} />
-                )
-              ) : isDiscipler ? (
-                <View className="flex-row flex-wrap gap-2">
-                  <DiscipleChip icon={Eye} label="Responses" color={accent} onPress={() => router.push(`/discipleship/${rel.id}/responses`)} />
-                  <DiscipleChip icon={Flag} label="Flagged" color={accent} onPress={() => router.push(`/discipleship/${rel.id}/flagged`)} />
-                  <DiscipleChip icon={MessageSquare} label="Mailbox" color={accent} badge={rel.unreadCount} onPress={() => router.push(`/discipleship/${rel.id}/mailbox`)} />
+                  <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted }}>
+                    {isDiscipler ? "Invite pending" : "Invited you to disciple"}
+                  </Text>
                 </View>
-              ) : (
-                <DiscipleChip icon={MessageSquare} label="Mailbox" color={accent} badge={rel.unreadCount} onPress={() => router.push(`/discipleship/${rel.id}/mailbox`)} />
-              )}
-            </View>
+                {isDiscipler ? (
+                  <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted, fontStyle: "italic" }}>Waiting…</Text>
+                ) : (
+                  <DiscipleChip icon={HeartHandshake} label="Review" color={accent} onPress={() => setReviewRel(rel)} />
+                )}
+              </View>
+            );
+          }
+
+          // Active: the whole card opens the one relationship screen.
+          return (
+            <Pressable
+              key={rel.id}
+              onPress={() => router.push(`/discipleship/${rel.id}`)}
+              accessibilityRole="button"
+              accessibilityLabel={`Open discipleship with ${rel.counterpart.displayName}`}
+              style={{ flexDirection: "row", alignItems: "center", gap: 12, borderWidth: 1, borderColor: border, borderRadius: 12, backgroundColor: card, padding: 12, marginBottom: 8 }}
+            >
+              <Avatar name={rel.counterpart.displayName} url={rel.counterpart.avatarUrl} accent={accent} />
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 15, color: fg }} numberOfLines={1}>
+                  {rel.counterpart.displayName}
+                </Text>
+                <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted }}>
+                  {isDiscipler ? "You're discipling them" : "Your discipler"}
+                </Text>
+              </View>
+              {rel.unreadCount > 0 ? (
+                <View style={{ minWidth: 20, height: 20, borderRadius: 10, backgroundColor: accent, alignItems: "center", justifyContent: "center", paddingHorizontal: 6 }}>
+                  <Text style={{ color: "#fff", fontFamily: "DMSans_700Bold", fontSize: 11 }}>{rel.unreadCount}</Text>
+                </View>
+              ) : null}
+              <ChevronRight size={18} color={muted} />
+            </Pressable>
           );
         })
       )}
