@@ -111,12 +111,17 @@ discipleship.post("/:id/accept", async (c) => {
   return c.json({ relationship: updated });
 });
 
-// POST /api/discipleship/:id/decline — the disciple declines; the row is removed.
+// POST /api/discipleship/:id/decline — either party ends the relationship. The
+// discipler cancels a pending invite or ends an active one; the disciple declines
+// an invite or ends an active one. Removing the row cascades to its questions,
+// flags, mailbox, and notes.
 discipleship.post("/:id/decline", async (c) => {
   const userId = c.var.user.id;
   const rel = await loadRelationship(c.req.param("id"));
   if (!rel) return c.json({ error: "Not found" }, 404);
-  if (rel.discipleId !== userId) return c.json({ error: "Only the disciple can decline." }, 403);
+  if (rel.disciplerId !== userId && rel.discipleId !== userId) {
+    return c.json({ error: "Forbidden" }, 403);
+  }
 
   await db.delete(discipleRelationships).where(eq(discipleRelationships.id, rel.id));
   return c.json({ ok: true });

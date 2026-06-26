@@ -9,7 +9,7 @@ one-offs get migrated opportunistically.
 |---|---|---|
 | Transient success, or you navigate away | **Toast** — `useToast().show("…")` | "Joined Men's Group", "Invite sent", "Code applied" |
 | Success tied to a form/section the user is looking at | **Inline confirmation** near the action | "Shared with the community ✓" under the Community post button |
-| Destructive / irreversible confirmation | **`ConfirmModal`** (`confirmPhrase` for type-to-confirm) | Delete group |
+| Destructive / irreversible confirmation | **`ConfirmModal`** + `destructive`; quick ones can use native `Alert` | Delete group, cancel invite, end discipleship |
 | Recoverable error | **Inline error** near the field; `Alert` only if there's no field | promo-code error under the input |
 | OS-level prompt | **native `Alert` / system dialog** | camera / mic / notification permission |
 
@@ -42,6 +42,17 @@ Prefer these over hand-rolled `Pressable`/`TextInput`. Inline-styled controls ar
 
 If you're copying a `borderWidth/borderColor/borderRadius/padding` block onto a
 `TextInput`, reach for `Input` instead.
+
+## Modals & sheets
+
+- **Slide-up drawers** → `@/components/BottomSheet`. The dimmed backdrop **fades** in
+  while the sheet **slides** up — never `<Modal animationType="slide">`, which slides the
+  backdrop along with it. Pass `contentStyle` for the sheet's padding / `maxHeight`;
+  tapping the backdrop (or Android back) calls `onClose`.
+- **Confirm dialogs** → `@/components/ConfirmModal` (centered, fades). Set `destructive`
+  for irreversible actions. Reserve `confirmPhrase` (type-to-confirm) for the genuinely
+  catastrophic — routine deletes (a group, an invite) are a plain destructive confirm, not
+  a typing exercise.
 
 ## Adoption status (as of 2026-06)
 Migrated: auth, onboarding, edit-profile, the social screens (group create/edit/join

@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 import { ArrowLeft, Check, ChevronDown } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
 import { Button } from "@/components/Button";
+import { BottomSheet } from "@/components/BottomSheet";
 import { Input } from "@/components/Input";
 import { useThemeColor } from "@/components/useThemeColor";
 import { ApiClient } from "@/lib/api";
@@ -351,17 +352,11 @@ export default function OnboardingSurvey() {
                 </View>
               ) : null}
 
-              <Modal
+              <BottomSheet
                 visible={statePickerOpen}
-                animationType="slide"
-                transparent
-                onRequestClose={() => setStatePickerOpen(false)}
+                onClose={() => setStatePickerOpen(false)}
+                contentStyle={{ padding: 0, maxHeight: "60%" }}
               >
-                <Pressable
-                  className="flex-1 bg-black/50"
-                  onPress={() => setStatePickerOpen(false)}
-                />
-                <View className="bg-background rounded-t-2xl" style={{ maxHeight: "60%" }}>
                   <View className="flex-row items-center justify-between border-b border-border px-5 py-4">
                     <Text className="font-sans-semibold text-base text-foreground">
                       Select your state
@@ -386,8 +381,7 @@ export default function OnboardingSurvey() {
                       </Pressable>
                     )}
                   />
-                </View>
-              </Modal>
+              </BottomSheet>
             </View>
           )}
 

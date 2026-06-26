@@ -43,6 +43,7 @@ import { withAlpha } from "@/theme/themes";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { ConfirmModal } from "@/components/ConfirmModal";
+import { BottomSheet } from "@/components/BottomSheet";
 import { useToast } from "@/components/Toast";
 import { InviteCodeRow, MemberSearch } from "@/components/GroupInvite";
 import { Avatar } from "@/components/Avatar";
@@ -75,45 +76,6 @@ function Divider() {
 // Bottom-sheet modal shared by the edit / join flows. Lifts above the
 // keyboard (so inputs aren't hidden), and tapping the dimmed backdrop closes it
 // while taps inside the sheet are absorbed by the inner Pressable.
-function BottomSheet({
-  visible,
-  onClose,
-  children,
-}: {
-  visible: boolean;
-  onClose: () => void;
-  children: ReactNode;
-}) {
-  const bg = useThemeColor("background");
-  return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={{ flex: 1 }}
-      >
-        <Pressable
-          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}
-          onPress={onClose}
-        >
-          <Pressable
-            onPress={() => {}}
-            style={{
-              backgroundColor: bg,
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
-              padding: 24,
-              paddingBottom: 40,
-              maxHeight: "90%",
-            }}
-          >
-            {children}
-          </Pressable>
-        </Pressable>
-      </KeyboardAvoidingView>
-    </Modal>
-  );
-}
-
 // ─── Discipleship (one-on-one) ────────────────────────────────────────────────
 
 // One-time privacy notice the disciple must accept before the relationship goes
@@ -131,17 +93,14 @@ function PrivacyNoticeModal({
   onAccept: () => void;
   onDecline: () => void;
 }) {
-  const bg = useThemeColor("background");
   const fg = useThemeColor("foreground");
   const muted = useThemeColor("muted-foreground");
   const primary = useThemeColor("primary");
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onDecline}>
-      <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}>
-        <View style={{ backgroundColor: bg, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, paddingBottom: 40 }}>
-          <Text style={{ fontFamily: "PlayfairDisplay_700Bold", fontSize: 22, color: fg, marginBottom: 12 }}>
-            A discipleship invite
-          </Text>
+    <BottomSheet visible={visible} onClose={onDecline}>
+      <Text style={{ fontFamily: "PlayfairDisplay_700Bold", fontSize: 22, color: fg, marginBottom: 12 }}>
+        A discipleship invite
+      </Text>
           <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 15, color: fg, lineHeight: 22, marginBottom: 12 }}>
             {disciplerName} would like to walk with you as your discipler.
           </Text>
@@ -167,9 +126,7 @@ function PrivacyNoticeModal({
           >
             <Text style={{ color: muted, fontFamily: "DMSans_500Medium", fontSize: 14 }}>Decline</Text>
           </Pressable>
-        </View>
-      </View>
-    </Modal>
+    </BottomSheet>
   );
 }
 
@@ -343,6 +300,25 @@ function DiscipleshipHub({
     }
   };
 
+  // Discipler cancels a pending invite they sent.
+  const handleCancelInvite = (rel: DiscipleshipRelationship) => {
+    Alert.alert("Cancel invite", `Cancel your discipleship invite to ${rel.counterpart.displayName}?`, [
+      { text: "Keep", style: "cancel" },
+      {
+        text: "Cancel invite",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await ApiClient.declineDiscipleship(rel.id);
+            await refresh();
+          } catch (err) {
+            Alert.alert("Couldn't cancel", err instanceof ApiError ? err.message : "Please try again.");
+          }
+        },
+      },
+    ]);
+  };
+
   return (
     <View>
       <SectionLabel label="Discipleship" />
@@ -375,7 +351,15 @@ function DiscipleshipHub({
                   </Text>
                 </View>
                 {isDiscipler ? (
-                  <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted, fontStyle: "italic" }}>Waiting…</Text>
+                  <Pressable
+                    onPress={() => handleCancelInvite(rel)}
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel="Cancel invite"
+                    style={{ paddingHorizontal: 6, paddingVertical: 6 }}
+                  >
+                    <Text style={{ fontFamily: "DMSans_500Medium", fontSize: 13, color: muted }}>Cancel</Text>
+                  </Pressable>
                 ) : (
                   <DiscipleChip icon={HeartHandshake} label="Review" color={accent} onPress={() => setReviewRel(rel)} />
                 )}
@@ -464,7 +448,7 @@ export default function GroupsScreen() {
   const [joinCode, setJoinCode] = useState("");
   const [joining, setJoining] = useState(false);
 
-  // Delete group (type-to-confirm)
+  // Delete group (plain destructive confirm — no typing required)
   const [deleteTarget, setDeleteTarget] = useState<Group | null>(null);
   const [deletingGroup, setDeletingGroup] = useState(false);
 
@@ -922,7 +906,7 @@ export default function GroupsScreen() {
             />
       </BottomSheet>
 
-      {/* ── Delete group confirmation (type-to-confirm) ────────────────────── */}
+      {/* ── Delete group confirmation ──────────────────────────────────────── */}
       <ConfirmModal
         visible={!!deleteTarget}
         title="Delete group"
@@ -934,7 +918,6 @@ export default function GroupsScreen() {
             : ""
         }
         confirmLabel="Delete group"
-        confirmPhrase={deleteTarget?.name}
         destructive
         busy={deletingGroup}
         onConfirm={confirmDeleteGroup}

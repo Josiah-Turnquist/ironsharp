@@ -16,6 +16,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, CornerUpLeft, Flag, Lock, Plus, Send, Star, Trash2, X } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
 import { Avatar } from "@/components/Avatar";
+import { BottomSheet } from "@/components/BottomSheet";
+import { ConfirmModal } from "@/components/ConfirmModal";
 import { ErrorState } from "@/components/ErrorState";
 import { useThemeColor } from "@/components/useThemeColor";
 import { withAlpha } from "@/theme/themes";
@@ -66,6 +68,22 @@ export default function DiscipleshipScreen() {
   // Mailbox draft is lifted here so "reply" from a response can prefill it.
   const [draft, setDraft] = useState("");
 
+  const qc = useQueryClient();
+  const [showEnd, setShowEnd] = useState(false);
+  const [ending, setEnding] = useState(false);
+  const endRelationship = async () => {
+    setEnding(true);
+    try {
+      await ApiClient.declineDiscipleship(id);
+      await qc.invalidateQueries({ queryKey: ["discipleship"] });
+      setShowEnd(false);
+      router.back();
+    } catch (e) {
+      setEnding(false);
+      Alert.alert("Couldn't end", e instanceof ApiError ? e.message : "Please try again.");
+    }
+  };
+
   return (
     <Screen edges={["top"]}>
       {/* Identity header */}
@@ -93,6 +111,17 @@ export default function DiscipleshipScreen() {
             {rel?.status === "pending" ? " · pending" : ""}
           </Text>
         </View>
+        {rel?.status === "active" ? (
+          <Pressable
+            onPress={() => setShowEnd(true)}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="End discipleship"
+            style={{ paddingHorizontal: 4, paddingVertical: 6 }}
+          >
+            <Text style={{ fontFamily: "DMSans_500Medium", fontSize: 13, color: muted }}>End</Text>
+          </Pressable>
+        ) : null}
       </View>
 
       {/* Segmented control */}
@@ -143,6 +172,17 @@ export default function DiscipleshipScreen() {
           <MessagesPanel id={id} myId={myId} accent={primary} draft={draft} setDraft={setDraft} />
         )}
       </KeyboardAvoidingView>
+
+      <ConfirmModal
+        visible={showEnd}
+        title="End discipleship"
+        message={`This ends your discipleship with ${counterpartName} for both of you and removes its notes, questions, and messages. It can't be undone.`}
+        confirmLabel="End discipleship"
+        destructive
+        busy={ending}
+        onConfirm={endRelationship}
+        onCancel={() => !ending && setShowEnd(false)}
+      />
     </Screen>
   );
 }
@@ -342,10 +382,7 @@ function DailyQuestionSheet({ id, visible, onClose }: { id: string; visible: boo
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
-        <Pressable style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }} onPress={onClose}>
-          <Pressable onPress={() => {}} style={{ backgroundColor: bg, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 22, paddingBottom: 36 }}>
+    <BottomSheet visible={visible} onClose={onClose} contentStyle={{ padding: 22, paddingBottom: 36, maxHeight: "90%" }}>
             <View className="mb-4 flex-row items-center justify-between">
               <Text style={{ fontFamily: "PlayfairDisplay_700Bold", fontSize: 20, color: fg }}>Ask a question</Text>
               <Pressable onPress={onClose} hitSlop={12} accessibilityRole="button" accessibilityLabel="Close">
@@ -387,10 +424,7 @@ function DailyQuestionSheet({ id, visible, onClose }: { id: string; visible: boo
             >
               <Text style={{ color: "#fff", fontFamily: "DMSans_700Bold", fontSize: 15 }}>{sending ? "Sending…" : "Send question"}</Text>
             </Pressable>
-          </Pressable>
-        </Pressable>
-      </KeyboardAvoidingView>
-    </Modal>
+    </BottomSheet>
   );
 }
 

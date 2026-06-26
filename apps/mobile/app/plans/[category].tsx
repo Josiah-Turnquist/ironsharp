@@ -14,6 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { BookOpen, ChevronRight, User, Users } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
 import { Header } from "@/components/Header";
+import { BottomSheet } from "@/components/BottomSheet";
 import { ErrorState } from "@/components/ErrorState";
 import { useThemeColor } from "@/components/useThemeColor";
 import { withAlpha } from "@/theme/themes";
@@ -208,27 +209,11 @@ export default function PlanList() {
       </ScrollView>
 
       {/* Assignment sheet */}
-      <Modal
+      <BottomSheet
         visible={!!pendingPlanId}
-        transparent
-        animationType="slide"
-        onRequestClose={() => !assigning && setPendingPlanId(null)}
+        onClose={() => !assigning && setPendingPlanId(null)}
+        contentStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 36 }}
       >
-        <Pressable
-          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}
-          onPress={() => !assigning && setPendingPlanId(null)}
-        >
-          <Pressable onPress={(e) => e.stopPropagation()}>
-            <View
-              style={{
-                backgroundColor: bg,
-                borderTopLeftRadius: 20,
-                borderTopRightRadius: 20,
-                paddingHorizontal: 20,
-                paddingTop: 20,
-                paddingBottom: 36,
-              }}
-            >
               <View
                 style={{
                   width: 36,
@@ -382,10 +367,7 @@ export default function PlanList() {
               {assigning && (
                 <ActivityIndicator color={primary} style={{ marginTop: 8 }} />
               )}
-            </View>
-          </Pressable>
-        </Pressable>
-      </Modal>
+      </BottomSheet>
     </Screen>
   );
 }

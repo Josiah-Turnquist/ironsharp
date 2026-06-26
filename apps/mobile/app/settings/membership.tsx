@@ -4,6 +4,7 @@ import { Check, Copy, Tag } from "lucide-react-native";
 import { useQueryClient } from "@tanstack/react-query";
 import { Screen } from "@/components/Screen";
 import { Header } from "@/components/Header";
+import { BottomSheet } from "@/components/BottomSheet";
 import { Button } from "@/components/Button";
 import { useToast } from "@/components/Toast";
 import { useProfile } from "@/lib/queries";
@@ -199,28 +200,11 @@ export default function MembershipScreen() {
       </ScrollView>
 
       {/* ── Promo code modal ──────────────────────────────────────────────── */}
-      <Modal
+      <BottomSheet
         visible={showPromo}
-        animationType="slide"
-        transparent
-        onRequestClose={() => !redeeming && setShowPromo(false)}
+        onClose={() => !redeeming && setShowPromo(false)}
+        contentStyle={{ padding: 24, paddingBottom: 44, gap: 16, maxHeight: "90%" }}
       >
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
-        <Pressable
-          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}
-          onPress={() => !redeeming && setShowPromo(false)}
-        >
-          <Pressable
-            onPress={() => {}}
-            style={{
-              backgroundColor: bg,
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
-              padding: 24,
-              paddingBottom: 44,
-              gap: 16,
-            }}
-          >
             <Text className="font-serif text-xl font-bold text-foreground">Promo Code</Text>
             <TextInput
               value={promoCode}
@@ -253,10 +237,7 @@ export default function MembershipScreen() {
               disabled={!promoCode.trim()}
               loading={redeeming}
             />
-          </Pressable>
-        </Pressable>
-        </KeyboardAvoidingView>
-      </Modal>
+      </BottomSheet>
     </Screen>
   );
 }
