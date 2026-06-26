@@ -224,9 +224,9 @@ submissions.put("/", async (c) => {
   // Background tasks — none of these block the response. `today` is the
   // submitter's LOCAL calendar day (x-timezone-offset header), not UTC.
   const today = clientDateString(c);
-  updateStreaks(userId, planId, dayNumber, today).catch((err) => console.error("[submissions] updateStreaks failed:", err));
+  updateStreaks(userId, planId, dayNumber, today, groupId).catch((err) => console.error("[submissions] updateStreaks failed:", err));
   notifyPartnerDone(userId, planId).catch((err) => console.error("[submissions] notifyPartnerDone failed:", err));
-  notifyGroupCompleteIfDone(userId, planId, dayNumber).catch((err) => console.error("[submissions] notifyGroupCompleteIfDone failed:", err));
+  notifyGroupCompleteIfDone(userId, planId, dayNumber, groupId).catch((err) => console.error("[submissions] notifyGroupCompleteIfDone failed:", err));
 
   return c.json({ submission: row });
 });
@@ -267,8 +267,10 @@ async function updatePersonalStreak(userId: string, today: string) {
     .where(eq(profiles.userId, userId));
 }
 
-async function updateGroupStreaks(userId: string, planId: string, dayNumber: number, today: string) {
-  // Find groups where this submission counts toward the group's active day.
+async function updateGroupStreaks(userId: string, planId: string, dayNumber: number, today: string, groupId: string | null) {
+  // A personal submission (no group instance) never advances a group.
+  if (!groupId) return;
+  // Only the group this submission was actually made in counts toward its day.
   const memberRows = await db
     .select({ groupId: groupMembers.groupId })
     .from(groupMembers)
@@ -276,6 +278,7 @@ async function updateGroupStreaks(userId: string, planId: string, dayNumber: num
     .where(
       and(
         eq(groupMembers.userId, userId),
+        eq(groupMembers.groupId, groupId),
         eq(groups.currentPlanId, planId),
         eq(groups.currentDay, dayNumber)
       )
@@ -357,9 +360,9 @@ async function updateGroupStreaks(userId: string, planId: string, dayNumber: num
   }
 }
 
-async function updateStreaks(userId: string, planId: string, dayNumber: number, today: string) {
+async function updateStreaks(userId: string, planId: string, dayNumber: number, today: string, groupId: string | null) {
   await Promise.all([
     updatePersonalStreak(userId, today),
-    updateGroupStreaks(userId, planId, dayNumber, today),
+    updateGroupStreaks(userId, planId, dayNumber, today, groupId),
   ]);
 }

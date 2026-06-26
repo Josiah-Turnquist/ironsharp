@@ -89,6 +89,9 @@ groupsRoute.get("/", async (c) => {
               .where(
                 and(
                   eq(devotionalSubmissions.planId, group.currentPlanId),
+                  // Only this group's own submissions — not the member's personal
+                  // copy or another group's copy of the same shared plan.
+                  eq(devotionalSubmissions.groupId, group.id),
                   or(
                     group.currentDay
                       ? eq(devotionalSubmissions.dayNumber, group.currentDay)
