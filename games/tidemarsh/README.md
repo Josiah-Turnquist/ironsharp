@@ -55,6 +55,11 @@ npx tsc -p tsconfig.json   # recompiles src/main.ts -> dist/main.js
      on a deep channel sits low and **floods at spring tide**. The build ghost warns you.
    - **Platform** (expensive) — a high deck that survives any tide. Platforms grow the
      village (raise **6** to win, then keep playing) *and* double as safe, raised farmland.
+5. **Neighbours move in.** Every platform you raise becomes home to a villager who
+   wants something — a few clams, some driftwood, or a hot meal (shown in a speech
+   bubble above them). Walk onto a villager with the goods in your stores to deliver:
+   you earn **reputation** and a small thank-you gift, and they soon ask for something
+   new. Reach **10 reputation** and the marsh becomes a true village.
 
 ### The hook — elevation everywhere
 
@@ -92,10 +97,10 @@ games/tidemarsh/
 ## Status / next steps
 
 The core fun is in: tide-reading, elevation building, **tidal farming**, a **lunar
-calendar**, a **hunger/win-lose** stake, **day/night + particles + sound**, and
-**autosave**. Natural next additions:
+calendar**, a **hunger/win-lose** stake, **villagers + requests** (reputation arc),
+**day/night + particles + sound**, and **autosave**. Natural next additions:
 
-- Neighbours/quests once the village grows; cooking foraged ingredients into better food.
-- More crop types with different grow times / yields, and fertiliser from clams.
 - Weather (storms that raise the tide unexpectedly) to stress the lunar planning.
+- A cooking station + multiple crop types so villager "food" requests feed a deeper economy.
+- Progression/upgrades: bigger basket, faster crops, sturdier boardwalks.
 - A proper title/menu screen and difficulty options (food rate, tide speed).

@@ -98,6 +98,33 @@ interface Crop {
 }
 
 // ----------------------------------------------------------------------------
+// Villagers & requests
+// ----------------------------------------------------------------------------
+const REP_GOAL = 10; // reputation needed for the village to "thrive"
+const VILLAGER_COOLDOWN = 8; // seconds of gratitude before a new request appears
+const VILLAGER_HATS = ["#e07a5f", "#5f8fe0", "#c77dd6", "#5fc0a0", "#d6b14a"];
+
+type Want =
+  | { type: "resource"; res: ResKind; amount: number }
+  | { type: "food"; amount: number };
+
+interface Villager {
+  c: number;
+  r: number;
+  hat: number;
+  want: Want | null;
+  cooldown: number; // >0 = recently satisfied, no active request
+}
+
+function rollWant(): Want {
+  if (Math.random() < 0.4) {
+    return { type: "food", amount: 2 + Math.floor(Math.random() * 2) };
+  }
+  const res = RES_ORDER[Math.floor(Math.random() * RES_ORDER.length)];
+  return { type: "resource", res, amount: 2 + Math.floor(Math.random() * 3) };
+}
+
+// ----------------------------------------------------------------------------
 // Particles (juice)
 // ----------------------------------------------------------------------------
 interface Particle {
@@ -209,6 +236,9 @@ interface State {
   day: number;
   buildSel: BuildSel;
   platformsBuilt: number;
+  villagers: Villager[];
+  rep: number;
+  thrived: boolean;
   won: boolean;
   gameOver: "" | "starved";
   message: string;
@@ -509,14 +539,82 @@ function tryBuild(c: number, r: number) {
   SFX.build();
   if (def.kind === "platform") {
     state.platformsBuilt++;
+    // a neighbour moves onto the new platform with a request
+    state.villagers.push({
+      c,
+      r,
+      hat: state.villagers.length % VILLAGER_HATS.length,
+      want: rollWant(),
+      cooldown: 0,
+    });
     if (state.platformsBuilt >= GOAL_PLATFORMS && !state.won) {
       state.won = true;
-      setMessage("The village thrives! Neighbours are moving in. Keep going as long as you like.");
+      setMessage("The village has its six platforms! A neighbour moved in — see what they need.");
     } else {
-      setMessage(`Platform raised — the village grows (${state.platformsBuilt}/${GOAL_PLATFORMS}). Safe to farm.`);
+      setMessage(`Platform raised — a neighbour moves in (${state.platformsBuilt}/${GOAL_PLATFORMS}). Safe to farm.`);
     }
   } else {
     setMessage("Boardwalk laid. Watch its deck height at spring tide.");
+  }
+}
+
+// ----------------------------------------------------------------------------
+// Villagers
+// ----------------------------------------------------------------------------
+function wantText(w: Want): string {
+  return w.type === "food" ? `${w.amount} food` : `${w.amount} ${RES_META[w.res].name.toLowerCase()}`;
+}
+function tryFulfillVillager() {
+  const v = state.villagers.find((vv) => vv.c === state.player.c && vv.r === state.player.r);
+  if (!v || !v.want || v.cooldown > 0) return;
+  const w = v.want;
+  // pay from the home stockpile / food stores
+  if (w.type === "food") {
+    if (state.food < w.amount) {
+      setMessage(`Neighbour wants ${wantText(w)} — harvest more first.`);
+      SFX.error();
+      return;
+    }
+    state.food -= w.amount;
+  } else {
+    if (state.stored[w.res] < w.amount) {
+      setMessage(`Neighbour wants ${wantText(w)} — gather more first.`);
+      SFX.error();
+      return;
+    }
+    state.stored[w.res] -= w.amount;
+  }
+  // reward: reputation + a small gift so the economy keeps flowing
+  state.rep += 1;
+  v.want = null;
+  v.cooldown = VILLAGER_COOLDOWN;
+  let gift: string;
+  if (Math.random() < 0.5) {
+    state.food += 2;
+    gift = "+2 food";
+  } else {
+    const r = RES_ORDER[Math.floor(Math.random() * RES_ORDER.length)];
+    state.stored[r] += 1;
+    gift = `+1 ${RES_META[r].name.toLowerCase()}`;
+  }
+  spawnParticles(v.c, v.r, "#e9c46a", 12);
+  SFX.harvest();
+  if (state.rep >= REP_GOAL && !state.thrived) {
+    state.thrived = true;
+    setMessage(`Reputation ${state.rep}! The marsh is a true village now. Thank you, neighbour. (${gift})`);
+  } else {
+    setMessage(`Delivered ${wantText(w)}. Reputation ${state.rep}/${REP_GOAL}. They gift you ${gift}.`);
+  }
+}
+function updateVillagers(dt: number) {
+  for (const v of state.villagers) {
+    if (v.cooldown > 0) {
+      v.cooldown -= dt;
+      if (v.cooldown <= 0) {
+        v.cooldown = 0;
+        v.want = rollWant();
+      }
+    }
   }
 }
 
@@ -536,6 +634,7 @@ function tryMove(dc: number, dr: number) {
   state.player.r = nr;
   tryForage();
   tryHarvestOrClear();
+  tryFulfillVillager();
   if (atHome()) storeHaul();
 }
 function checkStranded() {
@@ -592,7 +691,7 @@ function setMessage(m: string) {
 // Save / load (localStorage)
 // ----------------------------------------------------------------------------
 const SAVE_KEY = "tidemarsh.save";
-const SAVE_VERSION = 3;
+const SAVE_VERSION = 4;
 function saveGame() {
   try {
     const data = {
@@ -602,6 +701,9 @@ function saveGame() {
       day: state.day,
       food: state.food,
       platformsBuilt: state.platformsBuilt,
+      rep: state.rep,
+      thrived: state.thrived,
+      villagers: state.villagers,
       won: state.won,
       gameOver: state.gameOver,
       player: state.player,
@@ -643,6 +745,9 @@ function loadGame(): boolean {
       day: typeof d.day === "number" ? d.day : 1,
       buildSel: null,
       platformsBuilt: d.platformsBuilt ?? 0,
+      villagers: Array.isArray(d.villagers) ? d.villagers : [],
+      rep: typeof d.rep === "number" ? d.rep : 0,
+      thrived: !!d.thrived,
       won: !!d.won,
       gameOver: d.gameOver === "starved" ? "starved" : "",
       message: "Welcome back to the marsh.",
@@ -676,6 +781,9 @@ function newGame(seed: number) {
     day: 1,
     buildSel: null,
     platformsBuilt: 0,
+    villagers: [],
+    rep: 0,
+    thrived: false,
     won: false,
     gameOver: "",
     message: "Low tide, daylight. Forage the flats, then plant a crop on high ground.",
@@ -841,6 +949,65 @@ function drawHome() {
   ctx.fill();
   ctx.fillStyle = "#5b3a1f";
   ctx.fillRect(x + TILE / 2 - 2, y + 16, 4, 8);
+}
+
+function drawResIcon(kind: ResKind, x: number, y: number) {
+  ctx.fillStyle = RES_META[kind].color;
+  ctx.fillRect(x, y, 8, 8);
+}
+function drawVillagers() {
+  for (const v of state.villagers) {
+    const x = v.c * TILE;
+    const y = HUD_TOP + v.r * TILE;
+    const cx = x + TILE / 2;
+    const cy = y + TILE / 2;
+    // little figure
+    ctx.fillStyle = "#23323a";
+    ctx.beginPath();
+    ctx.arc(cx, cy + 1, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = VILLAGER_HATS[v.hat];
+    ctx.beginPath();
+    ctx.arc(cx, cy - 4, 5, Math.PI, 0);
+    ctx.fill();
+    ctx.fillRect(cx - 6, cy - 4, 12, 2);
+
+    // request bubble above
+    const bx = cx;
+    const by = y - 6;
+    if (v.want && v.cooldown <= 0) {
+      const label = v.want.type === "food" ? `${v.want.amount}` : `${v.want.amount}`;
+      ctx.fillStyle = "rgba(245,245,235,0.95)";
+      ctx.strokeStyle = "rgba(0,0,0,0.25)";
+      const bw = 34;
+      const bh = 18;
+      ctx.beginPath();
+      ctx.roundRect(bx - bw / 2, by - bh, bw, bh, 4);
+      ctx.fill();
+      ctx.stroke();
+      // little tail
+      ctx.beginPath();
+      ctx.moveTo(bx - 3, by);
+      ctx.lineTo(bx + 3, by);
+      ctx.lineTo(bx, by + 4);
+      ctx.closePath();
+      ctx.fill();
+      if (v.want.type === "food") {
+        ctx.fillStyle = "#e07a5f";
+        ctx.font = "11px Segoe UI, sans-serif";
+        ctx.fillText("🍲", bx - 13, by - 4);
+      } else {
+        drawResIcon(v.want.res, bx - 13, by - bh + 5);
+      }
+      ctx.fillStyle = "#243038";
+      ctx.font = "bold 11px Segoe UI, sans-serif";
+      ctx.fillText(label, bx + 1, by - 4);
+    } else if (v.cooldown > 0) {
+      ctx.fillStyle = "rgba(233,120,120,0.95)";
+      ctx.font = "12px Segoe UI, sans-serif";
+      ctx.fillText("♥", bx - 4, by - 2);
+    }
+  }
 }
 
 function drawPlayer() {
@@ -1023,7 +1190,9 @@ function drawHUD(water: number) {
   ctx.font = "12px Segoe UI, sans-serif";
   ctx.fillText(`Basket ${totalCarry()}/${state.carryCap}`, rx + 130, 54);
   ctx.fillStyle = "#e8f1ee";
-  ctx.fillText(`Village ${state.platformsBuilt}/${GOAL_PLATFORMS}`, rx + 260, 54);
+  ctx.fillText(`Village ${state.platformsBuilt}/${GOAL_PLATFORMS}`, rx + 240, 54);
+  ctx.fillStyle = state.thrived ? "#9be07a" : "#e8f1ee";
+  ctx.fillText(`★ Rep ${state.rep}/${REP_GOAL}`, rx + 360, 54);
 
   // bottom: build menu
   const by = HUD_TOP + GRID_H;
@@ -1099,6 +1268,7 @@ function frame(now: number) {
 
     const water = waterLevelAt(state.t);
     updateCrops(dt, water);
+    updateVillagers(dt);
     checkStranded();
 
     nodeTimer += dt;
@@ -1122,6 +1292,7 @@ function frame(now: number) {
   for (const n of state.nodes) drawNode(n, water);
   drawHome();
   drawBuildGhost();
+  drawVillagers();
   drawPlayer();
   drawParticles();
   drawNightOverlay();
