@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tidemarsh — a cozy tidal-survival prototype</title>
+    <style>
+      :root {
+        --bg: #0d1b1e;
+        --ink: #e8f1ee;
+        --muted: #8fb0a8;
+        --wood: #b5793f;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Segoe UI", system-ui, sans-serif;
+      }
+      #wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+      }
+      h1 {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0;
+        letter-spacing: 0.5px;
+      }
+      h1 small { color: var(--muted); font-weight: 400; font-size: 13px; }
+      #game {
+        border-radius: 10px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        background: #06292b;
+        cursor: pointer;
+      }
+      #help {
+        max-width: 760px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+        text-align: center;
+      }
+      #help b { color: var(--ink); }
+      kbd {
+        background: #1c3a3c;
+        border: 1px solid #2c5557;
+        border-bottom-width: 2px;
+        border-radius: 4px;
+        padding: 1px 6px;
+        font-family: inherit;
+        font-size: 12px;
+        color: var(--ink);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="wrap">
+      <h1>Tidemarsh <small>— read the tide, forage the flats, build above the water</small></h1>
+      <canvas id="game" width="960" height="640"></canvas>
+      <div id="help">
+        <b>Move</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / arrows &nbsp;·&nbsp;
+        <b>Forage</b> walk onto an exposed flat &nbsp;·&nbsp;
+        <b>Build</b> pick <kbd>1</kbd> boardwalk <kbd>2</kbd> platform, then <b>click</b> an adjacent tile &nbsp;·&nbsp;
+        <kbd>Space</kbd> wait &nbsp;·&nbsp; <kbd>R</kbd> restart
+        <br />
+        Low tide opens the mudflats. When the water rises, get back onto high ground or a boardwalk —
+        or you'll swim home and drop half your haul. Build the network outward and grow the village.
+      </div>
+    </div>
+    <script type="module" src="./dist/main.js"></script>
+  </body>
+</html>
