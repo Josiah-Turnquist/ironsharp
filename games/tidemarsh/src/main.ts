@@ -36,6 +36,10 @@ const TIDE_AMP_SPRING = 0.29; // range 0.16 .. 0.74
 const SPRING_EVERY = 3; // a spring tide every 3rd cycle (new & full moon)
 const LUNAR_CYCLES = 6; // cycles per full lunar month (new=0, full=3)
 
+// Storms: an unpredictable surge layered on top of the predictable tide.
+const STORM_SURGE = 0.12; // extra water height at the peak of a stormy high tide
+const STORM_CHANCE = 0.28; // share of cycles (after day 1) that turn stormy
+
 // ----------------------------------------------------------------------------
 // Structures
 // ----------------------------------------------------------------------------
@@ -312,10 +316,24 @@ function isSpringCycle(ci: number): boolean {
 function ampForCycle(ci: number): number {
   return isSpringCycle(ci) ? TIDE_AMP_SPRING : TIDE_AMP_NORMAL;
 }
+/** Deterministic-per-seed storm schedule, so reloads reproduce the weather. */
+function isStormCycle(ci: number): boolean {
+  if (ci <= 0) return false; // a calm first day to find your feet
+  const seed = state ? state.seed : 0;
+  const h = makeRng((seed ^ (ci * 0x01000193)) >>> 0)();
+  return h < STORM_CHANCE;
+}
+/** Extra water height from a storm, ramping with the tide and peaking at high water. */
+function stormSurgeAt(t: number): number {
+  const ci = cycleIndexAt(t);
+  if (!isStormCycle(ci)) return 0;
+  const phase = (t / CYCLE_SECONDS - ci) * Math.PI * 2;
+  return STORM_SURGE * Math.max(0, -Math.cos(phase));
+}
 function waterLevelAt(t: number): number {
   const ci = cycleIndexAt(t);
   const phase = (t / CYCLE_SECONDS - ci) * Math.PI * 2;
-  return TIDE_BASE - ampForCycle(ci) * Math.cos(phase);
+  return TIDE_BASE - ampForCycle(ci) * Math.cos(phase) + stormSurgeAt(t);
 }
 /** 0..1 within the current cycle (0 = low/day, .5 = high/night). */
 function cycleFrac(t: number): number {
@@ -671,7 +689,17 @@ function onNewDay() {
     SFX.error();
     return;
   }
-  if (isSpringCycle(cycleIndexAt(state.t))) SFX.spring();
+  const ci = cycleIndexAt(state.t);
+  if (isStormCycle(ci)) {
+    SFX.spring();
+    setMessage(
+      isSpringCycle(ci)
+        ? "⛈ Storm on a spring tide! A dangerous surge — even platforms may flood. Get high!"
+        : "⛈ A storm rolls in — the tide will surge past its mark at high water.",
+    );
+    return;
+  }
+  if (isSpringCycle(ci)) SFX.spring();
   if (state.food <= FOOD_PER_DAY * 2) {
     setMessage(`Day ${state.day}. Low on food (${state.food}) — harvest a crop soon.`);
   } else {
@@ -1071,16 +1099,59 @@ function drawBuildGhost() {
   }
 }
 
+/** 0..1 intensity of the current storm (0 when clear). */
+function stormIntensity(): number {
+  return Math.min(1, stormSurgeAt(state.t) / STORM_SURGE);
+}
+
+let rain: { x: number; y: number; v: number; len: number }[] = [];
+function updateRain(dt: number) {
+  const intensity = stormIntensity();
+  if (intensity > 0.05) {
+    const want = Math.floor(40 * intensity);
+    while (rain.length < want) {
+      rain.push({
+        x: Math.random() * GRID_W,
+        y: HUD_TOP + Math.random() * GRID_H,
+        v: 520 + Math.random() * 260,
+        len: 7 + Math.random() * 7,
+      });
+    }
+  }
+  for (const d of rain) {
+    d.y += d.v * dt;
+    d.x += d.v * 0.18 * dt; // wind slant
+    if (d.y > HUD_TOP + GRID_H) {
+      d.y = HUD_TOP - 5;
+      d.x = Math.random() * GRID_W;
+    }
+  }
+  // drain rain away once the storm passes
+  if (intensity < 0.05 && rain.length) rain = rain.slice(0, Math.max(0, rain.length - 3));
+}
+function drawRain() {
+  if (!rain.length) return;
+  ctx.strokeStyle = "rgba(180,205,225,0.45)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (const d of rain) {
+    ctx.moveTo(d.x, d.y);
+    ctx.lineTo(d.x - d.len * 0.18, d.y - d.len);
+  }
+  ctx.stroke();
+}
+
 function drawNightOverlay() {
   const d = dayness(state.t);
-  // darkness toward night (high tide)
-  const dark = (1 - d) * 0.5;
+  // darkness toward night (high tide), deepened by any storm
+  const storm = stormIntensity();
+  const dark = (1 - d) * 0.5 + storm * 0.28;
   if (dark > 0.01) {
-    ctx.fillStyle = `rgba(8,16,42,${dark})`;
+    ctx.fillStyle = `rgba(8,16,42,${Math.min(0.75, dark)})`;
     ctx.fillRect(0, HUD_TOP, GRID_W, GRID_H);
   }
-  // warm dawn/dusk glow when transitioning
-  const glow = Math.max(0, 1 - Math.abs(d - 0.5) * 4) * 0.12;
+  // warm dawn/dusk glow when transitioning (suppressed during storms)
+  const glow = Math.max(0, 1 - Math.abs(d - 0.5) * 4) * 0.12 * (1 - storm);
   if (glow > 0.01) {
     ctx.fillStyle = `rgba(255,150,70,${glow})`;
     ctx.fillRect(0, HUD_TOP, GRID_W, GRID_H);
@@ -1137,6 +1208,8 @@ function drawHUD(water: number) {
   const info = tidePhaseInfo(state.t);
   const ci = cycleIndexAt(state.t);
   const spring = isSpringCycle(ci);
+  const storming = isStormCycle(ci);
+  const stormNext = isStormCycle(ci + 1);
 
   // tide gauge
   const gx = 16;
@@ -1148,17 +1221,20 @@ function drawHUD(water: number) {
   const lo = TIDE_BASE - TIDE_AMP_SPRING;
   const hi = TIDE_BASE + TIDE_AMP_SPRING;
   const frac = (water - lo) / (hi - lo);
-  ctx.fillStyle = spring ? "#3a86a8" : "#2f6f86";
+  ctx.fillStyle = storming ? "#7a5fae" : spring ? "#3a86a8" : "#2f6f86";
   ctx.fillRect(gx, gy, gw * Math.max(0, Math.min(1, frac)), gh);
   ctx.strokeStyle = "#1c4a4c";
   ctx.strokeRect(gx + 0.5, gy + 0.5, gw, gh);
-  ctx.fillStyle = "#cfe7e0";
+  ctx.fillStyle = storming ? "#cdb6f0" : "#cfe7e0";
   ctx.font = "12px Segoe UI, sans-serif";
-  ctx.fillText(`${info.label}${spring ? "  ·  SPRING TIDE" : ""}  ${info.rising ? "▲" : "▼"}`, gx, gy - 2);
+  const wx = storming ? "  ·  ⛈ STORM" : spring ? "  ·  SPRING TIDE" : "";
+  ctx.fillText(`${info.label}${wx}  ${info.rising ? "▲" : "▼"}`, gx, gy - 2);
   ctx.fillStyle = "#8fb0a8";
   ctx.font = "11px Segoe UI, sans-serif";
   const nextTxt = info.rising ? `high in ${info.nextHighIn.toFixed(0)}s` : `low in ${info.nextLowIn.toFixed(0)}s`;
-  ctx.fillText(`Day ${state.day}  ·  ${nextTxt}`, gx, gy + gh + 14);
+  const forecast = stormNext && !storming ? "  ·  storm coming" : "";
+  ctx.fillStyle = stormNext && !storming ? "#cdb6f0" : "#8fb0a8";
+  ctx.fillText(`Day ${state.day}  ·  ${nextTxt}${forecast}`, gx, gy + gh + 14);
 
   // moon + spring prediction
   const mx = gx + gw + 26;
@@ -1283,6 +1359,7 @@ function frame(now: number) {
     }
   }
   updateParticles(dt);
+  updateRain(dt);
 
   const water = waterLevelAt(state.t);
   ctx.clearRect(0, 0, W, H);
@@ -1296,6 +1373,7 @@ function frame(now: number) {
   drawPlayer();
   drawParticles();
   drawNightOverlay();
+  drawRain();
   drawHUD(water);
   drawGameOver();
 

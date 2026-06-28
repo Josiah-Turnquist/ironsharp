@@ -77,6 +77,16 @@ The **lunar dial** (top HUD) shows the moon phase and counts down to the next **
 tide** (the extra-high tide at new and full moon, every 3rd cycle). Spring tides flood
 things normal tides don't — plant and build ahead of them, not into them.
 
+### Watch the weather
+
+Some days a **storm** rolls in (the tide bar turns purple and reads `⛈ STORM`; rain
+falls and the marsh darkens). A storm adds a **surge** on top of the normal tide,
+pushing the water *past* its usual high-water mark — drowning crops and boardwalks that
+a calm tide would have spared. The HUD warns you the day before (`storm coming`). The
+worst case is a **storm landing on a spring tide**, where the surge can climb high
+enough to flood even platforms — get to the highest ground you have. Storms are fixed by
+the marsh's seed, so a given marsh always has the same weather (and reloads reproduce it).
+
 ### Other touches
 
 - **Day/night** colour cycle tied to the tide (bright at low water, dark at high).
@@ -97,10 +107,11 @@ games/tidemarsh/
 ## Status / next steps
 
 The core fun is in: tide-reading, elevation building, **tidal farming**, a **lunar
-calendar**, a **hunger/win-lose** stake, **villagers + requests** (reputation arc),
-**day/night + particles + sound**, and **autosave**. Natural next additions:
+calendar**, **storms/weather**, a **hunger/win-lose** stake, **villagers + requests**
+(reputation arc), **day/night + particles + sound**, and **autosave**. Natural next
+additions:
 
-- Weather (storms that raise the tide unexpectedly) to stress the lunar planning.
 - A cooking station + multiple crop types so villager "food" requests feed a deeper economy.
 - Progression/upgrades: bigger basket, faster crops, sturdier boardwalks.
-- A proper title/menu screen and difficulty options (food rate, tide speed).
+- Storm-warning structures (a tide gauge / weathervane you build to forecast further ahead).
+- A proper title/menu screen and difficulty options (food rate, tide speed, storm frequency).
