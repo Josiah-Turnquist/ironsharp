@@ -36,28 +36,48 @@ npx tsc -p tsconfig.json   # recompiles src/main.ts -> dist/main.js
 | Move | `W` `A` `S` `D` or arrow keys |
 | Forage | walk onto an exposed flat (wood / reeds / clams) |
 | Store haul | walk onto your house |
-| Pick a structure | `1` boardwalk · `2` platform · `0` cancel |
-| Build | with a structure selected, **click** an adjacent tile |
+| Harvest / clear crop | walk onto a ripe (or dead) crop |
+| Pick an action | `1` boardwalk · `2` platform · `3` plant crop · `0` cancel |
+| Build / plant | with an action selected, **click** an adjacent tile |
 | Restart (new marsh) | `R` |
 
 ### The loop
 
-1. **Low tide** exposes the mudflats — run out and forage. Your basket is limited,
-   so come home to store before it's full.
-2. **The tide rises** on a clock you can read (top-left gauge). If your tile floods
-   while you're standing on it, you swim home and **drop half your haul**.
-3. **Build** to extend your reach and grow the village:
+1. **Low tide** (daylight) exposes the mudflats — run out and forage. Your basket is
+   limited, so come home to store before it's full.
+2. **The tide rises** (and night falls) on a clock you can read (top-left gauge). If
+   your tile floods while you're standing on it, you swim home and **drop half your haul**.
+3. **Farm to survive.** You eat **2 food per day** (each tide cycle). Plant crops
+   (`3`, costs 1 reed) on high ground or a platform; they ripen over ~1.3 cycles and
+   yield food when you walk onto them. **Run out of food and it's game over.**
+4. **Build** to extend your reach and grow the village:
    - **Boardwalk** (cheap) — a low deck. Lets you cross water… but a boardwalk laid
-     on a deep channel sits low and **floods at spring tide** (every 3rd cycle, the
-     gauge turns brighter and reads `SPRING TIDE`). The build ghost warns you.
-   - **Platform** (expensive) — a high deck that survives any tide. Platforms are
-     what grow the village; raise **6** to win (then keep playing).
+     on a deep channel sits low and **floods at spring tide**. The build ghost warns you.
+   - **Platform** (expensive) — a high deck that survives any tide. Platforms grow the
+     village (raise **6** to win, then keep playing) *and* double as safe, raised farmland.
 
-### The hook
+### The hook — elevation everywhere
 
-Every structure has a **deck height** = its tile's elevation + an offset. That's the
-core decision: a boardwalk over a deep channel is the path to far foraging grounds,
-but it's exactly the thing the spring tide drowns. Build smart, build high.
+Every structure **and every crop** has a **deck height** = its tile's elevation + an
+offset. That's the core decision throughout the game:
+
+- A boardwalk over a deep channel is the path to far foraging grounds, but it's exactly
+  the thing the spring tide drowns.
+- A crop on low marsh grows fine on calm days, but the **salt water kills any crop the
+  tide reaches** — so the lowest beds get wiped at spring tide unless you saw it coming.
+
+### Read the moon
+
+The **lunar dial** (top HUD) shows the moon phase and counts down to the next **spring
+tide** (the extra-high tide at new and full moon, every 3rd cycle). Spring tides flood
+things normal tides don't — plant and build ahead of them, not into them.
+
+### Other touches
+
+- **Day/night** colour cycle tied to the tide (bright at low water, dark at high).
+- **Particles & sound** on foraging, building, planting, harvesting, and getting caught.
+- **Autosave** to `localStorage` — close the tab and your marsh is waiting when you return.
+  Press `R` to abandon it and generate a fresh marsh.
 
 ## Files
 
@@ -71,11 +91,11 @@ games/tidemarsh/
 
 ## Status / next steps
 
-This is a vertical slice proving the core fun: tide-reading + elevation building.
-Natural next additions:
+The core fun is in: tide-reading, elevation building, **tidal farming**, a **lunar
+calendar**, a **hunger/win-lose** stake, **day/night + particles + sound**, and
+**autosave**. Natural next additions:
 
-- Crops that die if planted below the waterline (the "plant at the right elevation"
-  layer from the original pitch).
-- Lunar calendar UI so spring tides can be *predicted*, not just survived.
-- Neighbours/quests once the village grows; cooking with foraged ingredients.
-- Persistence (save the marsh) and sound.
+- Neighbours/quests once the village grows; cooking foraged ingredients into better food.
+- More crop types with different grow times / yields, and fertiliser from clams.
+- Weather (storms that raise the tide unexpectedly) to stress the lunar planning.
+- A proper title/menu screen and difficulty options (food rate, tide speed).
