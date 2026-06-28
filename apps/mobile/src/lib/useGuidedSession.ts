@@ -36,6 +36,7 @@ export function useGuidedSession(
   const [phase, setPhase] = useState<GuidedPhase>("ready");
   const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState<GuidedAnswers>({});
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const stepRef = useRef(0);
   const answersRef = useRef<GuidedAnswers>({});
@@ -125,11 +126,13 @@ export function useGuidedSession(
   }, [tts, stt]);
 
   const submit = useCallback(async () => {
+    setSaveError(null);
     setPhase("saving");
     try {
       await onComplete(answersRef.current);
       setPhase("done");
     } catch {
+      setSaveError("Couldn't save — check your connection and try again.");
       setPhase("summary");
     }
   }, [onComplete]);
@@ -139,6 +142,7 @@ export function useGuidedSession(
     stepIndex,
     steps,
     answers,
+    saveError,
     liveTranscript: stt.transcript,
     isListening: stt.isListening,
     sttError: stt.error,

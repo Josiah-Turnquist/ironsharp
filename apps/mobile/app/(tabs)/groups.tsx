@@ -2,10 +2,8 @@ import { useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
   LayoutAnimation,
   Modal,
-  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
