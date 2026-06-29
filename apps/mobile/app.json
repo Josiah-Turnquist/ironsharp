@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "IronSharp",
-    "slug": "ironsharp",
+    "slug": "iron-sharp",
     "scheme": "ironsharp",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -75,15 +75,15 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "7d341012-d0a8-4ea6-a4cd-927886fd5927"
+        "projectId": "1008eb2b-d74d-43c7-9337-6d14f5e1f7ed"
       }
     },
-    "owner": "josiahturnq",
+    "owner": "ironsharp",
     "runtimeVersion": {
       "policy": "fingerprint"
     },
     "updates": {
-      "url": "https://u.expo.dev/7d341012-d0a8-4ea6-a4cd-927886fd5927"
+      "url": "https://u.expo.dev/1008eb2b-d74d-43c7-9337-6d14f5e1f7ed"
     }
   }
 }
