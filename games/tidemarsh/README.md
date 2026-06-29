@@ -37,8 +37,9 @@ npx tsc -p tsconfig.json   # recompiles src/main.ts -> dist/main.js
 | Forage | walk onto an exposed flat (wood / reeds / clams) |
 | Store haul | walk onto your house |
 | Harvest / clear crop | walk onto a ripe (or dead) crop |
-| Pick an action | `1` boardwalk · `2` platform · `3` plant crop · `0` cancel |
+| Pick an action | `1` boardwalk · `2` platform · `3` plant greens · `4` plant roots · `0` cancel |
 | Build / plant | with an action selected, **click** an adjacent tile |
+| Cook a meal | press `C` while standing on your house |
 | Restart (new marsh) | `R` |
 
 ### The loop
@@ -47,9 +48,18 @@ npx tsc -p tsconfig.json   # recompiles src/main.ts -> dist/main.js
    limited, so come home to store before it's full.
 2. **The tide rises** (and night falls) on a clock you can read (top-left gauge). If
    your tile floods while you're standing on it, you swim home and **drop half your haul**.
-3. **Farm to survive.** You eat **2 food per day** (each tide cycle). Plant crops
-   (`3`, costs 1 reed) on high ground or a platform; they ripen over ~1.3 cycles and
-   yield food when you walk onto them. **Run out of food and it's game over.**
+3. **Farm & cook to survive.** You eat **2 food per day** (each tide cycle). Plant
+   crops (cost 1 reed) on high ground or a platform; harvest them by walking onto them
+   once ripe to collect **produce**. Then stand on your house and press `C` to **cook**
+   produce + clams into meals worth far more food than the raw parts. **Run out of food
+   and it's game over.** Two crop varieties trade off against the weather:
+   - **Greens** (`3`) — fast (~45s), small yield (+1). Quick turnaround; harvest before a storm.
+   - **Roots** (`4`) — slow (~90s), big yield (+3). Efficient in calm stretches, but a
+     surge that catches them mid-grow wipes the whole bed.
+
+   Cooking recipes (the best affordable meal is made each press of `C`):
+   *Marsh Stew* = 2 produce + 2 clams → +12 · *Greens Bowl* = 2 produce → +6 ·
+   *Steamed Clams* = 3 clams → +5.
 4. **Build** to extend your reach and grow the village:
    - **Boardwalk** (cheap) — a low deck. Lets you cross water… but a boardwalk laid
      on a deep channel sits low and **floods at spring tide**. The build ghost warns you.
@@ -106,12 +116,12 @@ games/tidemarsh/
 
 ## Status / next steps
 
-The core fun is in: tide-reading, elevation building, **tidal farming**, a **lunar
-calendar**, **storms/weather**, a **hunger/win-lose** stake, **villagers + requests**
-(reputation arc), **day/night + particles + sound**, and **autosave**. Natural next
-additions:
+The core fun is in: tide-reading, elevation building, **tidal farming** with **two crop
+varieties** + a **cooking** loop, a **lunar calendar**, **storms/weather**, a
+**hunger/win-lose** stake, **villagers + requests** (reputation arc), **day/night +
+particles + sound**, and **autosave**. Natural next additions:
 
-- A cooking station + multiple crop types so villager "food" requests feed a deeper economy.
-- Progression/upgrades: bigger basket, faster crops, sturdier boardwalks.
-- Storm-warning structures (a tide gauge / weathervane you build to forecast further ahead).
+- Progression/upgrades: bigger basket, faster crops, sturdier (higher-deck) boardwalks.
+- Let villagers' "food" requests demand specific cooked meals for bonus reputation.
+- More crop varieties / recipes; fertiliser from clams to speed growth.
 - A proper title/menu screen and difficulty options (food rate, tide speed, storm frequency).

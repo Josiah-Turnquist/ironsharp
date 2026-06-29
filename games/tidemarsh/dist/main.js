@@ -61,11 +61,18 @@ const RES_META = {
 };
 const FORAGE_TARGET = 11;
 const SEED_COST_REED = 1; // planting a crop costs one reed
-const CROP_GROW_SECONDS = 64; // ~1.3 cycles from seed to ripe
-const CROP_FOOD_YIELD = 4;
 const FOOD_PER_DAY = 2; // eaten at each tide rollover
 const START_FOOD = 12;
 const GOAL_PLATFORMS = 6;
+const CROP_DEFS = {
+    greens: { name: "Greens", grow: 45, yield: 1, stalk: "#79b94e", head: "#cde06a" },
+    roots: { name: "Roots", grow: 92, yield: 3, stalk: "#9a8a4e", head: "#e0b24a" },
+};
+const RECIPES = [
+    { name: "Marsh Stew", produce: 2, clam: 2, food: 12 },
+    { name: "Greens Bowl", produce: 2, clam: 0, food: 6 },
+    { name: "Steamed Clams", produce: 0, clam: 3, food: 5 },
+];
 // ----------------------------------------------------------------------------
 // Villagers & requests
 // ----------------------------------------------------------------------------
@@ -352,14 +359,15 @@ function tryHarvestOrClear() {
         return;
     }
     if (crop.growth >= 1) {
-        state.food += CROP_FOOD_YIELD;
+        const def = CROP_DEFS[crop.kind];
+        state.produce += def.yield;
         state.crops[i] = null;
-        setMessage(`Harvested +${CROP_FOOD_YIELD} food (${state.food} stored).`);
-        spawnParticles(state.player.c, state.player.r, "#e9c46a", 12);
+        setMessage(`Harvested ${def.name}: +${def.yield} produce (${state.produce}). Cook at home (C).`);
+        spawnParticles(state.player.c, state.player.r, def.head, 12);
         SFX.harvest();
     }
 }
-function tryPlant(c, r) {
+function tryPlant(kind, c, r) {
     if (!inBounds(c, r))
         return;
     const adj = Math.abs(c - state.player.c) + Math.abs(r - state.player.r) === 1;
@@ -396,9 +404,10 @@ function tryPlant(c, r) {
         return;
     }
     state.stored.reed -= SEED_COST_REED;
-    state.crops[i] = { growth: 0, dead: false };
-    setMessage("Sowed a seed. Keep it above the tideline or the salt will take it.");
-    spawnParticles(c, r, "#86c06a", 6);
+    state.crops[i] = { kind, growth: 0, dead: false };
+    const def = CROP_DEFS[kind];
+    setMessage(`Sowed ${def.name} (~${def.grow}s, +${def.yield}). Keep it above the tideline or the salt takes it.`);
+    spawnParticles(c, r, def.stalk, 6);
     SFX.plant();
 }
 function updateCrops(dt, water) {
@@ -414,8 +423,36 @@ function updateCrops(dt, water) {
             continue;
         }
         if (crop.growth < 1)
-            crop.growth = Math.min(1, crop.growth + dt / CROP_GROW_SECONDS);
+            crop.growth = Math.min(1, crop.growth + dt / CROP_DEFS[crop.kind].grow);
     }
+}
+// ----------------------------------------------------------------------------
+// Cooking — convert produce + clams into food at home
+// ----------------------------------------------------------------------------
+function bestRecipe() {
+    for (const r of RECIPES) {
+        if (state.produce >= r.produce && state.stored.clam >= r.clam)
+            return r;
+    }
+    return null;
+}
+function tryCook() {
+    if (!atHome()) {
+        setMessage("Step onto your house to cook.");
+        return;
+    }
+    const r = bestRecipe();
+    if (!r) {
+        setMessage("Nothing to cook — you need produce (farm) and/or clams (forage).");
+        SFX.error();
+        return;
+    }
+    state.produce -= r.produce;
+    state.stored.clam -= r.clam;
+    state.food += r.food;
+    setMessage(`Cooked ${r.name}: +${r.food} food (${state.food}).`);
+    spawnParticles(state.home.c, state.home.r, "#e9c46a", 14);
+    SFX.harvest();
 }
 // ----------------------------------------------------------------------------
 // Home / storing
@@ -441,8 +478,8 @@ function canAfford(def) {
         state.stored.clam >= def.cost.clam);
 }
 function tryBuild(c, r) {
-    if (state.buildSel === "crop") {
-        tryPlant(c, r);
+    if (state.buildSel === "greens" || state.buildSel === "roots") {
+        tryPlant(state.buildSel, c, r);
         return;
     }
     if (!state.buildSel)
@@ -640,7 +677,7 @@ function setMessage(m) {
 // Save / load (localStorage)
 // ----------------------------------------------------------------------------
 const SAVE_KEY = "tidemarsh.save";
-const SAVE_VERSION = 4;
+const SAVE_VERSION = 5;
 function saveGame() {
     try {
         const data = {
@@ -649,6 +686,7 @@ function saveGame() {
             t: state.t,
             day: state.day,
             food: state.food,
+            produce: state.produce,
             platformsBuilt: state.platformsBuilt,
             rep: state.rep,
             thrived: state.thrived,
@@ -659,7 +697,7 @@ function saveGame() {
             stored: state.stored,
             carry: state.carry,
             structs: state.structs,
-            crops: state.crops.map((c) => (c ? { g: +c.growth.toFixed(3), d: c.dead ? 1 : 0 } : 0)),
+            crops: state.crops.map((c) => (c ? { k: c.kind, g: +c.growth.toFixed(3), d: c.dead ? 1 : 0 } : 0)),
         };
         localStorage.setItem(SAVE_KEY, JSON.stringify(data));
     }
@@ -687,12 +725,13 @@ function loadGame() {
             home,
             structs: Array.isArray(d.structs) && d.structs.length === COLS * ROWS ? d.structs : new Array(COLS * ROWS).fill(null),
             crops: Array.isArray(d.crops) && d.crops.length === COLS * ROWS
-                ? d.crops.map((c) => (c ? { growth: c.g, dead: !!c.d } : null))
+                ? d.crops.map((c) => (c ? { kind: c.k === "roots" ? "roots" : "greens", growth: c.g, dead: !!c.d } : null))
                 : new Array(COLS * ROWS).fill(null),
             nodes: [],
             player: d.player ?? { ...home },
             carry: d.carry ?? { wood: 0, reed: 0, clam: 0 },
             stored: d.stored ?? { wood: 0, reed: 0, clam: 0 },
+            produce: typeof d.produce === "number" ? d.produce : 0,
             food: typeof d.food === "number" ? d.food : START_FOOD,
             t: typeof d.t === "number" ? d.t : 0,
             day: typeof d.day === "number" ? d.day : 1,
@@ -729,6 +768,7 @@ function newGame(seed) {
         player: { c: home.c, r: home.r },
         carry: { wood: 0, reed: 0, clam: 0 },
         stored: { wood: 4, reed: 3, clam: 0 },
+        produce: 0,
         food: START_FOOD,
         t: 0,
         day: 1,
@@ -837,9 +877,10 @@ function drawCrop(c, r) {
         ctx.lineWidth = 1;
         return;
     }
+    const cd = CROP_DEFS[crop.kind];
     const ripe = crop.growth >= 1;
     const hgt = 5 + crop.growth * 13;
-    ctx.strokeStyle = ripe ? "#cde06a" : "#79b94e";
+    ctx.strokeStyle = ripe ? cd.head : cd.stalk;
     ctx.lineWidth = 2;
     for (let i = -1; i <= 1; i++) {
         ctx.beginPath();
@@ -849,7 +890,7 @@ function drawCrop(c, r) {
     }
     ctx.lineWidth = 1;
     if (ripe) {
-        ctx.fillStyle = "#e9c46a";
+        ctx.fillStyle = cd.head;
         for (let i = -1; i <= 1; i++)
             ctx.fillRect(cx + i * 4 - 1.5, baseY - hgt - 2, 4, 4);
     }
@@ -985,7 +1026,7 @@ function drawPlayer() {
 function drawBuildGhost() {
     if (!state.buildSel)
         return;
-    const isCrop = state.buildSel === "crop";
+    const isCrop = state.buildSel === "greens" || state.buildSel === "roots";
     const def = isCrop ? null : STRUCTS[state.buildSel];
     const dirs = [
         [1, 0],
@@ -1176,7 +1217,7 @@ function drawHUD(water) {
     const rx = 330;
     ctx.font = "12px Segoe UI, sans-serif";
     RES_ORDER.forEach((k, i) => {
-        const x = rx + i * 130;
+        const x = rx + i * 110;
         ctx.fillStyle = RES_META[k].color;
         ctx.fillRect(x, 12, 10, 10);
         ctx.fillStyle = "#e8f1ee";
@@ -1184,44 +1225,57 @@ function drawHUD(water) {
         ctx.fillStyle = "#8fb0a8";
         ctx.fillText(`${state.stored[k]} · +${state.carry[k]}`, x + 16, 36);
     });
-    // food + basket + village
+    // produce (crop yield, ingredient for cooking)
+    const px = rx + 3 * 110;
+    ctx.fillStyle = "#cde06a";
+    ctx.fillRect(px, 12, 10, 10);
+    ctx.fillStyle = "#e8f1ee";
+    ctx.fillText("Produce", px + 16, 21);
+    ctx.fillStyle = "#8fb0a8";
+    ctx.fillText(`${state.produce}`, px + 16, 36);
+    // food + cook hint + basket + village + rep
+    const cook = bestRecipe();
     ctx.fillStyle = state.food <= FOOD_PER_DAY * 2 ? "#e07a5f" : "#e9c46a";
     ctx.font = "13px Segoe UI, sans-serif";
     ctx.fillText(`🍲 Food ${state.food}`, rx, 54);
-    ctx.fillStyle = "#8fb0a8";
+    ctx.fillStyle = cook ? "#9be07a" : "#5d756f";
     ctx.font = "12px Segoe UI, sans-serif";
-    ctx.fillText(`Basket ${totalCarry()}/${state.carryCap}`, rx + 130, 54);
+    ctx.fillText(cook ? `[C] cook ${cook.name}` : "[C] cook", rx + 110, 54);
+    ctx.fillStyle = "#8fb0a8";
+    ctx.fillText(`Basket ${totalCarry()}/${state.carryCap}`, rx + 250, 54);
     ctx.fillStyle = "#e8f1ee";
-    ctx.fillText(`Village ${state.platformsBuilt}/${GOAL_PLATFORMS}`, rx + 240, 54);
+    ctx.fillText(`Village ${state.platformsBuilt}/${GOAL_PLATFORMS}`, rx + 360, 54);
     ctx.fillStyle = state.thrived ? "#9be07a" : "#e8f1ee";
-    ctx.fillText(`★ Rep ${state.rep}/${REP_GOAL}`, rx + 360, 54);
+    ctx.fillText(`★ ${state.rep}/${REP_GOAL}`, rx + 480, 54);
     // bottom: build menu
     const by = HUD_TOP + GRID_H;
     ctx.fillStyle = "#0a2123";
     ctx.fillRect(0, by, W, HUD_BOTTOM);
+    const seeds = state.stored.reed >= SEED_COST_REED;
     const opts = [
         { key: "1", sel: "boardwalk", label: "Boardwalk", cost: "2 wood, 1 reed", afford: canAfford(STRUCTS.boardwalk) },
-        { key: "2", sel: "platform", label: "Platform", cost: "3 wood, 2 reed, 1 clam", afford: canAfford(STRUCTS.platform) },
-        { key: "3", sel: "crop", label: "Plant crop", cost: "1 reed → food", afford: state.stored.reed >= SEED_COST_REED },
+        { key: "2", sel: "platform", label: "Platform", cost: "3 wd, 2 rd, 1 cl", afford: canAfford(STRUCTS.platform) },
+        { key: "3", sel: "greens", label: "Greens", cost: "1 reed · fast +1", afford: seeds },
+        { key: "4", sel: "roots", label: "Roots", cost: "1 reed · slow +3", afford: seeds },
     ];
     let bx = 12;
     for (const o of opts) {
         const selected = state.buildSel === o.sel;
         ctx.fillStyle = selected ? "#15413f" : "#0d2e30";
-        ctx.fillRect(bx, by + 10, 184, 44);
+        ctx.fillRect(bx, by + 10, 148, 44);
         ctx.strokeStyle = selected ? "#e9c46a" : "#1c4a4c";
-        ctx.strokeRect(bx + 0.5, by + 10.5, 184, 44);
+        ctx.strokeRect(bx + 0.5, by + 10.5, 148, 44);
         ctx.fillStyle = o.afford ? "#e8f1ee" : "#6d8983";
         ctx.font = "13px Segoe UI, sans-serif";
         ctx.fillText(`[${o.key}] ${o.label}`, bx + 10, by + 28);
         ctx.fillStyle = "#8fb0a8";
         ctx.font = "11px Segoe UI, sans-serif";
         ctx.fillText(o.cost, bx + 10, by + 46);
-        bx += 196;
+        bx += 156;
     }
     ctx.fillStyle = "#8fb0a8";
     ctx.font = "11px Segoe UI, sans-serif";
-    ctx.fillText(state.buildSel ? "click an adjacent tile · [0] cancel" : "pick 1/2/3, then click a tile", bx + 4, by + 24);
+    ctx.fillText(state.buildSel ? "click an adjacent tile · [0] cancel" : "pick 1-4 + click · [C] cook at home", bx + 6, by + 24);
     if (state.messageT > 0) {
         ctx.fillStyle = `rgba(233,196,106,${Math.min(1, state.messageT)})`;
         ctx.font = "13px Segoe UI, sans-serif";
@@ -1341,8 +1395,15 @@ window.addEventListener("keydown", (e) => {
             setMessage("Platform selected — click an adjacent tile.");
             break;
         case "3":
-            state.buildSel = "crop";
-            setMessage("Planting — click adjacent soil or a platform (keep it above the tideline).");
+            state.buildSel = "greens";
+            setMessage("Greens — fast, low yield. Click adjacent soil or a platform above the tideline.");
+            break;
+        case "4":
+            state.buildSel = "roots";
+            setMessage("Roots — slow but big yield. Mind storms; click adjacent soil or a platform.");
+            break;
+        case "c":
+            tryCook();
             break;
         case "0":
         case "escape":
