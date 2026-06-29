@@ -88,13 +88,22 @@ export async function notifyPartnerDone(
 export async function notifyGroupCompleteIfDone(
   submittingUserId: string,
   planId: string,
-  dayNumber: number
+  dayNumber: number,
+  groupId: string | null
 ): Promise<void> {
+  // Only a group submission can complete a group; scope to that instance.
+  if (!groupId) return;
   const memberRows = await db
     .select({ groupId: groupMembers.groupId })
     .from(groupMembers)
     .innerJoin(groups, eq(groups.id, groupMembers.groupId))
-    .where(and(eq(groupMembers.userId, submittingUserId), eq(groups.currentPlanId, planId)));
+    .where(
+      and(
+        eq(groupMembers.userId, submittingUserId),
+        eq(groupMembers.groupId, groupId),
+        eq(groups.currentPlanId, planId)
+      )
+    );
   if (memberRows.length === 0) return;
 
   for (const { groupId } of memberRows) {
@@ -121,7 +130,8 @@ export async function notifyGroupCompleteIfDone(
         and(
           inArray(devotionalSubmissions.userId, allIds),
           eq(devotionalSubmissions.planId, planId),
-          eq(devotionalSubmissions.dayNumber, dayNumber)
+          eq(devotionalSubmissions.dayNumber, dayNumber),
+          eq(devotionalSubmissions.groupId, groupId)
         )
       );
 

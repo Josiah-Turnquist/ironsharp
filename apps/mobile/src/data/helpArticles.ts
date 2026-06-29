@@ -75,7 +75,7 @@ export const HELP_SECTIONS: HelpSection[] = [
       },
       {
         q: "Where can I see past devotionals?",
-        a: "Open the Devotional tab — your active personal plan is at the top under Personal, and any group plans you're in show under Shared. Completed plans are visible from the Plans tab.",
+        a: "Your active personal plan is on the Home tab. Group plans show in the Groups tab — tap a group to open its devotional. Completed plans are under Profile → Completed Plans.",
       },
       {
         q: "What happens if I miss a day?",
@@ -108,11 +108,11 @@ export const HELP_SECTIONS: HelpSection[] = [
       },
       {
         q: "How do I start a plan?",
-        a: "Go to the Plans tab, browse by category, and tap a plan. You'll be asked if it's just for you or for a group. If you have groups, you can assign it to one of them.",
+        a: "For a personal plan, open Home and tap Start a plan. For a group, open the Groups tab and tap New plan — you'll name the group, choose its plan, and invite people, all in one flow.",
       },
       {
         q: "Where do I find new plans?",
-        a: "Tap the Plans tab and browse the categories — Men's, Women's, Marriage, Family, General, and more. AI-generated plans tailored to your specific book or topic are also coming soon.",
+        a: "Tap New plan in the Groups tab (or Start a plan on Home) to browse the library by category — Men's, Women's, Marriage, Family, General, and more — or generate your own with AI.",
       },
       {
         q: "What happens when I finish a plan?",
@@ -145,11 +145,11 @@ export const HELP_SECTIONS: HelpSection[] = [
       },
       {
         q: "Where do I open my group's devotional?",
-        a: "Two places: the Devotional tab → Shared section shows all your group plans with a Continue Reading button, or tap the group card in the Groups tab and use the Open Devotional button.",
+        a: "Open the Groups tab, tap your group's card, and use the Open Devotional button.",
       },
       {
         q: "Can I assign a plan to my group?",
-        a: "Yes. When you tap a plan in the Plans tab, choose the group you want to read it with. If the group already has that plan assigned, it opens right to your current day without resetting progress.",
+        a: "Yes — it's built in. Tapping New plan creates the group and picks its plan together. For a group that doesn't have a plan yet, open it in the Groups tab and tap Choose a plan.",
       },
       {
         q: "Who can see my answers?",
@@ -265,7 +265,7 @@ export const HELP_SECTIONS: HelpSection[] = [
       },
       {
         q: "I assigned a plan to my group but it still shows as personal.",
-        a: "Open the devotional from the Groups tab or the Shared section of the Devotional tab — those routes open it in group context. Opening from the Home screen will show your personal progress for that plan.",
+        a: "Open the devotional from your group's card in the Groups tab — that opens it in group context. Opening the same plan from Home shows your personal progress instead.",
       },
       {
         q: "My streak disappeared.",

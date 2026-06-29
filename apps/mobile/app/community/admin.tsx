@@ -13,6 +13,7 @@ import { Plus, Trash2, X } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
 import { Header } from "@/components/Header";
 import { useThemeColor } from "@/components/useThemeColor";
+import { withAlpha } from "@/theme/themes";
 import { useCommunityAdminList, useProfile } from "@/lib/queries";
 import {
   ApiClient,
@@ -335,7 +336,7 @@ export default function CommunityAdmin() {
                     borderRadius: 12,
                     paddingHorizontal: 8,
                     paddingVertical: 2,
-                    backgroundColor: (d.status === "published" ? primary : muted) + "22",
+                    backgroundColor: withAlpha(d.status === "published" ? primary : muted, 0.13),
                   }}
                 >
                   <Text

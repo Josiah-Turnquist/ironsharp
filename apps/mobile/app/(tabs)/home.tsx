@@ -1,11 +1,12 @@
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { BookOpen, CheckCircle2, Globe, Sun, Headphones } from "lucide-react-native";
+import { BookOpen, CheckCircle2, ChevronRight, Globe, Sun, Headphones } from "lucide-react-native";
 import { PopIn } from "@/components/PopIn";
 import { Screen } from "@/components/Screen";
 import { StreakFlame } from "@/components/StreakFlame";
+import { Avatar } from "@/components/Avatar";
 import { useThemeColor } from "@/components/useThemeColor";
-import { useProfile, useActiveDevotional, useCommunityToday } from "@/lib/queries";
+import { useProfile, useActiveDevotional, useCommunityToday, useDiscipleships } from "@/lib/queries";
 import { useLocalDoneToday } from "@/lib/useLocalDoneToday";
 
 export default function HomeScreen() {
@@ -20,6 +21,8 @@ export default function HomeScreen() {
   const todayDevo = community.data?.devotional ?? null;
   const communityResponded = !!community.data?.myResponse;
   const communityCount = community.data?.feed?.length ?? 0;
+  const discipleships = useDiscipleships();
+  const activeDisc = (discipleships.data ?? []).find((r) => r.status === "active") ?? null;
   const primary = useThemeColor("primary");
   const muted = useThemeColor("muted-foreground");
 
@@ -104,7 +107,7 @@ export default function HomeScreen() {
         <Pressable
           onPress={() =>
             router.push(
-              active ? `/devotional/${active.planId}` : "/(tabs)/plans"
+              active ? `/devotional/${active.planId}` : "/plans"
             )
           }
           className="mb-6 w-full rounded-2xl border border-border bg-card p-7"
@@ -142,6 +145,32 @@ export default function HomeScreen() {
             )}
           </View>
         </Pressable>
+
+        {activeDisc ? (
+          <Pressable
+            onPress={() => router.push(`/discipleship/${activeDisc.id}`)}
+            accessibilityRole="button"
+            accessibilityLabel={`Open discipleship with ${activeDisc.counterpart.displayName}`}
+            className="mb-6 w-full flex-row items-center gap-3 rounded-2xl border border-border bg-card p-5"
+          >
+            <Avatar name={activeDisc.counterpart.displayName} url={activeDisc.counterpart.avatarUrl} accent={primary} />
+            <View className="flex-1">
+              <Text className="text-xs font-sans-semibold uppercase tracking-wider text-muted-foreground">Discipleship</Text>
+              <Text className="font-sans-semibold text-base text-foreground" numberOfLines={1}>
+                {activeDisc.counterpart.displayName}
+              </Text>
+              <Text className="text-sm text-muted-foreground">
+                {activeDisc.role === "discipler" ? "You're discipling them" : "Your discipler"}
+              </Text>
+            </View>
+            {activeDisc.unreadCount > 0 ? (
+              <View style={{ minWidth: 20, height: 20, borderRadius: 10, backgroundColor: primary, alignItems: "center", justifyContent: "center", paddingHorizontal: 6 }}>
+                <Text style={{ color: "#fff", fontFamily: "DMSans_700Bold", fontSize: 11 }}>{activeDisc.unreadCount}</Text>
+              </View>
+            ) : null}
+            <ChevronRight size={18} color={muted} />
+          </Pressable>
+        ) : null}
 
         {/* Daily quote */}
         <View style={{ borderRadius: 12 }} className="bg-card-deep p-5">

@@ -5,6 +5,7 @@ import { Lock } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
 import { Header } from "@/components/Header";
 import { useThemeColor } from "@/components/useThemeColor";
+import { withAlpha } from "@/theme/themes";
 import { ApiClient, type Submission, type DevotionalDay } from "@/lib/api";
 import { useAuthed, usePlan, useDays } from "@/lib/queries";
 
@@ -96,7 +97,7 @@ function DayCard({
               width: 24,
               height: 24,
               borderRadius: 12,
-              backgroundColor: accent + "22",
+              backgroundColor: withAlpha(accent, 0.13),
               alignItems: "center",
               justifyContent: "center",
               flexShrink: 0,

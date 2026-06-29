@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { CheckCircle2, Hammer, Sparkles } from "lucide-react-native";
+import { Hammer, Sparkles } from "lucide-react-native";
 
 const CATEGORY_IMAGES: Record<string, ImageSourcePropType> = {
   mens:           require("../../assets/images/categories/mens.jpg"),
@@ -21,12 +21,10 @@ const CATEGORY_IMAGES: Record<string, ImageSourcePropType> = {
   youth:          require("../../assets/images/categories/youth.jpg"),
   "new-believer": require("../../assets/images/categories/new-believer.jpg"),
   general:        require("../../assets/images/categories/general.jpg"),
-  completed:      require("../../assets/images/categories/completed.jpg"),
 };
 import { Screen } from "@/components/Screen";
-import { ScreenHeader } from "@/components/ScreenHeader";
+import { Header } from "@/components/Header";
 import { ErrorState } from "@/components/ErrorState";
-import { useThemeColor } from "@/components/useThemeColor";
 import { usePlans, useGenerateTokens } from "@/lib/queries";
 import { CATEGORIES } from "@/lib/categories";
 
@@ -58,12 +56,16 @@ function TokenCoins({ count, limit }: { count: number; limit: number }) {
   );
 }
 
-export default function PlansScreen() {
+/**
+ * The "Start a Plan" flow — browse the premade library or generate a custom plan
+ * with AI. Reached from the Groups tab ("Your Plans" → Start a new plan); not a
+ * bottom-nav tab.
+ */
+export default function NewPlanScreen() {
   const router = useRouter();
   const { data, isError, refetch } = usePlans();
   const tokens = useGenerateTokens();
   const white = "#FFFFFF";
-  const muted = useThemeColor("muted-foreground");
 
   const countByCategory = data?.countByCategory ?? {};
   const tokensRemaining = tokens.data?.tokensRemaining ?? 0;
@@ -92,6 +94,7 @@ export default function PlansScreen() {
   if (isError) {
     return (
       <Screen edges={["top"]}>
+        <Header title="Start a Plan" subtitle="Browse or create" />
         <ErrorState
           message="We couldn't load plans. Check your connection and try again."
           onRetry={() => refetch()}
@@ -102,46 +105,13 @@ export default function PlansScreen() {
 
   return (
     <Screen edges={["top"]}>
+      <Header title="Start a Plan" subtitle="Browse or create" />
       <ScrollView
-        contentContainerClassName="mx-auto w-full max-w-lg px-6 py-8"
+        contentContainerClassName="mx-auto w-full max-w-lg px-6 py-6"
         showsVerticalScrollIndicator={false}
       >
-        <ScreenHeader eyebrow="Browse & Start" title="Plans" />
-
         <View className="flex-row flex-wrap justify-between">
-          {/* Completed tile (pinned first) */}
-          <Pressable
-            onPress={() => router.push("/plans/completed")}
-            accessible={true}
-            accessibilityRole="button"
-            accessibilityLabel="Completed plans"
-            className="mb-3 aspect-[4/5] w-[48%] justify-end overflow-hidden rounded-2xl bg-card-deep"
-          >
-            <Image
-              source={CATEGORY_IMAGES.completed}
-              style={[StyleSheet.absoluteFillObject, { width: "100%", height: "100%" }]}
-              resizeMode="cover"
-            />
-            <View
-              style={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: "55%",
-                backgroundColor: "rgba(0,0,0,0.45)",
-              }}
-            />
-            <View className="p-3">
-              <CheckCircle2 size={22} color={white} />
-              <Text className="mt-2 font-serif text-base font-bold uppercase text-white">
-                Completed
-              </Text>
-              <Text className="text-xs text-white/70">Your finished plans</Text>
-            </View>
-          </Pressable>
-
-          {/* Create Your Own tile (pinned second) */}
+          {/* Create Your Own — AI generation (pinned first) */}
           <Pressable
             onPress={openCreate}
             accessible={true}
@@ -150,7 +120,6 @@ export default function PlansScreen() {
             className="mb-3 aspect-[4/5] w-[48%] justify-end overflow-hidden rounded-2xl"
             style={{ backgroundColor: "#1C2B3A" }}
           >
-            {/* Subtle diagonal grain overlay */}
             <View
               style={{
                 position: "absolute",

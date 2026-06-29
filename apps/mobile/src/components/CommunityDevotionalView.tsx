@@ -1,6 +1,10 @@
-import { useState } from "react";
-import { ActivityIndicator, Alert, Pressable, Text, TextInput, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Alert, Pressable, Text, View } from "react-native";
+import { Check, Globe } from "lucide-react-native";
+import { Button } from "@/components/Button";
+import { Input } from "@/components/Input";
 import { useThemeColor } from "@/components/useThemeColor";
+import { withAlpha } from "@/theme/themes";
 import {
   ApiClient,
   ApiError,
@@ -11,47 +15,27 @@ import {
 
 const REACTIONS: { type: CommunityReactionType; label: string }[] = [
   { type: "amen", label: "🙏 Amen" },
-  { type: "hit_me", label: "💥 Hit me" },
-  { type: "fire", label: "🔥 Fire" },
+  { type: "hit_me", label: "💥 Convicted" },
+  { type: "fire", label: "🔥 Inspired" },
 ];
+
+function timeAgo(iso: string): string {
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return "";
+  const s = Math.max(0, Math.round((Date.now() - then) / 1000));
+  if (s < 45) return "just now";
+  const m = Math.round(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.round(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.round(h / 24);
+  if (d < 7) return `${d}d ago`;
+  return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
 
 function Label({ children }: { children: string }) {
   return (
     <Text className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">{children}</Text>
-  );
-}
-
-function PrivacyToggle({
-  value,
-  onChange,
-  accent,
-}: {
-  value: boolean;
-  onChange: (v: boolean) => void;
-  accent: string;
-}) {
-  const muted = useThemeColor("muted-foreground");
-  return (
-    <Pressable
-      onPress={() => onChange(!value)}
-      accessibilityRole="checkbox"
-      accessibilityState={{ checked: value }}
-      className="mt-1 flex-row items-center gap-2 self-start py-1"
-    >
-      <View
-        style={{
-          width: 16,
-          height: 16,
-          borderRadius: 4,
-          borderWidth: 1.5,
-          borderColor: value ? accent : muted,
-          backgroundColor: value ? accent : "transparent",
-        }}
-      />
-      <Text style={{ color: muted, fontFamily: "DMSans_400Regular", fontSize: 12 }}>
-        Keep this private
-      </Text>
-    </Pressable>
   );
 }
 
@@ -92,7 +76,7 @@ function FeedCard({
             width: 26,
             height: 26,
             borderRadius: 13,
-            backgroundColor: primary + "22",
+            backgroundColor: withAlpha(primary, 0.13),
             alignItems: "center",
             justifyContent: "center",
           }}
@@ -104,6 +88,9 @@ function FeedCard({
         <Text style={{ flex: 1, fontFamily: "DMSans_700Bold", fontSize: 14, color: fg }}>
           {item.displayName}
           {item.isOwn ? " (you)" : ""}
+        </Text>
+        <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 11, color: muted }}>
+          {timeAgo(item.updatedAt)}
         </Text>
       </View>
 
@@ -155,7 +142,7 @@ function FeedCard({
                 gap: 4,
                 borderWidth: 1,
                 borderColor: mine ? primary : border,
-                backgroundColor: mine ? primary + "18" : "transparent",
+                backgroundColor: mine ? withAlpha(primary, 0.1) : "transparent",
                 borderRadius: 16,
                 paddingHorizontal: 10,
                 paddingVertical: 5,
@@ -189,7 +176,6 @@ export function CommunityDevotionalView({
   const muted = useThemeColor("muted-foreground");
   const border = useThemeColor("border");
   const primary = useThemeColor("primary");
-  const card = useThemeColor("card");
 
   const devotional = data.devotional!;
   const mine = data.myResponse;
@@ -197,23 +183,14 @@ export function CommunityDevotionalView({
   const [response1, setResponse1] = useState(mine?.response1 ?? "");
   const [response2, setResponse2] = useState(mine?.response2 ?? "");
   const [prayer, setPrayer] = useState(mine?.prayer ?? "");
-  const [q1Private, setQ1Private] = useState(mine?.q1Private ?? false);
-  const [q2Private, setQ2Private] = useState(mine?.q2Private ?? false);
-  const [prayerPrivate, setPrayerPrivate] = useState(mine?.prayerPrivate ?? true);
   const [saving, setSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
 
-  const inputStyle = {
-    borderWidth: 1,
-    borderColor: border,
-    borderRadius: 10,
-    padding: 12,
-    color: fg,
-    backgroundColor: card,
-    fontSize: 14,
-    fontFamily: "DMSans_400Regular" as const,
-    minHeight: 72,
-    textAlignVertical: "top" as const,
-  };
+  useEffect(() => {
+    if (!justSaved) return;
+    const t = setTimeout(() => setJustSaved(false), 2800);
+    return () => clearTimeout(t);
+  }, [justSaved]);
 
   const save = async () => {
     setSaving(true);
@@ -223,12 +200,13 @@ export function CommunityDevotionalView({
         response1: response1.trim() || null,
         response2: response2.trim() || null,
         prayer: prayer.trim() || null,
-        q1Private,
-        q2Private,
-        prayerPrivate,
+        // Community is a public forum — every post is visible to everyone.
+        q1Private: false,
+        q2Private: false,
+        prayerPrivate: false,
       });
       onRefetch();
-      Alert.alert("Shared", "Your response has been saved.");
+      setJustSaved(true);
     } catch (err) {
       Alert.alert("Couldn't save", err instanceof ApiError ? err.message : "Please try again.");
     } finally {
@@ -303,57 +281,51 @@ export function CommunityDevotionalView({
       <View style={{ height: 1, backgroundColor: border, marginVertical: 24 }} />
 
       {/* ── Your response ───────────────────────────────────────────────── */}
-      <Text className="mb-4 font-serif text-lg font-bold text-foreground">Your Response</Text>
+      <Text className="mb-2 font-serif text-lg font-bold text-foreground">Your Response</Text>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 7,
+          marginBottom: 16,
+          backgroundColor: withAlpha(primary, 0.08),
+          borderRadius: 8,
+          paddingHorizontal: 10,
+          paddingVertical: 9,
+        }}
+      >
+        <Globe size={14} color={primary} />
+        <Text style={{ flex: 1, color: muted, fontFamily: "DMSans_400Regular", fontSize: 12, lineHeight: 17 }}>
+          This is a public forum — anything you post is visible to everyone in IronSharp.
+        </Text>
+      </View>
 
       <Label>{devotional.reflectionQ1}</Label>
-      <TextInput
-        value={response1}
-        onChangeText={setResponse1}
-        multiline
-        placeholder="Write your reflection…"
-        placeholderTextColor={muted}
-        style={inputStyle}
-      />
-      <PrivacyToggle value={q1Private} onChange={setQ1Private} accent={primary} />
+      <Input value={response1} onChangeText={setResponse1} multiline placeholder="Write your reflection…" />
 
       <View style={{ height: 14 }} />
       <Label>{devotional.reflectionQ2}</Label>
-      <TextInput
-        value={response2}
-        onChangeText={setResponse2}
-        multiline
-        placeholder="Write your reflection…"
-        placeholderTextColor={muted}
-        style={inputStyle}
-      />
-      <PrivacyToggle value={q2Private} onChange={setQ2Private} accent={primary} />
+      <Input value={response2} onChangeText={setResponse2} multiline placeholder="Write your reflection…" />
 
       <View style={{ height: 14 }} />
       <Label>Prayer (optional)</Label>
-      <TextInput
-        value={prayer}
-        onChangeText={setPrayer}
-        multiline
-        placeholder="Write a prayer…"
-        placeholderTextColor={muted}
-        style={inputStyle}
-      />
-      <PrivacyToggle value={prayerPrivate} onChange={setPrayerPrivate} accent={primary} />
+      <Input value={prayer} onChangeText={setPrayer} multiline placeholder="Write a prayer…" />
 
-      <Pressable
+      <Button
+        title={mine ? "Update Response" : "Share Response"}
         onPress={save}
-        disabled={saving}
-        style={{ opacity: saving ? 0.6 : 1, marginTop: 18 }}
-        className="h-12 items-center justify-center rounded-xl bg-primary"
-      >
-        {saving ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text className="text-base font-semibold text-primary-foreground">
-            {mine ? "Update Response" : "Share Response"}
+        loading={saving}
+        style={{ marginTop: 18 }}
+      />
+
+      {justSaved ? (
+        <View className="mt-3 flex-row items-center justify-center gap-2">
+          <Check size={15} color={primary} />
+          <Text style={{ color: primary, fontFamily: "DMSans_500Medium", fontSize: 13 }}>
+            Shared with the community
           </Text>
-        )}
-      </Pressable>
+        </View>
+      ) : null}
 
       <View style={{ height: 1, backgroundColor: border, marginVertical: 24 }} />
 

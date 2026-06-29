@@ -8,7 +8,7 @@ type Props = TextInputProps & {
 };
 
 export const Input = forwardRef<TextInput, Props>(function Input(
-  { label, hint, ...rest },
+  { label, hint, multiline, style, ...rest },
   ref
 ) {
   const placeholderColor = useThemeColor("muted-foreground");
@@ -19,8 +19,13 @@ export const Input = forwardRef<TextInput, Props>(function Input(
       ) : null}
       <TextInput
         ref={ref}
+        multiline={multiline}
         placeholderTextColor={placeholderColor}
-        className="h-12 rounded-xl border border-input bg-card px-4 font-sans text-base text-foreground"
+        textAlignVertical={multiline ? "top" : undefined}
+        className={`rounded-xl border border-input bg-card px-4 font-sans text-base text-foreground ${
+          multiline ? "py-3" : "h-12"
+        }`}
+        style={[multiline ? { minHeight: 96 } : null, style]}
         {...rest}
       />
       {hint ? <Text className="mt-1 text-xs text-muted-foreground">{hint}</Text> : null}

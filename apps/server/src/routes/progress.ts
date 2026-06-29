@@ -71,6 +71,9 @@ progress.get("/active", async (c) => {
       and(
         eq(devotionalSubmissions.userId, userId),
         eq(devotionalSubmissions.planId, active.planId),
+        // Personal "done today" reflects only the personal submission, not a
+        // group copy of the same plan.
+        isNull(devotionalSubmissions.groupId),
         gte(devotionalSubmissions.submittedAt, todayStart),
         lt(devotionalSubmissions.submittedAt, tomorrowStart)
       )

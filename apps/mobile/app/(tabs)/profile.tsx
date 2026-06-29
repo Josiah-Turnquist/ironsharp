@@ -6,6 +6,7 @@ import {
   LogOut,
   ChevronRight,
   Award,
+  CheckCircle2,
   UserCog,
   Bell,
   HelpCircle,
@@ -174,6 +175,14 @@ export default function ProfileScreen() {
           >
             <UserCog size={20} color={primary} />
             <Text className="flex-1 text-base text-foreground">Edit Profile</Text>
+            <ChevronRight size={18} color={muted} />
+          </Pressable>
+          <Pressable
+            onPress={() => router.push("/plans/completed")}
+            className="flex-row items-center gap-3 border-b border-border p-4 active:bg-muted/40"
+          >
+            <CheckCircle2 size={20} color={primary} />
+            <Text className="flex-1 text-base text-foreground">Completed Plans</Text>
             <ChevronRight size={18} color={muted} />
           </Pressable>
           <Pressable

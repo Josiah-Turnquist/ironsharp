@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -7,7 +7,6 @@ import {
   Pressable,
   RefreshControl,
   ScrollView,
-  Share,
   Text,
   TextInput,
   View,
@@ -20,6 +19,7 @@ import {
   BookOpen,
   CheckCircle2,
   ChevronDown,
+  ChevronRight,
   ChevronUp,
   Circle,
   Eye,
@@ -31,23 +31,26 @@ import {
   Pencil,
   Plus,
   Trash2,
-  UserPlus,
   X,
 } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { ErrorState } from "@/components/ErrorState";
 import { useThemeColor } from "@/components/useThemeColor";
-import { useGroups, useActiveDevotional, useDiscipleships, useProfile } from "@/lib/queries";
-import { useLocalDoneToday } from "@/lib/useLocalDoneToday";
-import { PopIn } from "@/components/PopIn";
+import { withAlpha } from "@/theme/themes";
+import { Button } from "@/components/Button";
+import { Input } from "@/components/Input";
+import { ConfirmModal } from "@/components/ConfirmModal";
 import { BottomSheet } from "@/components/BottomSheet";
-import { GROUP_TYPE_CONFIG, GROUP_TYPE_KEYS } from "@/lib/groupTypes";
+import { useToast } from "@/components/Toast";
+import { InviteCodeRow, MemberSearch } from "@/components/GroupInvite";
+import { Avatar } from "@/components/Avatar";
+import { useGroups, useDiscipleships, useProfile } from "@/lib/queries";
+import { GROUP_TYPE_CONFIG } from "@/lib/groupTypes";
 import {
   ApiClient,
   ApiError,
   type Group,
-  type UserSearchResult,
   type DiscipleshipRelationship,
 } from "@/lib/api";
 
@@ -61,18 +64,6 @@ function SectionLabel({ label }: { label: string }) {
   );
 }
 
-function EmptyNote({ text }: { text: string }) {
-  const muted = useThemeColor("muted-foreground");
-  const border = useThemeColor("border");
-  return (
-    <View style={{ borderLeftWidth: 2, borderLeftColor: border, paddingLeft: 12, marginBottom: 2 }}>
-      <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 15, color: muted, fontStyle: "italic" }}>
-        {text}
-      </Text>
-    </View>
-  );
-}
-
 function Divider() {
   const border = useThemeColor("border");
   return <View style={{ height: 1, backgroundColor: border, marginVertical: 24 }} />;
@@ -80,223 +71,9 @@ function Divider() {
 
 // ─── Shared sub-components ────────────────────────────────────────────────────
 
-function InviteCodeRow({
-  inviteCode,
-  accent,
-  muted,
-  border,
-  card,
-}: {
-  inviteCode: string;
-  accent: string;
-  muted: string;
-  border: string;
-  card: string;
-}) {
-  const shareCode = () =>
-    Share.share({
-      message: `Join my IronSharp group — enter code ${inviteCode} in the app.`,
-    });
-
-  return (
-    <View>
-      <Text
-        style={{
-          fontFamily: "DMSans_700Bold",
-          fontSize: 12,
-          color: muted,
-          letterSpacing: 1.2,
-          textTransform: "uppercase",
-          marginBottom: 8,
-        }}
-      >
-        Invite Code
-      </Text>
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          backgroundColor: card,
-          borderWidth: 1,
-          borderColor: border,
-          borderRadius: 10,
-          paddingHorizontal: 14,
-          paddingVertical: 12,
-          gap: 10,
-        }}
-      >
-        <Text
-          selectable
-          style={{
-            flex: 1,
-            fontFamily: "DMSans_700Bold",
-            fontSize: 22,
-            letterSpacing: 4,
-            color: accent,
-          }}
-        >
-          {inviteCode}
-        </Text>
-        <Pressable
-          onPress={shareCode}
-          hitSlop={10}
-          accessibilityRole="button"
-          accessibilityLabel="Share invite code"
-        >
-          <Link size={18} color={muted} />
-        </Pressable>
-      </View>
-      <Text
-        style={{
-          fontFamily: "DMSans_400Regular",
-          fontSize: 12,
-          color: muted,
-          marginTop: 6,
-        }}
-      >
-        Share this code or tap the link icon to send it.
-      </Text>
-    </View>
-  );
-}
-
-function MemberSearch({
-  groupId,
-  existingUserIds,
-  accent,
-  muted,
-  border,
-  card,
-  bg,
-  fg,
-  onAdded,
-}: {
-  groupId: string;
-  existingUserIds: Set<string>;
-  accent: string;
-  muted: string;
-  border: string;
-  card: string;
-  bg: string;
-  fg: string;
-  onAdded: () => void;
-}) {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<UserSearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [adding, setAdding] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (query.length < 2) { setResults([]); return; }
-    const t = setTimeout(async () => {
-      setSearching(true);
-      try {
-        const { users } = await ApiClient.searchUsers(query);
-        setResults(users.filter((u) => !existingUserIds.has(u.userId)));
-      } finally {
-        setSearching(false);
-      }
-    }, 300);
-    return () => clearTimeout(t);
-  }, [query, existingUserIds]);
-
-  const handleAdd = async (userId: string) => {
-    setAdding(userId);
-    try {
-      await ApiClient.addGroupMember(groupId, userId);
-      setResults((prev) => prev.filter((u) => u.userId !== userId));
-      onAdded();
-    } catch (err) {
-      Alert.alert("Error", err instanceof ApiError ? err.message : "Could not add member.");
-    } finally {
-      setAdding(null);
-    }
-  };
-
-  return (
-    <View>
-      <Text
-        style={{
-          fontFamily: "DMSans_700Bold",
-          fontSize: 12,
-          color: muted,
-          letterSpacing: 1.2,
-          textTransform: "uppercase",
-          marginBottom: 8,
-        }}
-      >
-        Add People
-      </Text>
-      <TextInput
-        value={query}
-        onChangeText={setQuery}
-        placeholder="Search by name…"
-        placeholderTextColor={muted}
-        style={{
-          borderWidth: 1,
-          borderColor: border,
-          borderRadius: 10,
-          paddingHorizontal: 12,
-          paddingVertical: 10,
-          color: fg,
-          backgroundColor: bg,
-          fontSize: 14,
-          fontFamily: "DMSans_400Regular",
-          marginBottom: 8,
-        }}
-      />
-      {searching && <ActivityIndicator size="small" color={accent} style={{ marginBottom: 8 }} />}
-      {results.map((user) => (
-        <View
-          key={user.userId}
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            backgroundColor: card,
-            borderWidth: 1,
-            borderColor: border,
-            borderRadius: 10,
-            padding: 12,
-            marginBottom: 6,
-            gap: 10,
-          }}
-        >
-          <View
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 16,
-              backgroundColor: accent + "22",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 13, color: accent }}>
-              {user.displayName[0]?.toUpperCase()}
-            </Text>
-          </View>
-          <Text style={{ flex: 1, fontFamily: "DMSans_400Regular", fontSize: 14, color: fg }}>
-            {user.displayName}
-          </Text>
-          <Pressable
-            onPress={() => handleAdd(user.userId)}
-            disabled={adding === user.userId}
-            style={{ opacity: adding === user.userId ? 0.5 : 1 }}
-            accessibilityRole="button"
-            accessibilityLabel={`Add ${user.displayName} to group`}
-          >
-            {adding === user.userId ? (
-              <ActivityIndicator size="small" color={accent} />
-            ) : (
-              <UserPlus size={18} color={accent} />
-            )}
-          </Pressable>
-        </View>
-      ))}
-    </View>
-  );
-}
-
+// Bottom-sheet modal shared by the edit / join flows. Lifts above the
+// keyboard (so inputs aren't hidden), and tapping the dimmed backdrop closes it
+// while taps inside the sheet are absorbed by the inner Pressable.
 // ─── Discipleship (one-on-one) ────────────────────────────────────────────────
 
 // One-time privacy notice the disciple must accept before the relationship goes
@@ -314,17 +91,14 @@ function PrivacyNoticeModal({
   onAccept: () => void;
   onDecline: () => void;
 }) {
-  const bg = useThemeColor("background");
   const fg = useThemeColor("foreground");
   const muted = useThemeColor("muted-foreground");
   const primary = useThemeColor("primary");
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onDecline}>
-      <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}>
-        <View style={{ backgroundColor: bg, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, paddingBottom: 40 }}>
-          <Text style={{ fontFamily: "PlayfairDisplay_700Bold", fontSize: 22, color: fg, marginBottom: 12 }}>
-            A discipleship invite
-          </Text>
+    <BottomSheet visible={visible} onClose={onDecline}>
+      <Text style={{ fontFamily: "PlayfairDisplay_700Bold", fontSize: 22, color: fg, marginBottom: 12 }}>
+        A discipleship invite
+      </Text>
           <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 15, color: fg, lineHeight: 22, marginBottom: 12 }}>
             {disciplerName} would like to walk with you as your discipler.
           </Text>
@@ -350,9 +124,7 @@ function PrivacyNoticeModal({
           >
             <Text style={{ color: muted, fontFamily: "DMSans_500Medium", fontSize: 14 }}>Decline</Text>
           </Pressable>
-        </View>
-      </View>
-    </Modal>
+    </BottomSheet>
   );
 }
 
@@ -372,7 +144,7 @@ function DiscipleChip({
   return (
     <Pressable
       onPress={onPress}
-      style={{ borderWidth: 1, borderColor: color, borderRadius: 8, backgroundColor: color + "15" }}
+      style={{ borderWidth: 1, borderColor: color, borderRadius: 8, backgroundColor: withAlpha(color, 0.12) }}
       className="flex-row items-center gap-1.5 px-3 py-2"
     >
       <Icon size={13} color={color} />
@@ -386,7 +158,9 @@ function DiscipleChip({
   );
 }
 
-// Discipleship entry points rendered inside an expanded one-on-one card.
+// Per-group discipleship: the *invite* lives here, because this is where you
+// pick the person. Once a relationship exists it's managed in the top-level
+// Discipleship hub, so the card just points there.
 function DiscipleshipSection({
   group,
   rel,
@@ -399,19 +173,11 @@ function DiscipleshipSection({
   accent: string;
 }) {
   const qc = useQueryClient();
-  const router = useRouter();
+  const toast = useToast();
   const muted = useThemeColor("muted-foreground");
   const border = useThemeColor("border");
-  const [showNotice, setShowNotice] = useState(false);
-  const [busy, setBusy] = useState(false);
 
   const other = group.members.find((m) => m.userId !== myUserId);
-
-  const refresh = () =>
-    Promise.all([
-      qc.invalidateQueries({ queryKey: ["discipleship"] }),
-      qc.invalidateQueries({ queryKey: ["groups"] }),
-    ]);
 
   const handleInvite = () => {
     if (!other) return;
@@ -423,14 +189,15 @@ function DiscipleshipSection({
         {
           text: "Send invite",
           onPress: async () => {
-            setBusy(true);
             try {
               await ApiClient.inviteDisciple(group.id, other.userId);
-              await refresh();
+              await Promise.all([
+                qc.invalidateQueries({ queryKey: ["discipleship"] }),
+                qc.invalidateQueries({ queryKey: ["groups"] }),
+              ]);
+              toast.show("Invite sent");
             } catch (err) {
               Alert.alert("Couldn't invite", err instanceof ApiError ? err.message : "Please try again.");
-            } finally {
-              setBusy(false);
             }
           },
         },
@@ -438,63 +205,29 @@ function DiscipleshipSection({
     );
   };
 
-  const handleAccept = async () => {
-    if (!rel) return;
-    setBusy(true);
-    try {
-      await ApiClient.acceptDiscipleship(rel.id);
-      await refresh();
-      setShowNotice(false);
-    } catch (err) {
-      Alert.alert("Couldn't accept", err instanceof ApiError ? err.message : "Please try again.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleDecline = async () => {
-    if (!rel) return;
-    setBusy(true);
-    try {
-      await ApiClient.declineDiscipleship(rel.id);
-      await refresh();
-      setShowNotice(false);
-    } catch (err) {
-      Alert.alert("Couldn't decline", err instanceof ApiError ? err.message : "Please try again.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
   let body: ReactNode;
   if (!rel) {
     body = other ? (
-      <DiscipleChip icon={HeartHandshake} label="Start discipleship" color={accent} onPress={handleInvite} />
+      <>
+        <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted, lineHeight: 17 }}>
+          Walk one-on-one — you'll see {other.displayName}'s responses as they submit, can send a daily
+          question, and message privately.
+        </Text>
+        <DiscipleChip icon={HeartHandshake} label="Start discipleship" color={accent} onPress={handleInvite} />
+      </>
     ) : (
       <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted, fontStyle: "italic" }}>
         Add the other person to this group to start discipleship.
       </Text>
     );
-  } else if (rel.status === "pending") {
-    body =
-      rel.role === "disciple" ? (
-        <DiscipleChip icon={HeartHandshake} label="Review discipleship invite" color={accent} onPress={() => setShowNotice(true)} />
-      ) : (
-        <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted, fontStyle: "italic" }}>
-          Invite sent — waiting for {rel.counterpart.displayName} to accept.
-        </Text>
-      );
-  } else if (rel.status === "active") {
-    body =
-      rel.role === "discipler" ? (
-        <View className="flex-row flex-wrap gap-2">
-          <DiscipleChip icon={Eye} label={`${rel.counterpart.displayName}'s responses`} color={accent} onPress={() => router.push(`/discipleship/${rel.id}/responses`)} />
-          <DiscipleChip icon={Flag} label="Flagged" color={accent} onPress={() => router.push(`/discipleship/${rel.id}/flagged`)} />
-          <DiscipleChip icon={MessageSquare} label="Mailbox" color={accent} badge={rel.unreadCount} onPress={() => router.push(`/discipleship/${rel.id}/mailbox`)} />
-        </View>
-      ) : (
-        <DiscipleChip icon={MessageSquare} label="Mailbox" color={accent} badge={rel.unreadCount} onPress={() => router.push(`/discipleship/${rel.id}/mailbox`)} />
-      );
+  } else {
+    body = (
+      <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted, fontStyle: "italic" }}>
+        {rel.status === "pending"
+          ? "Invite pending — manage it in Discipleship at the top of this tab."
+          : "Active — open responses, flags, and the mailbox from Discipleship at the top of this tab."}
+      </Text>
+    );
   }
 
   return (
@@ -503,9 +236,167 @@ function DiscipleshipSection({
         Discipleship
       </Text>
       {body}
+    </View>
+  );
+}
+
+// Top-level discipleship hub: lists every relationship (pending + active) with
+// its entry points, so active discipleships aren't buried inside an expanded
+// group card. Accepting or declining an invite happens right here too.
+function DiscipleshipHub({
+  relationships,
+  onStartOneOnOne,
+  accent,
+}: {
+  relationships: DiscipleshipRelationship[];
+  onStartOneOnOne: () => void;
+  accent: string;
+}) {
+  const qc = useQueryClient();
+  const router = useRouter();
+  const muted = useThemeColor("muted-foreground");
+  const border = useThemeColor("border");
+  const card = useThemeColor("card");
+  const fg = useThemeColor("foreground");
+  const [reviewRel, setReviewRel] = useState<DiscipleshipRelationship | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  // "ended" relationships shouldn't clutter the hub.
+  const live = relationships.filter((r) => r.status !== "ended");
+
+  const refresh = () =>
+    Promise.all([
+      qc.invalidateQueries({ queryKey: ["discipleship"] }),
+      qc.invalidateQueries({ queryKey: ["groups"] }),
+    ]);
+
+  const handleAccept = async () => {
+    if (!reviewRel) return;
+    setBusy(true);
+    try {
+      await ApiClient.acceptDiscipleship(reviewRel.id);
+      await refresh();
+      setReviewRel(null);
+    } catch (err) {
+      Alert.alert("Couldn't accept", err instanceof ApiError ? err.message : "Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDecline = async () => {
+    if (!reviewRel) return;
+    setBusy(true);
+    try {
+      await ApiClient.declineDiscipleship(reviewRel.id);
+      await refresh();
+      setReviewRel(null);
+    } catch (err) {
+      Alert.alert("Couldn't decline", err instanceof ApiError ? err.message : "Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // Discipler cancels a pending invite they sent.
+  const handleCancelInvite = (rel: DiscipleshipRelationship) => {
+    Alert.alert("Cancel invite", `Cancel your discipleship invite to ${rel.counterpart.displayName}?`, [
+      { text: "Keep", style: "cancel" },
+      {
+        text: "Cancel invite",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await ApiClient.declineDiscipleship(rel.id);
+            await refresh();
+          } catch (err) {
+            Alert.alert("Couldn't cancel", err instanceof ApiError ? err.message : "Please try again.");
+          }
+        },
+      },
+    ]);
+  };
+
+  return (
+    <View>
+      <SectionLabel label="Discipleship" />
+      {live.length === 0 ? (
+        <View style={{ borderWidth: 1, borderColor: border, borderRadius: 12, backgroundColor: card, padding: 16 }}>
+          <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 14, color: muted, lineHeight: 21, marginBottom: 14 }}>
+            Walk with one person, one-on-one — see each other's responses, send a daily question, and
+            message privately. Start by creating a one-on-one group together.
+          </Text>
+          <Button title="Start a one-on-one" variant="outline" onPress={onStartOneOnOne} />
+        </View>
+      ) : (
+        live.map((rel) => {
+          const isDiscipler = rel.role === "discipler";
+
+          // Pending: not yet a live relationship — review/accept or wait here.
+          if (rel.status === "pending") {
+            return (
+              <View
+                key={rel.id}
+                style={{ flexDirection: "row", alignItems: "center", gap: 12, borderWidth: 1, borderColor: border, borderRadius: 12, backgroundColor: card, padding: 12, marginBottom: 8 }}
+              >
+                <Avatar name={rel.counterpart.displayName} url={rel.counterpart.avatarUrl} accent={accent} />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 15, color: fg }} numberOfLines={1}>
+                    {rel.counterpart.displayName}
+                  </Text>
+                  <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted }}>
+                    {isDiscipler ? "Invite pending" : "Invited you to disciple"}
+                  </Text>
+                </View>
+                {isDiscipler ? (
+                  <Pressable
+                    onPress={() => handleCancelInvite(rel)}
+                    hitSlop={8}
+                    accessibilityRole="button"
+                    accessibilityLabel="Cancel invite"
+                    style={{ paddingHorizontal: 6, paddingVertical: 6 }}
+                  >
+                    <Text style={{ fontFamily: "DMSans_500Medium", fontSize: 13, color: muted }}>Cancel</Text>
+                  </Pressable>
+                ) : (
+                  <DiscipleChip icon={HeartHandshake} label="Review" color={accent} onPress={() => setReviewRel(rel)} />
+                )}
+              </View>
+            );
+          }
+
+          // Active: the whole card opens the one relationship screen.
+          return (
+            <Pressable
+              key={rel.id}
+              onPress={() => router.push(`/discipleship/${rel.id}`)}
+              accessibilityRole="button"
+              accessibilityLabel={`Open discipleship with ${rel.counterpart.displayName}`}
+              style={{ flexDirection: "row", alignItems: "center", gap: 12, borderWidth: 1, borderColor: border, borderRadius: 12, backgroundColor: card, padding: 12, marginBottom: 8 }}
+            >
+              <Avatar name={rel.counterpart.displayName} url={rel.counterpart.avatarUrl} accent={accent} />
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 15, color: fg }} numberOfLines={1}>
+                  {rel.counterpart.displayName}
+                </Text>
+                <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted }}>
+                  {isDiscipler ? "You're discipling them" : "Your discipler"}
+                </Text>
+              </View>
+              {rel.unreadCount > 0 ? (
+                <View style={{ minWidth: 20, height: 20, borderRadius: 10, backgroundColor: accent, alignItems: "center", justifyContent: "center", paddingHorizontal: 6 }}>
+                  <Text style={{ color: "#fff", fontFamily: "DMSans_700Bold", fontSize: 11 }}>{rel.unreadCount}</Text>
+                </View>
+              ) : null}
+              <ChevronRight size={18} color={muted} />
+            </Pressable>
+          );
+        })
+      )}
+
       <PrivacyNoticeModal
-        visible={showNotice}
-        disciplerName={rel?.counterpart.displayName ?? "Someone"}
+        visible={!!reviewRel}
+        disciplerName={reviewRel?.counterpart.displayName ?? "Someone"}
         busy={busy}
         onAccept={handleAccept}
         onDecline={handleDecline}
@@ -518,11 +409,11 @@ function DiscipleshipSection({
 
 export default function GroupsScreen() {
   const groups = useGroups();
-  const active = useActiveDevotional();
   const discipleships = useDiscipleships();
   const profile = useProfile();
   const qc = useQueryClient();
   const router = useRouter();
+  const toast = useToast();
   const primary = useThemeColor("primary");
   const muted = useThemeColor("muted-foreground");
   const border = useThemeColor("border");
@@ -536,10 +427,6 @@ export default function GroupsScreen() {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [refreshing, setRefreshing] = useState(false);
 
-  // Matches the reader's local "done for today" lock so the personal card agrees
-  // with what you see when you tap in — even after the UTC day has rolled over.
-  const localDone = useLocalDoneToday(active.data?.planId);
-
   const onRefresh = async () => {
     setRefreshing(true);
     await Promise.all([
@@ -548,14 +435,6 @@ export default function GroupsScreen() {
     ]);
     setRefreshing(false);
   };
-
-  // Create flow
-  const [showCreate, setShowCreate] = useState(false);
-  const [createStep, setCreateStep] = useState<1 | 2>(1);
-  const [newName, setNewName] = useState("");
-  const [newType, setNewType] = useState("small-group");
-  const [creating, setCreating] = useState(false);
-  const [createdGroup, setCreatedGroup] = useState<Group | null>(null);
 
   // Edit flow
   const [editGroup, setEditGroup] = useState<Group | null>(null);
@@ -566,6 +445,10 @@ export default function GroupsScreen() {
   const [showJoin, setShowJoin] = useState(false);
   const [joinCode, setJoinCode] = useState("");
   const [joining, setJoining] = useState(false);
+
+  // Delete group (plain destructive confirm — no typing required)
+  const [deleteTarget, setDeleteTarget] = useState<Group | null>(null);
+  const [deletingGroup, setDeletingGroup] = useState(false);
 
   const toggle = (id: string) => {
     // Animate the height change, and allow multiple groups open at once —
@@ -579,37 +462,9 @@ export default function GroupsScreen() {
     });
   };
 
-  const closeCreate = () => {
-    setShowCreate(false);
-    setCreateStep(1);
-    setNewName("");
-    setNewType("small-group");
-    setCreatedGroup(null);
-  };
-
-  const handleCreate = async () => {
-    if (!newName.trim()) return;
-    setCreating(true);
-    try {
-      const { group } = await ApiClient.createGroup({ name: newName.trim(), groupType: newType });
-      await qc.invalidateQueries({ queryKey: ["groups"] });
-      // Prefer the fully-assembled row from the list (it includes members);
-      // fall back to the freshly-created group so step 2 always has the
-      // invite code even if the refetch hasn't landed yet.
-      const fresh = (await ApiClient.getGroups()).groups.find((g) => g.id === group.id) ?? null;
-      setCreatedGroup(fresh ?? { ...group, members: group.members ?? [] });
-      setCreateStep(2);
-    } catch (err) {
-      // Without this the failure was silent — the modal just sat on step 1
-      // with no feedback, which read as "create group is broken".
-      Alert.alert(
-        "Couldn't create group",
-        err instanceof ApiError ? err.message : "Something went wrong. Please try again."
-      );
-    } finally {
-      setCreating(false);
-    }
-  };
+  // Entry point for starting discipleship from the hub: opens the unified
+  // create flow pre-set to a one-on-one group.
+  const startOneOnOne = () => router.push("/plans/new?type=one-on-one");
 
   const handleSaveEdit = async () => {
     if (!editGroup || !editName.trim()) return;
@@ -633,7 +488,7 @@ export default function GroupsScreen() {
       await qc.invalidateQueries({ queryKey: ["groups"] });
       setShowJoin(false);
       setJoinCode("");
-      Alert.alert("Joined!", `You're now in ${group.name}.`);
+      toast.show(`Joined ${group.name}`);
     } catch (err) {
       Alert.alert(
         "Could not join",
@@ -648,27 +503,23 @@ export default function GroupsScreen() {
     }
   };
 
-  const handleDeleteGroup = (groupId: string, name: string) => {
-    Alert.alert("Delete group", `Delete "${name}"? This can't be undone.`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await ApiClient.deleteGroup(groupId);
-            await qc.invalidateQueries({ queryKey: ["groups"] });
-            setExpandedIds((prev) => {
-              const next = new Set(prev);
-              next.delete(groupId);
-              return next;
-            });
-          } catch (err) {
-            Alert.alert("Couldn't delete group", err instanceof ApiError ? err.message : "Please try again.");
-          }
-        },
-      },
-    ]);
+  const confirmDeleteGroup = async () => {
+    if (!deleteTarget) return;
+    setDeletingGroup(true);
+    try {
+      await ApiClient.deleteGroup(deleteTarget.id);
+      await qc.invalidateQueries({ queryKey: ["groups"] });
+      setExpandedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(deleteTarget.id);
+        return next;
+      });
+      setDeleteTarget(null);
+    } catch (err) {
+      Alert.alert("Couldn't delete group", err instanceof ApiError ? err.message : "Please try again.");
+    } finally {
+      setDeletingGroup(false);
+    }
   };
 
   const handleRemoveMember = (groupId: string, targetUserId: string, name: string) => {
@@ -720,51 +571,14 @@ export default function GroupsScreen() {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={primary} />
           }
         >
-          <ScreenHeader eyebrow="Your Reading" title="Devotionals" />
+          <ScreenHeader eyebrow="Read together" title="Plans" />
 
-          {/* ── Personal devotional (relocated from the former Devotionals tab) ── */}
-          <SectionLabel label="Personal" />
-
-          {active.isLoading ? (
-            <ActivityIndicator color={primary} />
-          ) : active.data ? (
-            <View className="overflow-hidden rounded-xl border border-border bg-card">
-              <View className="flex-row items-center gap-3 px-4 py-5">
-                <View style={{ width: 3, height: 40, borderRadius: 2, backgroundColor: primary }} />
-                <View className="flex-1">
-                  <Text className="font-serif text-lg font-bold text-foreground">
-                    {active.data.planTitle}
-                  </Text>
-                  <Text className="mt-0.5 text-sm text-muted-foreground">
-                    {active.data.chapter ? `${active.data.chapter} · ` : ""}
-                    Day {active.data.currentDay}/{active.data.totalDays}
-                  </Text>
-                </View>
-                <Pressable
-                  onPress={() => router.push(`/devotional/${active.data!.planId}`)}
-                  accessibilityRole="button"
-                  accessibilityLabel={active.data.doneToday || localDone ? "Done today — tap to re-read" : "Continue reading"}
-                >
-                  {active.data.doneToday || localDone ? (
-                    <View className="flex-row items-center gap-1">
-                      <PopIn>
-                        <CheckCircle2 size={15} color={primary} />
-                      </PopIn>
-                      <Text className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                        Done today
-                      </Text>
-                    </View>
-                  ) : (
-                    <Text className="text-sm font-semibold uppercase tracking-wider text-primary">
-                      Continue
-                    </Text>
-                  )}
-                </Pressable>
-              </View>
-            </View>
-          ) : (
-            <EmptyNote text="You don't have an active personal plan. Browse plans to start one." />
-          )}
+          {/* ── Discipleship ───────────────────────────────────────────────────── */}
+          <DiscipleshipHub
+            relationships={discipleships.data ?? []}
+            onStartOneOnOne={startOneOnOne}
+            accent={primary}
+          />
 
           <Divider />
 
@@ -786,10 +600,10 @@ export default function GroupsScreen() {
               </Text>
               <View className="flex-row gap-3">
                 <Pressable
-                  onPress={() => setShowCreate(true)}
+                  onPress={() => router.push("/plans/new")}
                   className="h-11 items-center justify-center rounded-xl bg-primary px-6"
                 >
-                  <Text className="text-sm font-semibold text-primary-foreground">Create</Text>
+                  <Text className="text-sm font-semibold text-primary-foreground">New plan</Text>
                 </Pressable>
                 <Pressable
                   onPress={() => setShowJoin(true)}
@@ -920,15 +734,26 @@ export default function GroupsScreen() {
 
                     {/* Actions row */}
                     <View className="flex-row gap-3">
-                      {group.plan && (
+                      {group.plan ? (
                         <Pressable
                           onPress={() => router.push(`/devotional/${group.plan!.id}?groupId=${group.id}`)}
-                          style={{ borderWidth: 1, borderColor: config.color, borderRadius: 8, backgroundColor: config.color + "15" }}
+                          style={{ borderWidth: 1, borderColor: config.color, borderRadius: 8, backgroundColor: withAlpha(config.color, 0.12) }}
                           className="flex-row items-center gap-1.5 px-3 py-2"
                         >
                           <BookOpen size={13} color={config.color} />
                           <Text style={{ color: config.color, fontFamily: "DMSans_500Medium", fontSize: 12 }}>
                             Open Devotional
+                          </Text>
+                        </Pressable>
+                      ) : (
+                        <Pressable
+                          onPress={() => router.push(`/plans/new?groupId=${group.id}&groupName=${encodeURIComponent(group.name)}`)}
+                          style={{ borderWidth: 1, borderColor: config.color, borderRadius: 8, backgroundColor: withAlpha(config.color, 0.12) }}
+                          className="flex-row items-center gap-1.5 px-3 py-2"
+                        >
+                          <BookOpen size={13} color={config.color} />
+                          <Text style={{ color: config.color, fontFamily: "DMSans_500Medium", fontSize: 12 }}>
+                            Choose a plan
                           </Text>
                         </Pressable>
                       )}
@@ -943,7 +768,7 @@ export default function GroupsScreen() {
                         </Text>
                       </Pressable>
                       <Pressable
-                        onPress={() => handleDeleteGroup(group.id, group.name)}
+                        onPress={() => setDeleteTarget(group)}
                         style={{ borderWidth: 1, borderColor: destructiveBorder, borderRadius: 8, backgroundColor: destructiveBg }}
                         className="flex-row items-center gap-1.5 px-3 py-2"
                       >
@@ -962,11 +787,11 @@ export default function GroupsScreen() {
           {/* Footer actions */}
           <View style={{ marginTop: 8, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 20 }}>
             <Pressable
-              onPress={() => setShowCreate(true)}
+              onPress={() => router.push("/plans/new")}
               className="flex-row items-center gap-1.5 py-3"
             >
               <Plus size={15} color={primary} />
-              <Text style={{ color: primary }} className="text-sm font-semibold">New group</Text>
+              <Text style={{ color: primary }} className="text-sm font-semibold">New plan</Text>
             </Pressable>
             <Text style={{ color: border }}>·</Text>
             <Pressable
@@ -980,107 +805,6 @@ export default function GroupsScreen() {
             </>
           )}
         </ScrollView>
-
-      {/* ── Create group modal ─────────────────────────────────────────────── */}
-      <BottomSheet visible={showCreate} onClose={() => !creating && closeCreate()}>
-            <View className="mb-5 flex-row items-center justify-between">
-              <Text className="font-serif text-xl font-bold text-foreground">
-                {createStep === 1 ? "New Group" : createdGroup?.name ?? "Group Created"}
-              </Text>
-              <Pressable
-                onPress={closeCreate}
-                hitSlop={12}
-                accessibilityRole="button"
-                accessibilityLabel="Close"
-              >
-                <X size={20} color={muted} />
-              </Pressable>
-            </View>
-
-            {createStep === 1 ? (
-              <>
-                <Text className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Group Name</Text>
-                <TextInput
-                  value={newName}
-                  onChangeText={setNewName}
-                  placeholder="e.g. The Forge"
-                  placeholderTextColor={muted}
-                  style={{
-                    borderWidth: 1, borderColor: border, borderRadius: 10,
-                    padding: 12, color: fg, backgroundColor: card,
-                    marginBottom: 20, fontSize: 15, fontFamily: "DMSans_400Regular",
-                  }}
-                />
-
-                <Text className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Group Type</Text>
-                <View className="mb-6 gap-2">
-                  {GROUP_TYPE_KEYS.map((key) => {
-                    const val = GROUP_TYPE_CONFIG[key]!;
-                    const selected = newType === key;
-                    return (
-                      <Pressable
-                        key={key}
-                        onPress={() => setNewType(key)}
-                        accessibilityRole="radio"
-                        accessibilityState={{ selected }}
-                        style={{
-                          borderWidth: 1.5,
-                          borderColor: selected ? val.color : border,
-                          borderRadius: 10, padding: 12,
-                          flexDirection: "row", alignItems: "center", gap: 10,
-                          backgroundColor: selected ? val.color + "18" : "transparent",
-                        }}
-                      >
-                        <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: val.color }} />
-                        <Text style={{ color: selected ? val.color : fg, fontFamily: "DMSans_700Bold", fontSize: 14 }}>
-                          {val.label}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-
-                <Pressable
-                  onPress={handleCreate}
-                  disabled={!newName.trim() || creating}
-                  style={{ opacity: !newName.trim() || creating ? 0.5 : 1 }}
-                  className="h-12 items-center justify-center rounded-xl bg-primary"
-                >
-                  <Text className="text-base font-semibold text-primary-foreground">
-                    {creating ? "Creating…" : "Create Group"}
-                  </Text>
-                </Pressable>
-              </>
-            ) : createdGroup ? (
-              <ScrollView showsVerticalScrollIndicator={false}>
-                <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 14, color: muted, marginBottom: 20 }}>
-                  Your group is ready. Share the invite code or add people directly.
-                </Text>
-                <View style={{ marginBottom: 24 }}>
-                  <InviteCodeRow
-                    inviteCode={createdGroup.inviteCode}
-                    accent={GROUP_TYPE_CONFIG[createdGroup.groupType]?.color ?? primary}
-                    muted={muted} border={border} card={card}
-                  />
-                </View>
-                <View style={{ marginBottom: 24 }}>
-                  <MemberSearch
-                    groupId={createdGroup.id}
-                    existingUserIds={new Set(createdGroup.members.map((m) => m.userId))}
-                    accent={GROUP_TYPE_CONFIG[createdGroup.groupType]?.color ?? primary}
-                    muted={muted} border={border} card={card} bg={bg} fg={fg}
-                    onAdded={() => qc.invalidateQueries({ queryKey: ["groups"] })}
-                  />
-                </View>
-                <Pressable
-                  onPress={closeCreate}
-                  className="h-12 items-center justify-center rounded-xl bg-primary"
-                >
-                  <Text className="text-base font-semibold text-primary-foreground">Done</Text>
-                </Pressable>
-              </ScrollView>
-            ) : null}
-      </BottomSheet>
 
       {/* ── Edit group sheet ───────────────────────────────────────────────── */}
       <BottomSheet visible={!!editGroup} onClose={() => !saving && setEditGroup(null)}>
@@ -1098,26 +822,18 @@ export default function GroupsScreen() {
 
             <ScrollView showsVerticalScrollIndicator={false}>
               <Text className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Group Name</Text>
-              <TextInput
+              <Input
                 value={editName}
                 onChangeText={setEditName}
-                placeholderTextColor={muted}
-                style={{
-                  borderWidth: 1, borderColor: border, borderRadius: 10,
-                  padding: 12, color: fg, backgroundColor: card,
-                  marginBottom: 16, fontSize: 15, fontFamily: "DMSans_400Regular",
-                }}
+                style={{ marginBottom: 16 }}
               />
-              <Pressable
+              <Button
+                title="Save Name"
                 onPress={handleSaveEdit}
-                disabled={!editName.trim() || saving}
-                style={{ opacity: !editName.trim() || saving ? 0.5 : 1 }}
-                className="mb-6 h-11 items-center justify-center rounded-xl bg-primary"
-              >
-                <Text className="text-base font-semibold text-primary-foreground">
-                  {saving ? "Saving…" : "Save Name"}
-                </Text>
-              </Pressable>
+                disabled={!editName.trim()}
+                loading={saving}
+                style={{ marginBottom: 24 }}
+              />
 
               <View style={{ height: 1, backgroundColor: border, marginBottom: 24 }} />
 
@@ -1180,17 +896,31 @@ export default function GroupsScreen() {
               }}
             />
 
-            <Pressable
+            <Button
+              title="Join Group"
               onPress={handleJoin}
-              disabled={!joinCode.trim() || joining}
-              style={{ opacity: !joinCode.trim() || joining ? 0.5 : 1 }}
-              className="h-12 items-center justify-center rounded-xl bg-primary"
-            >
-              <Text className="text-base font-semibold text-primary-foreground">
-                {joining ? "Joining…" : "Join Group"}
-              </Text>
-            </Pressable>
+              disabled={!joinCode.trim()}
+              loading={joining}
+            />
       </BottomSheet>
+
+      {/* ── Delete group confirmation ──────────────────────────────────────── */}
+      <ConfirmModal
+        visible={!!deleteTarget}
+        title="Delete group"
+        message={
+          deleteTarget
+            ? `This permanently deletes "${deleteTarget.name}" for all ${deleteTarget.members.length} member${
+                deleteTarget.members.length === 1 ? "" : "s"
+              } and can't be undone.`
+            : ""
+        }
+        confirmLabel="Delete group"
+        destructive
+        busy={deletingGroup}
+        onConfirm={confirmDeleteGroup}
+        onCancel={() => !deletingGroup && setDeleteTarget(null)}
+      />
     </Screen>
   );
 }

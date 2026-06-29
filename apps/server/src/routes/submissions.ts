@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { and, asc, count, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, count, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "../db/index.js";
 import {
   devotionalSubmissions,
@@ -27,6 +27,7 @@ const submissionSchema = z.object({
   response1: z.string().nullish(),
   response2: z.string().nullish(),
   response3: z.string().nullish(),
+  q3Question: z.string().nullish(),
   prayer: z.string().nullish(),
   voiceMemoUrl: z.string().nullish(),
   audioQ1Url: z.string().nullish(),
@@ -37,6 +38,8 @@ const submissionSchema = z.object({
   prayerPrivate: z.boolean().optional(),
   voiceMemoPrivate: z.boolean().optional(),
   submissionSource: z.enum(["typed", "commute", "voice_memo", "voice"]).optional(),
+  // The group instance this answer belongs to. Omitted/null = personal.
+  groupId: z.string().uuid().nullish(),
 });
 
 // GET /api/submissions/group/day?planId=&dayNumber=
@@ -83,7 +86,9 @@ submissions.get("/group/day", async (c) => {
       and(
         inArray(devotionalSubmissions.userId, memberIds),
         eq(devotionalSubmissions.planId, planId),
-        eq(devotionalSubmissions.dayNumber, dayNumber)
+        eq(devotionalSubmissions.dayNumber, dayNumber),
+        // Only this group's answers — not members' personal copies of the same plan.
+        eq(devotionalSubmissions.groupId, membership.groupId)
       )
     );
 
@@ -142,6 +147,7 @@ submissions.get("/:planId/:dayNumber", async (c) => {
   const userId = c.var.user.id;
   const planId = c.req.param("planId");
   const dayNumber = Number(c.req.param("dayNumber"));
+  const groupId = c.req.query("groupId") || null;
 
   const [row] = await db
     .select()
@@ -150,7 +156,10 @@ submissions.get("/:planId/:dayNumber", async (c) => {
       and(
         eq(devotionalSubmissions.userId, userId),
         eq(devotionalSubmissions.planId, planId),
-        eq(devotionalSubmissions.dayNumber, dayNumber)
+        eq(devotionalSubmissions.dayNumber, dayNumber),
+        groupId
+          ? eq(devotionalSubmissions.groupId, groupId)
+          : isNull(devotionalSubmissions.groupId)
       )
     )
     .limit(1);
@@ -165,14 +174,13 @@ submissions.put("/", async (c) => {
   if (!parsed.success) return c.json({ error: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
   const body = parsed.data;
   const { planId, dayNumber } = body;
+  const groupId = body.groupId ?? null;
 
-  const values = {
-    userId,
-    planId,
-    dayNumber,
+  const fields = {
     response1: body.response1 ?? null,
     response2: body.response2 ?? null,
     response3: body.response3 ?? null,
+    q3Question: body.q3Question ?? null,
     prayer: body.prayer ?? null,
     voiceMemoUrl: body.voiceMemoUrl ?? null,
     audioQ1Url: body.audioQ1Url ?? null,
@@ -186,40 +194,41 @@ submissions.put("/", async (c) => {
     updatedAt: new Date(),
   };
 
-  const [row] = await db
-    .insert(devotionalSubmissions)
-    .values(values)
-    .onConflictDoUpdate({
-      target: [
-        devotionalSubmissions.userId,
-        devotionalSubmissions.planId,
-        devotionalSubmissions.dayNumber,
-      ],
-      set: {
-        response1: values.response1,
-        response2: values.response2,
-        response3: values.response3,
-        prayer: values.prayer,
-        voiceMemoUrl: values.voiceMemoUrl,
-        audioQ1Url: values.audioQ1Url,
-        audioQ2Url: values.audioQ2Url,
-        q1Private: values.q1Private,
-        q2Private: values.q2Private,
-        q3Private: values.q3Private,
-        prayerPrivate: values.prayerPrivate,
-        voiceMemoPrivate: values.voiceMemoPrivate,
-        submissionSource: values.submissionSource,
-        updatedAt: values.updatedAt,
-      },
-    })
-    .returning();
+  // One submission per scope (user, plan, day, instance). groupId NULL = personal.
+  // Enforced in app code: a nullable groupId can't dedupe NULLs in a Postgres
+  // unique index, so find-then-update/insert instead of onConflict.
+  const scope = and(
+    eq(devotionalSubmissions.userId, userId),
+    eq(devotionalSubmissions.planId, planId),
+    eq(devotionalSubmissions.dayNumber, dayNumber),
+    groupId
+      ? eq(devotionalSubmissions.groupId, groupId)
+      : isNull(devotionalSubmissions.groupId)
+  );
+
+  const [existing] = await db
+    .select({ id: devotionalSubmissions.id })
+    .from(devotionalSubmissions)
+    .where(scope)
+    .limit(1);
+
+  const [row] = existing
+    ? await db
+        .update(devotionalSubmissions)
+        .set(fields)
+        .where(eq(devotionalSubmissions.id, existing.id))
+        .returning()
+    : await db
+        .insert(devotionalSubmissions)
+        .values({ userId, planId, dayNumber, groupId, ...fields })
+        .returning();
 
   // Background tasks — none of these block the response. `today` is the
   // submitter's LOCAL calendar day (x-timezone-offset header), not UTC.
   const today = clientDateString(c);
-  updateStreaks(userId, planId, dayNumber, today).catch((err) => console.error("[submissions] updateStreaks failed:", err));
+  updateStreaks(userId, planId, dayNumber, today, groupId).catch((err) => console.error("[submissions] updateStreaks failed:", err));
   notifyPartnerDone(userId, planId).catch((err) => console.error("[submissions] notifyPartnerDone failed:", err));
-  notifyGroupCompleteIfDone(userId, planId, dayNumber).catch((err) => console.error("[submissions] notifyGroupCompleteIfDone failed:", err));
+  notifyGroupCompleteIfDone(userId, planId, dayNumber, groupId).catch((err) => console.error("[submissions] notifyGroupCompleteIfDone failed:", err));
 
   return c.json({ submission: row });
 });
@@ -260,8 +269,10 @@ async function updatePersonalStreak(userId: string, today: string) {
     .where(eq(profiles.userId, userId));
 }
 
-async function updateGroupStreaks(userId: string, planId: string, dayNumber: number, today: string) {
-  // Find groups where this submission counts toward the group's active day.
+async function updateGroupStreaks(userId: string, planId: string, dayNumber: number, today: string, groupId: string | null) {
+  // A personal submission (no group instance) never advances a group.
+  if (!groupId) return;
+  // Only the group this submission was actually made in counts toward its day.
   const memberRows = await db
     .select({ groupId: groupMembers.groupId })
     .from(groupMembers)
@@ -269,6 +280,7 @@ async function updateGroupStreaks(userId: string, planId: string, dayNumber: num
     .where(
       and(
         eq(groupMembers.userId, userId),
+        eq(groupMembers.groupId, groupId),
         eq(groups.currentPlanId, planId),
         eq(groups.currentDay, dayNumber)
       )
@@ -350,9 +362,9 @@ async function updateGroupStreaks(userId: string, planId: string, dayNumber: num
   }
 }
 
-async function updateStreaks(userId: string, planId: string, dayNumber: number, today: string) {
+async function updateStreaks(userId: string, planId: string, dayNumber: number, today: string, groupId: string | null) {
   await Promise.all([
     updatePersonalStreak(userId, today),
-    updateGroupStreaks(userId, planId, dayNumber, today),
+    updateGroupStreaks(userId, planId, dayNumber, today, groupId),
   ]);
 }
