@@ -1,5 +1,0 @@
-# The root .gitignore ignores all dist/ folders. For this self-contained
-# prototype we WANT the compiled output committed so it runs with no build step.
-!dist/
-!dist/**
-node_modules/
