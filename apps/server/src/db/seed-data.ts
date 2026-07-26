@@ -1031,5 +1031,93 @@ export const PLANS: PlanSeed[] = [
         "prayerPrompt": "Bring to God the honest grief or exhaustion of this season — not the sanitized version, but the real one — and ask him to meet you tomorrow morning with the mercy this passage promises."
       }
     ]
+  },
+  {
+    "title": "The Book of Ephesians",
+    "subtitle": "Seven days, start to finish.",
+    "category": "general",
+    "totalDays": 7,
+    "description": "Read Ephesians the way it was written, straight through in seven days. No reflection and no study notes: just the passage, and two questions that leave the thinking to you.",
+    "howToUse": "Paul writes Ephesians from a prison cell, probably in Rome, to believers in a city famous for its temple to Artemis and its thriving trade in magic. He is not putting out a fire. Unlike most of his letters there is no crisis being corrected here, no scandal, no argument to settle, which is part of why many think it was written to circulate among several churches rather than one. That freedom shows. Paul spends the first three chapters simply telling Christians what is already true of them: chosen, adopted, redeemed, sealed, raised, seated, brought near. Then everything turns at 4:1 on a single word, therefore, and the last three chapters describe what a life looks like when someone actually believes the first three. Watch for that hinge as you read, because it is the architecture of the whole letter. Identity first, instruction second. Paul never tells you to behave your way into belonging. He tells you what you belong to, then asks you to walk like it.",
+    "imageUrl": null,
+    "days": [
+      {
+        "dayNumber": 1,
+        "chapter": "Ephesians 1:1–14",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "In the original Greek, verses 3 through 14 are a single unbroken sentence, the longest one in the New Testament, because Paul starts listing what God has done and cannot find a place to stop. Read it again and notice who is doing the verbs. He chose, he predestined, he blessed, he lavished, he sealed. You are the object of nearly every action in this passage, not the subject. So where does your daily sense of standing with God still rise and fall on your own performance, and what has that scorekeeping cost you?",
+        "reflectionQ2": "Paul says you were marked with a seal, the Holy Spirit, who is the guarantee of an inheritance you have not received yet. The word he uses there was a business term in the first century: a down payment that legally obligates the buyer to complete the purchase. God has put money down on you. Write down the one area of your life where you are still living like the deal might fall through, and pray over that specific thing before you close your day.",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 2,
+        "chapter": "Ephesians 1:15–23",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Paul has just spent thirteen verses listing what God has done, and now he prays they would actually know it. Watch what he asks for: not more blessings, but eyes to see the ones already given. Then he measures the power at work in believers against a single event, the resurrection, and says it is the same power. Where have you been asking God for something new when the real problem is that you have never taken hold of what he already gave you?",
+        "reflectionQ2": "Paul prays for a spirit of wisdom and revelation so they would know the hope of their calling, and notice he prays this for people he already calls faithful. Knowing about God and knowing him are not the same thing, and the gap between them does not close on its own. Pray Paul's prayer for yourself today in your own words, and name the one thing you most need your eyes opened to.",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 3,
+        "chapter": "Ephesians 2:1–22",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Chapter 2 is one long before and after, and Paul does not soften the before. You were dead, following the course of this world, by nature deserving wrath. Then two words turn the entire passage: but God. Everything after that is something done to you while you were incapable of doing it yourself. So be honest about the before: what part of your old life do you still quietly treat as a strength rather than something you were rescued from?",
+        "reflectionQ2": "The second half of the chapter uses an image Paul's readers had seen with their own eyes. There was a wall in the temple courts with signs warning Gentiles that crossing it meant death, and Paul says Christ tore that wall down in his own body to make one new humanity out of two. Name the person or group you still keep on the other side of a wall, and this week do one concrete thing that treats them like family. Not a feeling. Something they would notice.",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 4,
+        "chapter": "Ephesians 3:1–21",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Paul is writing this from a prison cell, and he calls himself less than the least of all God's people. Then he prays the boldest prayer in the letter: that you would be rooted and grounded in love, and that you would know a love that surpasses knowledge. Read that phrase again, because it is a deliberate contradiction. He is praying you would know something bigger than knowing. Where have you settled for knowing about God's love instead of being rooted in it, and how does that difference show up when things go wrong?",
+        "reflectionQ2": "The chapter ends with Paul saying God is able to do far more than all we ask or think. Most of us pray carefully, asking only for what seems reasonable so we will not be disappointed. Today pray one prayer bigger than you are comfortable praying, and write it down with the date so you can look back at it.",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 5,
+        "chapter": "Ephesians 4:1–32",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "This is the hinge of the whole letter. Everything before this chapter is what God has done, and everything after is how to walk. Notice what Paul names first as the evidence that someone has actually grown up: not knowledge, not passion, not giftedness, but humility, gentleness, patience, and putting up with each other in love. Measure yourself against that list honestly, and name the relationship where you are currently failing it.",
+        "reflectionQ2": "Paul gets specific at the end of the chapter: no corrupting talk, only what builds up and gives grace to the people who hear it. That is a high bar for a mouth. Think of the last conversation where your words tore down instead of building up, go to that person this week, and say so plainly without explaining why they had it coming.",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 6,
+        "chapter": "Ephesians 5:1–33",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Paul says to imitate God the way beloved children imitate a parent, then spends the chapter describing what that looks like in ordinary hours. Look at what he treats as a moral matter: not only what you do in secret, but how you spend your time, because the days are evil and the hours are limited. Your calendar is a document about what you believe. What does yours actually say, and where does it contradict what you would tell someone you believe?",
+        "reflectionQ2": "The famous marriage passage begins with a sentence that governs everything after it: submit to one another out of reverence for Christ. Married or not, that is the instruction. Name the relationship where you always need to be right, and this week lose one argument on purpose without mentioning that you let it go.",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 7,
+        "chapter": "Ephesians 6:1–24",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Paul ends a letter about being seated with Christ by telling you to stand. Then look at the armor he lists: truth, righteousness, peace, faith, salvation, the word of God. Every single piece is something he already told you that you have, back in chapters 1 through 3. He is not asking you to go acquire equipment. He is asking you to put on what you were handed. Which piece have you been leaving off, and what has that cost you in the fight you are actually in?",
+        "reflectionQ2": "Notice how the armor section ends. Not with a weapon, but with praying at all times for all the saints. The final instruction of the entire letter is to pray for other people. So do it now, before you close this. Pick one person by name, pray for them specifically rather than generally, and then tell them you did.",
+        "prayerPrompt": null
+      }
+    ]
   }
 ];

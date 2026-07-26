@@ -329,6 +329,86 @@ function StudyNotesDrawer({ passageRef, notes }: { passageRef: string; notes: St
   );
 }
 
+// ─── Book intro (read-through plans) ─────────────────────────────────────────
+
+/**
+ * The "before you begin" orientation for a read-through plan, stored on the
+ * plan's howToUse. Open on day 1, since that IS the start, and collapsed after,
+ * so it stays reachable without turning into the per-day context drawer that
+ * read-throughs deliberately don't have. Themed plans leave howToUse null and
+ * never render this.
+ */
+function BookIntroDrawer({ text, startOpen }: { text: string; startOpen: boolean }) {
+  const cardBg = useThemeColor("card");
+  const borderColor = useThemeColor("border");
+  const mutedFg = useThemeColor("muted-foreground");
+  const fgColor = useThemeColor("foreground");
+
+  const [open, setOpen] = useState(startOpen);
+  const animH = useRef(new Animated.Value(startOpen ? 800 : 0)).current;
+  const chevronAnim = useRef(new Animated.Value(startOpen ? 1 : 0)).current;
+
+  // Reopen on day 1 and collapse once the reader moves on.
+  useEffect(() => {
+    setOpen(startOpen);
+    animH.setValue(startOpen ? 800 : 0);
+    chevronAnim.setValue(startOpen ? 1 : 0);
+  }, [startOpen, animH, chevronAnim]);
+
+  const toggle = () => {
+    const toOpen = !open;
+    setOpen(toOpen);
+    Animated.parallel([
+      Animated.timing(animH, {
+        toValue: toOpen ? 800 : 0,
+        duration: 250,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: false,
+      }),
+      Animated.timing(chevronAnim, {
+        toValue: toOpen ? 1 : 0,
+        duration: 200,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const rotation = chevronAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "180deg"],
+  });
+
+  return (
+    <View style={{ backgroundColor: cardBg, borderRadius: 16, borderWidth: 1, borderColor, overflow: "hidden" }}>
+      <Pressable
+        onPress={toggle}
+        accessibilityRole="button"
+        accessibilityLabel={open ? "Collapse book introduction" : "Expand book introduction"}
+        className="flex-row items-center justify-between px-4 py-3 active:opacity-70"
+      >
+        <View className="flex-row items-center gap-2">
+          <BookMarked size={13} color={mutedFg} />
+          <Text style={{ fontSize: 9, letterSpacing: 2, textTransform: "uppercase", color: mutedFg, fontFamily: "DMSans_400Regular" }}>
+            Before You Begin
+          </Text>
+        </View>
+        <Animated.View style={{ transform: [{ rotate: rotation }] }}>
+          <ChevronDown size={14} color={mutedFg} />
+        </Animated.View>
+      </Pressable>
+
+      <Animated.View style={{ maxHeight: animH, overflow: "hidden" }}>
+        <View className="px-4 pb-5">
+          <Text className="font-serif-regular" style={{ color: fgColor, fontSize: 14, lineHeight: 25 }}>
+            {text}
+          </Text>
+        </View>
+      </Animated.View>
+    </View>
+  );
+}
+
 // ─── Available translations ───────────────────────────────────────────────────
 
 // KJV + BBE are fully seeded in the local DB (1,189 chapters each). WEB/NLT/NKJV
@@ -1029,6 +1109,11 @@ export default function DevotionalReader() {
 
   const plan = planQ.data;
   const day = dayQ.data;
+  // Read-through days carry only the passage and two questions: no reflection,
+  // no context, no study notes. Every themed day has a reflection, so its
+  // absence is the signal — the passage-tools drawers would otherwise promise
+  // "coming soon" content that by design never arrives.
+  const isReadThrough = !!day && !day.reflection;
   const totalDays = plan?.totalDays ?? 0;
   const isLastDay = totalDays > 0 && currentDay >= totalDays;
 
@@ -1414,6 +1499,11 @@ export default function DevotionalReader() {
             </Pressable>
           ) : null}
 
+          {/* Book intro — read-through plans only, open on day 1 */}
+          {plan?.howToUse ? (
+            <BookIntroDrawer text={plan.howToUse} startOpen={displayDay === 1} />
+          ) : null}
+
           {/* Bible passage bubble */}
           <View onLayout={(e) => { cardYRef.current = e.nativeEvent.layout.y; }}>
             <BiblePassageCard
@@ -1467,19 +1557,22 @@ export default function DevotionalReader() {
             </View>
           ) : null}
 
-          {/* Passage tools — connected visual block */}
-          <View
-            style={{
-              borderRadius: 12,
-              borderWidth: 1,
-              borderColor,
-              overflow: "hidden",
-            }}
-          >
-            <PassageContextDrawer passageRef={day?.chapter ?? ""} inlineContext={day?.passageContext ?? null} />
-            <View style={{ height: 1, backgroundColor: borderColor }} />
-            <StudyNotesDrawer passageRef={day?.chapter ?? ""} notes={day?.studyNotes ?? []} />
-          </View>
+          {/* Passage tools — connected visual block. Hidden on read-through
+              days, where the reader is meant to meet the text cold. */}
+          {!isReadThrough ? (
+            <View
+              style={{
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor,
+                overflow: "hidden",
+              }}
+            >
+              <PassageContextDrawer passageRef={day?.chapter ?? ""} inlineContext={day?.passageContext ?? null} />
+              <View style={{ height: 1, backgroundColor: borderColor }} />
+              <StudyNotesDrawer passageRef={day?.chapter ?? ""} notes={day?.studyNotes ?? []} />
+            </View>
+          ) : null}
 
           {/* Reflect, Act, Prayer, Submit */}
           <View className="gap-2">
