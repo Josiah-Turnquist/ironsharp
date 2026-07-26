@@ -332,28 +332,20 @@ function StudyNotesDrawer({ passageRef, notes }: { passageRef: string; notes: St
 // ─── Book intro (read-through plans) ─────────────────────────────────────────
 
 /**
- * The "before you begin" orientation for a read-through plan, stored on the
- * plan's howToUse. Open on day 1, since that IS the start, and collapsed after,
- * so it stays reachable without turning into the per-day context drawer that
- * read-throughs deliberately don't have. Themed plans leave howToUse null and
- * never render this.
+ * The book's introduction, kept within reach for a reread. Always starts
+ * collapsed: the reader met this text in full on the intro screen when they
+ * started the plan, so reopening it here is their choice, not the day's
+ * business. Themed plans leave howToUse null and never render this.
  */
-function BookIntroDrawer({ text, startOpen }: { text: string; startOpen: boolean }) {
+function BookIntroDrawer({ text }: { text: string }) {
   const cardBg = useThemeColor("card");
   const borderColor = useThemeColor("border");
   const mutedFg = useThemeColor("muted-foreground");
   const fgColor = useThemeColor("foreground");
 
-  const [open, setOpen] = useState(startOpen);
-  const animH = useRef(new Animated.Value(startOpen ? 800 : 0)).current;
-  const chevronAnim = useRef(new Animated.Value(startOpen ? 1 : 0)).current;
-
-  // Reopen on day 1 and collapse once the reader moves on.
-  useEffect(() => {
-    setOpen(startOpen);
-    animH.setValue(startOpen ? 800 : 0);
-    chevronAnim.setValue(startOpen ? 1 : 0);
-  }, [startOpen, animH, chevronAnim]);
+  const [open, setOpen] = useState(false);
+  const animH = useRef(new Animated.Value(0)).current;
+  const chevronAnim = useRef(new Animated.Value(0)).current;
 
   const toggle = () => {
     const toOpen = !open;
@@ -1499,10 +1491,8 @@ export default function DevotionalReader() {
             </Pressable>
           ) : null}
 
-          {/* Book intro — read-through plans only, open on day 1 */}
-          {plan?.howToUse ? (
-            <BookIntroDrawer text={plan.howToUse} startOpen={displayDay === 1} />
-          ) : null}
+          {/* Book intro — read-through plans only, collapsed for reread */}
+          {plan?.howToUse ? <BookIntroDrawer text={plan.howToUse} /> : null}
 
           {/* Bible passage bubble */}
           <View onLayout={(e) => { cardYRef.current = e.nativeEvent.layout.y; }}>

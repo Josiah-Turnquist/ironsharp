@@ -80,7 +80,11 @@ export default function PlanList() {
       await ApiClient.restartPlan(planId);
       await qc.invalidateQueries({ queryKey: ["progress"] });
       await qc.invalidateQueries({ queryKey: ["progress", "active"] });
-      router.push(`/devotional/${planId}`);
+      // Same threshold as a first run: a restarted read-through is blank again.
+      const again = (plans ?? []).find((p) => p.id === planId);
+      router.push(
+        again?.howToUse ? `/devotional/intro/${planId}` : `/devotional/${planId}`
+      );
     } catch {
       Alert.alert("Something went wrong", "Please try again.");
     } finally {
@@ -125,7 +129,14 @@ export default function PlanList() {
     try {
       await ApiClient.startPlan(planId);
       await qc.invalidateQueries({ queryKey: ["progress"] });
-      router.push(`/devotional/${planId}`);
+      // A read-through opens on its book introduction the first time only.
+      // Every later entry point goes straight to the reading, where the same
+      // text sits collapsed for a reread. howToUse is the read-through marker;
+      // themed plans leave it null.
+      const started = (plans ?? []).find((p) => p.id === planId);
+      router.push(
+        started?.howToUse ? `/devotional/intro/${planId}` : `/devotional/${planId}`
+      );
     } catch {
       Alert.alert("Something went wrong", "Please try again.");
     } finally {

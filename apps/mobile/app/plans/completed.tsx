@@ -49,7 +49,13 @@ export default function CompletedPlans() {
             await ApiClient.restartPlan(planId);
             await qc.invalidateQueries({ queryKey: ["progress"] });
             await qc.invalidateQueries({ queryKey: ["progress", "active"] });
-            router.push(`/devotional/${planId}`);
+            // Taking a read-through again starts at its introduction, same as
+            // a first run — the run is blank, so the threshold repeats.
+            router.push(
+              planById.get(planId)?.howToUse
+                ? `/devotional/intro/${planId}`
+                : `/devotional/${planId}`
+            );
           } catch {
             Alert.alert("Something went wrong", "Please try again.");
           } finally {
