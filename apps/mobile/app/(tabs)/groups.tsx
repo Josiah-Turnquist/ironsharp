@@ -1,9 +1,7 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  LayoutAnimation,
-  Modal,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -17,21 +15,12 @@ import {
   Archive,
   BookOpen,
   CheckCircle2,
-  ChevronDown,
   ChevronRight,
-  ChevronUp,
-  Circle,
-  Eye,
-  Flag,
   HeartHandshake,
   Link,
-  LogOut,
-  MessageSquare,
   MoreVertical,
-  Pencil,
   Plus,
   Sun,
-  Trash2,
   X,
 } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
@@ -40,19 +29,15 @@ import { ErrorState } from "@/components/ErrorState";
 import { useThemeColor } from "@/components/useThemeColor";
 import { withAlpha } from "@/theme/themes";
 import { Button } from "@/components/Button";
-import { Input } from "@/components/Input";
-import { ConfirmModal } from "@/components/ConfirmModal";
 import { BottomSheet } from "@/components/BottomSheet";
+import { DiscipleChip } from "@/components/DiscipleChip";
 import { useToast } from "@/components/Toast";
-import { InviteCodeRow, MemberSearch } from "@/components/GroupInvite";
 import { Avatar } from "@/components/Avatar";
-import { useGroups, useDiscipleships, useProfile, useActiveDevotional } from "@/lib/queries";
-import { GROUP_TYPE_CONFIG, groupReadingHref } from "@/lib/groupTypes";
-import { effectiveTier, isDisciplerTier } from "@/lib/tiers";
+import { useGroups, useDiscipleships, useActiveDevotional } from "@/lib/queries";
+import { GROUP_TYPE_CONFIG } from "@/lib/groupTypes";
 import {
   ApiClient,
   ApiError,
-  type Group,
   type DiscipleshipRelationship,
 } from "@/lib/api";
 
@@ -128,132 +113,6 @@ function PrivacyNoticeModal({
             <Text style={{ color: muted, fontFamily: "DMSans_500Medium", fontSize: 14 }}>Decline</Text>
           </Pressable>
     </BottomSheet>
-  );
-}
-
-function DiscipleChip({
-  icon: Icon,
-  label,
-  color,
-  badge,
-  onPress,
-}: {
-  icon: typeof Eye;
-  label: string;
-  color: string;
-  badge?: number;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={{ borderWidth: 1, borderColor: color, borderRadius: 8, backgroundColor: withAlpha(color, 0.12) }}
-      className="flex-row items-center gap-1.5 px-3 py-2"
-    >
-      <Icon size={13} color={color} />
-      <Text style={{ color, fontFamily: "DMSans_500Medium", fontSize: 12 }}>{label}</Text>
-      {badge && badge > 0 ? (
-        <View style={{ minWidth: 16, height: 16, borderRadius: 8, backgroundColor: color, alignItems: "center", justifyContent: "center", paddingHorizontal: 4 }}>
-          <Text style={{ color: "#fff", fontFamily: "DMSans_700Bold", fontSize: 10 }}>{badge}</Text>
-        </View>
-      ) : null}
-    </Pressable>
-  );
-}
-
-// Per-group discipleship: the *invite* lives here, because this is where you
-// pick the person. Once a relationship exists it's managed in the top-level
-// Discipleship hub, so the card just points there.
-function DiscipleshipSection({
-  group,
-  rel,
-  myUserId,
-  accent,
-  canDisciple,
-}: {
-  group: Group;
-  rel: DiscipleshipRelationship | undefined;
-  myUserId: string | undefined;
-  accent: string;
-  canDisciple: boolean;
-}) {
-  const qc = useQueryClient();
-  const router = useRouter();
-  const toast = useToast();
-  const muted = useThemeColor("muted-foreground");
-  const border = useThemeColor("border");
-
-  const other = group.members.find((m) => m.userId !== myUserId);
-
-  const handleInvite = () => {
-    if (!other) return;
-    if (!canDisciple) {
-      Alert.alert(
-        "Sharpen required",
-        "Discipler tools are available on the Sharpen plan and above.",
-        [
-          { text: "Not now", style: "cancel" },
-          { text: "See plans", onPress: () => router.push("/settings/membership") },
-        ]
-      );
-      return;
-    }
-    Alert.alert(
-      "Start discipleship",
-      `Invite ${other.displayName} as your disciple? They'll be asked to accept first.`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Send invite",
-          onPress: async () => {
-            try {
-              await ApiClient.inviteDisciple(group.id, other.userId);
-              await Promise.all([
-                qc.invalidateQueries({ queryKey: ["discipleship"] }),
-                qc.invalidateQueries({ queryKey: ["groups"] }),
-              ]);
-              toast.show("Invite sent");
-            } catch (err) {
-              Alert.alert("Couldn't invite", err instanceof ApiError ? err.message : "Please try again.");
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  let body: ReactNode;
-  if (!rel) {
-    body = other ? (
-      <>
-        <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted, lineHeight: 17 }}>
-          Walk one-on-one — you'll see {other.displayName}'s responses as they submit, can send a daily
-          question, and message privately.
-        </Text>
-        <DiscipleChip icon={HeartHandshake} label="Start discipleship" color={accent} onPress={handleInvite} />
-      </>
-    ) : (
-      <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted, fontStyle: "italic" }}>
-        Add the other person to this group to start discipleship.
-      </Text>
-    );
-  } else {
-    body = (
-      <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: muted, fontStyle: "italic" }}>
-        {rel.status === "pending"
-          ? "Invite pending — manage it in Discipleship at the top of this tab."
-          : "Active — open responses, saved items, and the mailbox from Discipleship at the top of this tab."}
-      </Text>
-    );
-  }
-
-  return (
-    <View className="gap-2" style={{ borderTopWidth: 1, borderTopColor: border, paddingTop: 12 }}>
-      <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 12, color: muted, letterSpacing: 1, textTransform: "uppercase" }}>
-        Discipleship
-      </Text>
-      {body}
-    </View>
   );
 }
 
@@ -427,7 +286,6 @@ function DiscipleshipHub({
 export default function GroupsScreen() {
   const groups = useGroups();
   const discipleships = useDiscipleships();
-  const profile = useProfile();
   const { data: activeDevo } = useActiveDevotional();
   const qc = useQueryClient();
   const router = useRouter();
@@ -435,19 +293,11 @@ export default function GroupsScreen() {
   const primary = useThemeColor("primary");
   const muted = useThemeColor("muted-foreground");
   const border = useThemeColor("border");
-  const bg = useThemeColor("background");
   const card = useThemeColor("card");
   const fg = useThemeColor("foreground");
-  const destructive = useThemeColor("destructive");
-  const destructiveBorder = useThemeColor("destructive", 0.25);
-  const destructiveBg = useThemeColor("destructive", 0.06);
 
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [refreshing, setRefreshing] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  // Animated ref to the outer scroll view — lets the sortable list auto-scroll
-  // when a dragged card nears the top or bottom edge. (Plain ref in Expo Go,
-  // where the worklets runtime — and with it drag-to-reorder — is unavailable.)
   const scrollRef = useRef<ScrollView>(null);
 
   const onRefresh = async () => {
@@ -459,71 +309,14 @@ export default function GroupsScreen() {
     setRefreshing(false);
   };
 
-  // Edit flow
-  const [editGroup, setEditGroup] = useState<Group | null>(null);
-  const [editName, setEditName] = useState("");
-  const [saving, setSaving] = useState(false);
-
   // Join by code
   const [showJoin, setShowJoin] = useState(false);
   const [joinCode, setJoinCode] = useState("");
   const [joining, setJoining] = useState(false);
 
-  // Delete group (plain destructive confirm — no typing required)
-  const [deleteTarget, setDeleteTarget] = useState<Group | null>(null);
-  const [deletingGroup, setDeletingGroup] = useState(false);
-
-  const toggle = (id: string) => {
-    // Animate the height change, and allow multiple groups open at once —
-    // toggling one no longer auto-closes the others.
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpandedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
   // Entry point for starting discipleship from the hub: opens the unified
   // create flow pre-set to a one-on-one group.
   const startOneOnOne = () => router.push("/plans/new?type=one-on-one");
-
-  // A member (not the creator) leaving — distinct from the creator's "End".
-  const handleLeaveGroup = (group: Group) => {
-    const myId = profile.data?.userId;
-    if (!myId) return;
-    Alert.alert("Leave group?", `You'll leave "${group.name}". Your past entries stay with the group.`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Leave",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await ApiClient.removeGroupMember(group.id, myId);
-            await qc.invalidateQueries({ queryKey: ["groups"] });
-            toast.show(`Left ${group.name}`);
-          } catch (err) {
-            Alert.alert("Couldn't leave", err instanceof ApiError ? err.message : "Please try again.");
-          }
-        },
-      },
-    ]);
-  };
-
-  const handleSaveEdit = async () => {
-    if (!editGroup || !editName.trim()) return;
-    setSaving(true);
-    try {
-      await ApiClient.updateGroup(editGroup.id, editName.trim());
-      await qc.invalidateQueries({ queryKey: ["groups"] });
-      setEditGroup(null);
-    } catch (err) {
-      Alert.alert("Couldn't save", err instanceof ApiError ? err.message : "Please try again.");
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const handleJoin = async () => {
     if (!joinCode.trim()) return;
@@ -548,45 +341,7 @@ export default function GroupsScreen() {
     }
   };
 
-  const confirmDeleteGroup = async () => {
-    if (!deleteTarget) return;
-    setDeletingGroup(true);
-    try {
-      await ApiClient.deleteGroup(deleteTarget.id);
-      await qc.invalidateQueries({ queryKey: ["groups"] });
-      setExpandedIds((prev) => {
-        const next = new Set(prev);
-        next.delete(deleteTarget.id);
-        return next;
-      });
-      setDeleteTarget(null);
-    } catch (err) {
-      Alert.alert("Couldn't end group", err instanceof ApiError ? err.message : "Please try again.");
-    } finally {
-      setDeletingGroup(false);
-    }
-  };
-
-  const handleRemoveMember = (groupId: string, targetUserId: string, name: string) => {
-    Alert.alert("Remove member", `Remove ${name} from this group?`, [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Remove",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await ApiClient.removeGroupMember(groupId, targetUserId);
-            await qc.invalidateQueries({ queryKey: ["groups"] });
-          } catch (err) {
-            Alert.alert("Couldn't remove member", err instanceof ApiError ? err.message : "Please try again.");
-          }
-        },
-      },
-    ]);
-  };
-
   const groupList = groups.data ?? [];
-  const canDisciple = isDisciplerTier(effectiveTier(profile.data));
 
   return (
     <Screen edges={["top"]}>
@@ -720,10 +475,6 @@ export default function GroupsScreen() {
             {groupList.map((group) => {
             const config = GROUP_TYPE_CONFIG[group.groupType] ?? { label: group.groupType, color: primary };
             const doneCount = group.members.filter((m) => m.doneToday).length;
-            const isOpen = expandedIds.has(group.id);
-            // Only the creator can end the group or remove others; everyone else
-            // gets Leave. Never show controls that will just error after the tap.
-            const isCreator = group.createdBy === profile.data?.userId;
 
             return (
               <View
@@ -736,145 +487,30 @@ export default function GroupsScreen() {
                   backgroundColor: card,
                 }}
               >
-                {/* Collapsed row */}
-                <View className="flex-row items-center gap-3 px-3 py-5">
+                {/* The whole card is the door to the group's page, where the
+                    members, the reading, and the settings now live. */}
+                <Pressable
+                  onPress={() => router.push(`/groups/${group.id}`)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Open ${group.name}`}
+                  className="flex-row items-center gap-3 px-3 py-5 active:bg-muted/20"
+                >
                   {/* Type indicator — thin bar in the group's type color */}
                   <View style={{ width: 3, height: 40, borderRadius: 2, backgroundColor: config.color }} />
 
-                  <Pressable
-                    onPress={() => toggle(group.id)}
-                    className="flex-1 flex-row items-center"
-                    accessibilityRole="button"
-                    accessibilityLabel={`Toggle ${group.name}`}
-                    accessibilityState={{ expanded: isOpen }}
-                  >
-                    <View className="flex-1">
-                      <Text className="font-serif text-lg font-bold text-foreground">
-                        {group.name}
-                      </Text>
-                      <Text className="mt-0.5 text-sm text-muted-foreground">
-                        {/* Type is conveyed by the icon color; lead with progress instead */}
-                        {group.plan ? `Day ${group.currentDay} of ${group.plan.totalDays}` : "No plan yet"}
-                        {group.plan?.chapter ? ` · ${group.plan.chapter}` : ""}
-                        {` · ${doneCount}/${group.members.length} today`}
-                      </Text>
-                    </View>
-                    {isOpen ? <ChevronUp size={20} color={muted} /> : <ChevronDown size={20} color={muted} />}
-                  </Pressable>
-                </View>
-
-                {/* Expanded */}
-                {isOpen && (
-                  <View style={{ borderTopWidth: 1, borderTopColor: border }} className="px-4 py-3 gap-4">
-                    {/* Members */}
-                    <View className="gap-2">
-                      <View className="flex-row items-center justify-between mb-1">
-                        <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 12, color: muted, letterSpacing: 1, textTransform: "uppercase" }}>
-                          Members
-                        </Text>
-                        <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 12, color: muted, letterSpacing: 1, textTransform: "uppercase" }}>
-                          Completed
-                        </Text>
-                      </View>
-                      {group.members.length === 0 ? (
-                        <Text className="text-xs text-muted-foreground">No members yet.</Text>
-                      ) : (
-                        group.members.map((member) => (
-                          <View key={member.id} className="flex-row items-center justify-between">
-                            <Text className="text-sm text-foreground">{member.displayName}</Text>
-                            <View className="flex-row items-center gap-3">
-                              {member.doneToday
-                                ? <CheckCircle2 size={16} color={config.color} />
-                                : <Circle size={16} color={muted} />
-                              }
-                              {isCreator && member.userId !== profile.data?.userId ? (
-                                <Pressable
-                                  hitSlop={8}
-                                  onPress={() => handleRemoveMember(group.id, member.userId, member.displayName)}
-                                  accessibilityRole="button"
-                                  accessibilityLabel={`Remove ${member.displayName} from group`}
-                                >
-                                  <X size={13} color={muted} />
-                                </Pressable>
-                              ) : null}
-                            </View>
-                          </View>
-                        ))
-                      )}
-                    </View>
-
-                    {/* Discipleship (one-on-one only) */}
-                    {group.groupType === "one-on-one" && (
-                      <DiscipleshipSection
-                        group={group}
-                        rel={(discipleships.data ?? []).find((r) => r.groupId === group.id)}
-                        myUserId={profile.data?.userId}
-                        accent={config.color}
-                        canDisciple={canDisciple}
-                      />
-                    )}
-
-                    {/* Actions row */}
-                    <View className="flex-row gap-3">
-                      {group.plan ? (
-                        <Pressable
-                          onPress={() => router.push(groupReadingHref(group) ?? "/plans")}
-                          style={{ borderWidth: 1, borderColor: config.color, borderRadius: 8, backgroundColor: withAlpha(config.color, 0.12) }}
-                          className="flex-row items-center gap-1.5 px-3 py-2"
-                        >
-                          <BookOpen size={13} color={config.color} />
-                          <Text style={{ color: config.color, fontFamily: "DMSans_500Medium", fontSize: 12 }}>
-                            Open Devotional
-                          </Text>
-                        </Pressable>
-                      ) : (
-                        <Pressable
-                          onPress={() => router.push(`/plans/new?groupId=${group.id}&groupName=${encodeURIComponent(group.name)}`)}
-                          style={{ borderWidth: 1, borderColor: config.color, borderRadius: 8, backgroundColor: withAlpha(config.color, 0.12) }}
-                          className="flex-row items-center gap-1.5 px-3 py-2"
-                        >
-                          <BookOpen size={13} color={config.color} />
-                          <Text style={{ color: config.color, fontFamily: "DMSans_500Medium", fontSize: 12 }}>
-                            Choose a plan
-                          </Text>
-                        </Pressable>
-                      )}
-                      <Pressable
-                        onPress={() => { setEditGroup(group); setEditName(group.name); }}
-                        style={{ borderWidth: 1, borderColor: border, borderRadius: 8 }}
-                        className="flex-row items-center gap-1.5 px-3 py-2"
-                      >
-                        <Pencil size={13} color={muted} />
-                        <Text style={{ color: muted, fontFamily: "DMSans_500Medium", fontSize: 12 }}>
-                          Edit
-                        </Text>
-                      </Pressable>
-                      {isCreator ? (
-                        <Pressable
-                          onPress={() => setDeleteTarget(group)}
-                          style={{ borderWidth: 1, borderColor: destructiveBorder, borderRadius: 8, backgroundColor: destructiveBg }}
-                          className="flex-row items-center gap-1.5 px-3 py-2"
-                        >
-                          <Trash2 size={13} color={destructive} />
-                          <Text style={{ color: destructive, fontFamily: "DMSans_500Medium", fontSize: 12 }}>
-                            End
-                          </Text>
-                        </Pressable>
-                      ) : (
-                        <Pressable
-                          onPress={() => handleLeaveGroup(group)}
-                          style={{ borderWidth: 1, borderColor: destructiveBorder, borderRadius: 8, backgroundColor: destructiveBg }}
-                          className="flex-row items-center gap-1.5 px-3 py-2"
-                        >
-                          <LogOut size={13} color={destructive} />
-                          <Text style={{ color: destructive, fontFamily: "DMSans_500Medium", fontSize: 12 }}>
-                            Leave
-                          </Text>
-                        </Pressable>
-                      )}
-                    </View>
+                  <View className="flex-1">
+                    <Text className="font-serif text-lg font-bold text-foreground">
+                      {group.name}
+                    </Text>
+                    <Text className="mt-0.5 text-sm text-muted-foreground">
+                      {/* Type is conveyed by the bar's color; lead with progress instead */}
+                      {group.plan ? `Day ${group.currentDay} of ${group.plan.totalDays}` : "No plan yet"}
+                      {group.plan?.chapter ? ` · ${group.plan.chapter}` : ""}
+                      {` · ${doneCount}/${group.members.length} today`}
+                    </Text>
                   </View>
-                )}
+                  <ChevronRight size={20} color={muted} />
+                </Pressable>
               </View>
             );
             })}
@@ -901,61 +537,6 @@ export default function GroupsScreen() {
             </>
           )}
         </ScrollView>
-
-      {/* ── Edit group sheet ───────────────────────────────────────────────── */}
-      <BottomSheet visible={!!editGroup} onClose={() => !saving && setEditGroup(null)}>
-            <View className="mb-5 flex-row items-center justify-between">
-              <Text className="font-serif text-xl font-bold text-foreground">Edit Group</Text>
-              <Pressable
-                onPress={() => setEditGroup(null)}
-                hitSlop={12}
-                accessibilityRole="button"
-                accessibilityLabel="Close"
-              >
-                <X size={20} color={muted} />
-              </Pressable>
-            </View>
-
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <Text className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Group Name</Text>
-              <Input
-                value={editName}
-                onChangeText={setEditName}
-                style={{ marginBottom: 16 }}
-              />
-              <Button
-                title="Save Name"
-                onPress={handleSaveEdit}
-                disabled={!editName.trim()}
-                loading={saving}
-                style={{ marginBottom: 24 }}
-              />
-
-              <View style={{ height: 1, backgroundColor: border, marginBottom: 24 }} />
-
-              {editGroup && (
-                <View style={{ marginBottom: 24 }}>
-                  <InviteCodeRow
-                    inviteCode={editGroup.inviteCode}
-                    accent={GROUP_TYPE_CONFIG[editGroup.groupType]?.color ?? primary}
-                    muted={muted} border={border} card={card}
-                  />
-                </View>
-              )}
-
-              <View style={{ height: 1, backgroundColor: border, marginBottom: 24 }} />
-
-              {editGroup && (
-                <MemberSearch
-                  groupId={editGroup.id}
-                  existingUserIds={new Set(editGroup.members.map((m) => m.userId))}
-                  accent={GROUP_TYPE_CONFIG[editGroup.groupType]?.color ?? primary}
-                  muted={muted} border={border} card={card} bg={bg} fg={fg}
-                  onAdded={() => qc.invalidateQueries({ queryKey: ["groups"] })}
-                />
-              )}
-            </ScrollView>
-      </BottomSheet>
 
       {/* ── Join by code sheet ─────────────────────────────────────────────── */}
       <BottomSheet visible={showJoin} onClose={() => !joining && setShowJoin(false)}>
@@ -1036,24 +617,6 @@ export default function GroupsScreen() {
           <ChevronRight size={18} color={muted} />
         </Pressable>
       </BottomSheet>
-
-      {/* ── End group confirmation ─────────────────────────────────────────── */}
-      <ConfirmModal
-        visible={!!deleteTarget}
-        title="End group"
-        message={
-          deleteTarget
-            ? `This ends "${deleteTarget.name}" for all ${deleteTarget.members.length} member${
-                deleteTarget.members.length === 1 ? "" : "s"
-              }. It moves to Past groups and everyone keeps their past entries.`
-            : ""
-        }
-        confirmLabel="End group"
-        destructive
-        busy={deletingGroup}
-        onConfirm={confirmDeleteGroup}
-        onCancel={() => !deletingGroup && setDeleteTarget(null)}
-      />
     </Screen>
   );
 }
