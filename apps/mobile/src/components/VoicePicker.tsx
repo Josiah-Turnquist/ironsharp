@@ -59,7 +59,7 @@ export function VoicePicker({
   };
 
   return (
-    <BottomSheet visible={visible} onClose={close} contentStyle={{ padding: 20, paddingBottom: 32, maxHeight: "88%" }}>
+    <BottomSheet visible={visible} onClose={close} contentStyle={{ padding: 20, maxHeight: "88%" }}>
       <Text style={{ color: fg, fontFamily: "PlayfairDisplay_700Bold", fontSize: 22 }}>Choose a voice</Text>
       <Text style={{ color: muted, fontFamily: "DMSans_400Regular", fontSize: 14, marginTop: 4, marginBottom: 16 }}>
         Tap ▶ to hear a sample, then tap a name to use it.

@@ -58,20 +58,46 @@ type ChurchOption = "yes" | "no" | "looking" | null;
 // Grouped into themed pages (was one question per page, 10–11 taps deep).
 const TOTAL = 8;
 
-function ProgressBar({ step, totalSteps }: { step: number; totalSteps: number }) {
+/**
+ * Stepped header — back arrow, bar, then counter on one row, matching the plan
+ * wizards. Step 1 has nowhere to go back to, so the arrow keeps its slot but goes
+ * invisible; rendering nothing there would resize the bar on the way to step 2.
+ */
+function ProgressBar({
+  step,
+  totalSteps,
+  onBack,
+}: {
+  step: number;
+  totalSteps: number;
+  onBack: () => void;
+}) {
+  const foregroundColor = useThemeColor("foreground");
+  const first = step === 1;
+
   return (
-    <View className="px-6 pt-4 pb-2">
-      <View className="mb-1.5 flex-row items-center justify-between">
-        <Text className="text-xs font-sans-medium text-muted-foreground">
-          {step} of {totalSteps}
-        </Text>
-      </View>
-      <View className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+    <View className="flex-row items-center gap-3 px-6 pt-4 pb-2">
+      <Pressable
+        onPress={onBack}
+        disabled={first}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel="Back"
+        accessibilityElementsHidden={first}
+        className="-ml-2 p-2"
+        style={{ opacity: first ? 0 : 1 }}
+      >
+        <ArrowLeft size={24} color={foregroundColor} strokeWidth={2.5} />
+      </Pressable>
+      <View className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
         <View
           className="h-full rounded-full bg-primary"
           style={{ width: `${(step / totalSteps) * 100}%` }}
         />
       </View>
+      <Text className="text-xs font-sans-medium text-muted-foreground">
+        {step} of {totalSteps}
+      </Text>
     </View>
   );
 }
@@ -127,7 +153,6 @@ export default function OnboardingSurvey() {
   const { displayName, survey, set, setSurvey } = useOnboarding();
   const primaryColor = useThemeColor("primary");
   const mutedColor = useThemeColor("muted-foreground");
-  const foregroundColor = useThemeColor("foreground");
 
   const [step, setStep] = useState(1);
   const scrollRef = useRef<ScrollView>(null);
@@ -235,19 +260,7 @@ export default function OnboardingSurvey() {
 
   return (
     <Screen edges={["top", "bottom"]}>
-      {/* Top bar: progress + back arrow */}
-      <View>
-        {step > 1 && (
-          <Pressable
-            onPress={goBack}
-            className="absolute left-3 top-3 z-10 p-2"
-            hitSlop={8}
-          >
-            <ArrowLeft size={28} color={foregroundColor} strokeWidth={2.5} />
-          </Pressable>
-        )}
-        <ProgressBar step={step} totalSteps={TOTAL} />
-      </View>
+      <ProgressBar step={step} totalSteps={TOTAL} onBack={goBack} />
 
       <ScrollView
         ref={scrollRef}

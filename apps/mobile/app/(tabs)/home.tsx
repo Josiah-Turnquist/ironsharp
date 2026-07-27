@@ -1,6 +1,6 @@
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { BookOpen, CheckCircle2, ChevronRight, Globe, Sun, Users } from "lucide-react-native";
+import { BookOpen, CheckCircle2, ChevronRight, Globe, Sun } from "lucide-react-native";
 import { PopIn } from "@/components/PopIn";
 import { Screen } from "@/components/Screen";
 import { StreakFlame } from "@/components/StreakFlame";
@@ -188,8 +188,7 @@ export default function HomeScreen() {
         {/* Group readings not covered by the hero card */}
         {secondaryGroups.map((g) => {
           const done = !!g.members.find((m) => m.userId === myId)?.doneToday;
-          // Group-type accent (matches the Groups tab) — icon + done check only;
-          // the tint circle stays primary so the rows read as one family.
+          // Group-type accent (matches the Groups tab) — the type bar and done check.
           const accent = GROUP_TYPE_CONFIG[g.groupType]?.color ?? primary;
           return (
             <Pressable
@@ -199,9 +198,7 @@ export default function HomeScreen() {
               accessibilityLabel={`Open ${g.name}'s reading`}
               className="mb-3 w-full flex-row items-center gap-3 rounded-2xl border border-border bg-card p-4"
             >
-              <View className="h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                <Users size={20} color={accent} />
-              </View>
+              <View style={{ width: 3, height: 40, borderRadius: 2, backgroundColor: accent }} />
               <View className="flex-1">
                 <Text className="font-sans-semibold text-base text-foreground" numberOfLines={1}>
                   {g.name}

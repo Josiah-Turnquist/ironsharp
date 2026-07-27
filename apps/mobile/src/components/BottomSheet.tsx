@@ -8,9 +8,23 @@ import {
   Platform,
   Pressable,
   StyleProp,
+  StyleSheet,
+  View,
   ViewStyle,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColor } from "@/components/useThemeColor";
+
+/**
+ * Extra background painted BELOW the sheet's resting edge. The modal container stops
+ * short of the physical screen bottom, leaving a band of backdrop showing beneath the
+ * sheet. Bleeding the background down — and pulling the layout back up by the same
+ * amount — covers that band and the home indicator without moving any content.
+ */
+const BLEED = 64;
+
+/** Callers set `padding`; the bottom gap is derived so it clears the home indicator. */
+const DEFAULT_CONTENT: ViewStyle = { padding: 24, maxHeight: "90%" };
 
 /**
  * A bottom sheet whose dimmed backdrop FADES in while the sheet SLIDES up from the
@@ -31,6 +45,7 @@ export function BottomSheet({
   contentStyle?: StyleProp<ViewStyle>;
 }) {
   const bg = useThemeColor("background");
+  const insets = useSafeAreaInsets();
 
   const [mounted, setMounted] = useState(visible);
   const backdrop = useRef(new Animated.Value(0)).current;
@@ -59,6 +74,16 @@ export function BottomSheet({
 
   const translateY = slide.interpolate({ inputRange: [0, 1], outputRange: [0, screenH] });
 
+  // A caller's own paddingBottom (or its uniform padding) is the resting gap; the home
+  // indicator allowance is added on top so the last row never sits under the bar.
+  const content = StyleSheet.flatten<ViewStyle>(contentStyle ?? DEFAULT_CONTENT) ?? {};
+  const basePad =
+    typeof content.paddingBottom === "number"
+      ? content.paddingBottom
+      : typeof content.padding === "number"
+        ? content.padding
+        : 0;
+
   return (
     <Modal visible transparent animationType="none" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
@@ -67,12 +92,17 @@ export function BottomSheet({
             <Animated.View style={{ transform: [{ translateY }] }}>
               <Pressable
                 onPress={() => {}}
-                style={[
-                  { backgroundColor: bg, borderTopLeftRadius: 20, borderTopRightRadius: 20 },
-                  contentStyle ?? { padding: 24, paddingBottom: 40, maxHeight: "90%" },
-                ]}
+                style={{
+                  backgroundColor: bg,
+                  borderTopLeftRadius: 20,
+                  borderTopRightRadius: 20,
+                  paddingBottom: BLEED,
+                  marginBottom: -BLEED,
+                }}
               >
-                {children}
+                <View style={[content, { paddingBottom: basePad + insets.bottom }]}>
+                  {children}
+                </View>
               </Pressable>
             </Animated.View>
           </Pressable>

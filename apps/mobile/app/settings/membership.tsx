@@ -203,7 +203,7 @@ export default function MembershipScreen() {
       <BottomSheet
         visible={showPromo}
         onClose={() => !redeeming && setShowPromo(false)}
-        contentStyle={{ padding: 24, paddingBottom: 44, gap: 16, maxHeight: "90%" }}
+        contentStyle={{ padding: 24, gap: 16, maxHeight: "90%" }}
       >
             <Text className="font-serif text-xl font-bold text-foreground">Promo Code</Text>
             <TextInput

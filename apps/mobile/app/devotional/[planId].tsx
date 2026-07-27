@@ -47,6 +47,7 @@ function parseFocusVerses(ref: string): string | null {
   return match ? match[1].trim() : null;
 }
 import { useProgress, useGroupDayResponses, useGroups, useDiscipleships, useCustomQuestion, useProfile, usePlanSubmissions } from "@/lib/queries";
+import { isCalendarPaced } from "@/lib/groupTypes";
 import type { GroupDayResponse } from "@/lib/api";
 
 /** The viewer's local calendar date as "YYYY-MM-DD" (en-CA renders ISO). */
@@ -1203,6 +1204,21 @@ export default function DevotionalReader() {
     const groupResponses = groupResponsesQ.data ?? [];
     const hasGroupResponses = groupResponses.length > 0;
 
+    // Finishing the last day yourself doesn't finish it for the group. A convoy
+    // group closes its plan when every member is through; a calendar-paced one
+    // closes on the schedule, in the catch-up pass — either way the plan slot
+    // empties. Counting myself as done covers the last finisher, whose own flag
+    // hasn't come back from the server yet.
+    const calendarPaced = !!activeGroup && isCalendarPaced(activeGroup.groupType);
+    const groupFinished =
+      !!activeGroup &&
+      (!activeGroup.plan ||
+        (!calendarPaced &&
+          activeGroup.members.every(
+            (m) => m.doneToday || m.userId === profile.data?.userId
+          )));
+    const showNextPlan = wasLastDay && (!groupId || groupFinished);
+
     return (
       <Screen edges={["top", "bottom"]}>
         {/* Bare back chevron: this screen is reachable from Home, Groups, or a
@@ -1297,9 +1313,19 @@ export default function DevotionalReader() {
             </Text>
           ) : null}
 
+          {/* Swapping the group's plan now would end the run for everyone still
+              on the last day — no history entry, no completion credit. */}
+          {groupId && wasLastDay && !groupFinished ? (
+            <Text className="mb-6 text-center font-serif-italic text-sm text-muted-foreground">
+              {calendarPaced
+                ? "Your group wraps this plan up on schedule. You'll choose the next one then."
+                : "Waiting for the rest of your group to finish the last day. You'll choose the next plan once everyone's through."}
+            </Text>
+          ) : null}
+
           {/* Buttons */}
           <View className="gap-3">
-            {wasLastDay && (
+            {showNextPlan && (
               <Button
                 title={groupId ? "Choose your group's next plan" : "Start a new plan"}
                 onPress={() =>
@@ -1313,7 +1339,7 @@ export default function DevotionalReader() {
             )}
             <Button
               title="Back to Plans"
-              variant={wasLastDay ? "outline" : "primary"}
+              variant={showNextPlan ? "outline" : "primary"}
               onPress={() => router.replace("/(tabs)/groups")}
             />
             <Button

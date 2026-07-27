@@ -430,7 +430,7 @@ function DailyQuestionSheet({ id, visible, onClose }: { id: string; visible: boo
   };
 
   return (
-    <BottomSheet visible={visible} onClose={onClose} contentStyle={{ padding: 22, paddingBottom: 36, maxHeight: "90%" }}>
+    <BottomSheet visible={visible} onClose={onClose} contentStyle={{ padding: 22, maxHeight: "90%" }}>
             <View className="mb-4 flex-row items-center justify-between">
               <Text style={{ fontFamily: "PlayfairDisplay_700Bold", fontSize: 20, color: fg }}>Ask a question</Text>
               <Pressable onPress={onClose} hitSlop={12} accessibilityRole="button" accessibilityLabel="Close">

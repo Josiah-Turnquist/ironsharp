@@ -29,9 +29,6 @@ const createGroupSchema = z.object({
   groupType: z.enum(GROUP_TYPES),
 });
 const joinSchema = z.object({ inviteCode: z.string().trim().min(1) });
-const reorderSchema = z.object({
-  order: z.array(z.object({ groupId: z.string().uuid(), displayOrder: z.number().int() })).min(1),
-});
 const updateNameSchema = z.object({ name: z.string().trim().min(1).max(100) });
 const addMemberSchema = z.object({ userId: z.string().min(1) });
 const assignPlanSchema = z.object({ planId: z.string().uuid() });
@@ -602,29 +599,6 @@ groupsRoute.post("/join", async (c) => {
   return c.json({ group: { id: group.id, name: group.name } }, 201);
 });
 
-// PATCH /api/groups/reorder — persist drag-reorder. Body: { order: [{groupId, displayOrder}] }
-groupsRoute.patch("/reorder", async (c) => {
-  const userId = c.var.user.id;
-  const parsed = reorderSchema.safeParse(await c.req.json().catch(() => ({})));
-  if (!parsed.success) return c.json({ error: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
-  const { order } = parsed.data;
-
-  await Promise.all(
-    order.map(({ groupId, displayOrder }) =>
-      db
-        .update(groupMembers)
-        .set({ displayOrder })
-        .where(
-          and(
-            eq(groupMembers.groupId, groupId),
-            eq(groupMembers.userId, userId)
-          )
-        )
-    )
-  );
-
-  return c.json({ ok: true });
-});
 
 // PATCH /api/groups/:id — update group name (any member)
 groupsRoute.patch("/:id", async (c) => {

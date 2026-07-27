@@ -630,11 +630,6 @@ export const ApiClient = {
       method: "POST",
       body: JSON.stringify(body),
     }),
-  reorderGroups: (order: { groupId: string; displayOrder: number }[]) =>
-    api<{ ok: boolean }>("/api/groups/reorder", {
-      method: "PATCH",
-      body: JSON.stringify({ order }),
-    }),
   deleteGroup: (groupId: string) =>
     api<{ ok: boolean }>(`/api/groups/${groupId}`, { method: "DELETE" }),
   // Permanently remove an ended group from the current user's Past groups
