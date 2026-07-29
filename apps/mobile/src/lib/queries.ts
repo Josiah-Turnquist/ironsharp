@@ -72,6 +72,19 @@ export function useDays(planId: string | undefined) {
 }
 
 /**
+ * A single day of a plan. The group page peeks at the day the group is on
+ * without pulling the whole plan down to read one entry.
+ */
+export function useDay(planId: string | undefined, dayNumber: number | undefined) {
+  const { authed } = useAuthed();
+  return useQuery({
+    queryKey: ["plan", planId, "day", dayNumber],
+    queryFn: () => ApiClient.getDay(planId!, dayNumber!).then((r) => r.day),
+    enabled: authed && !!planId && !!dayNumber && dayNumber > 0,
+  });
+}
+
+/**
  * Every submission this user has made against one plan INSTANCE (personal when
  * groupId is null, otherwise that group's copy). Backs the day list's done /
  * missed marks — no new endpoint needed.

@@ -48,6 +48,7 @@ function parseFocusVerses(ref: string): string | null {
 }
 import { useProgress, useGroupDayResponses, useGroups, useDiscipleships, useCustomQuestion, useProfile, usePlanSubmissions } from "@/lib/queries";
 import { isCalendarPaced } from "@/lib/groupTypes";
+import { getDailyVerse } from "@/lib/doneVerse";
 import type { GroupDayResponse } from "@/lib/api";
 
 /** The viewer's local calendar date as "YYYY-MM-DD" (en-CA renders ISO). */
@@ -649,28 +650,6 @@ function BiblePassageCard({ passageRef, onPageChange, passageRead, onMarkRead }:
   );
 }
 
-// ─── Daily encouragement verses (shown on the done state) ────────────────────
-
-const DONE_VERSES = [
-  { text: "Let us not become weary in doing good, for at the proper time we will reap a harvest if we do not give up.", ref: "Galatians 6:9" },
-  { text: "He who began a good work in you will carry it on to completion until the day of Christ Jesus.", ref: "Philippians 1:6" },
-  { text: "The steadfast love of the LORD never ceases; his mercies never come to an end; they are new every morning; great is your faithfulness.", ref: "Lamentations 3:22–23" },
-  { text: "Let us run with perseverance the race marked out for us, fixing our eyes on Jesus, the pioneer and perfecter of faith.", ref: "Hebrews 12:1–2" },
-  { text: "But they who wait for the LORD shall renew their strength; they shall mount up with wings like eagles; they shall run and not be weary; they shall walk and not faint.", ref: "Isaiah 40:31" },
-  { text: "I have fought the good fight, I have finished the race, I have kept the faith.", ref: "2 Timothy 4:7" },
-  { text: "Be strong and courageous. Do not be afraid; do not be discouraged, for the LORD your God will be with you wherever you go.", ref: "Joshua 1:9" },
-  { text: "The LORD your God is with you, the Mighty Warrior who saves. He will take great delight in you; in his love he will no longer rebuke you, but will rejoice over you with singing.", ref: "Zephaniah 3:17" },
-  { text: "Trust in the LORD with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.", ref: "Proverbs 3:5–6" },
-  { text: "Create in me a clean heart, O God, and renew a right spirit within me.", ref: "Psalm 51:10" },
-  { text: "Your word is a lamp for my feet, a light on my path.", ref: "Psalm 119:105" },
-  { text: "Come to me, all you who are weary and burdened, and I will give you rest.", ref: "Matthew 11:28" },
-];
-
-function getDailyVerse() {
-  const dayIndex = Math.floor(Date.now() / 86_400_000);
-  return DONE_VERSES[dayIndex % DONE_VERSES.length]!;
-}
-
 // ─── Group response card ──────────────────────────────────────────────────────
 
 function GroupResponseCard({
@@ -799,12 +778,15 @@ function GroupResponseCard({
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
 export default function DevotionalReader() {
-  const { planId: planIdParam, groupId: groupIdParam, day: dayParam } = useLocalSearchParams<{
-    planId: string;
-    groupId?: string;
-    /** Open a specific day instead of the live one — how catch-up reaches a missed day. */
-    day?: string;
-  }>();
+  const { planId: planIdParam, groupId: groupIdParam, day: dayParam, reread: rereadParam } =
+    useLocalSearchParams<{
+      planId: string;
+      groupId?: string;
+      /** Open a specific day instead of the live one — how catch-up reaches a missed day. */
+      day?: string;
+      /** Skip straight past the done screen to the passage, for a finished day. */
+      reread?: string;
+    }>();
   const planId = String(planIdParam);
   const groupId = groupIdParam ?? null;
   const router = useRouter();
@@ -992,7 +974,11 @@ export default function DevotionalReader() {
   const [q2Private, setQ2Private] = useState(false);
   const [q3Private, setQ3Private] = useState(false);
   const [prayerPrivate, setPrayerPrivate] = useState(true);
-  const [passageRead, setPassageRead] = useState(false);
+  // `?reread=1` arrives from a finished day elsewhere in the app (the group
+  // page's done card), and stands in for having pressed "Re-read today's
+  // passage" on the done screen — which sets both of these together.
+  const openedForReread = rereadParam === "1";
+  const [passageRead, setPassageRead] = useState(openedForReread);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
   const [reflectionOpen, setReflectionOpen] = useState(true);
   const [done, setDone] = useState(false);
@@ -1001,7 +987,7 @@ export default function DevotionalReader() {
   // (last finisher), so deriving "which day did I complete" from it would
   // label day 1's completion "Day 2 of 7".
   const [justCompletedDay, setJustCompletedDay] = useState<number | null>(null);
-  const [reread, setReread] = useState(false);
+  const [reread, setReread] = useState(openedForReread);
   const isDoneState = done || lockedUntilTomorrow;
   // Which day the done screen and group feed talk about. Prefer the captured
   // day; on reopen (no capture), an existing submission for the current day
