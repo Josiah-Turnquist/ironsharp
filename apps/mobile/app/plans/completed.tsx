@@ -5,10 +5,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, ChevronRight, RotateCcw } from "lucide-react-native";
 import { Screen } from "@/components/Screen";
 import { Header } from "@/components/Header";
+import { ProgressRing } from "@/components/ProgressRing";
 import { useThemeColor } from "@/components/useThemeColor";
-import { usePlans, useProgress, useGroups } from "@/lib/queries";
+import { usePlans, useProgress, useGroups, useJourney } from "@/lib/queries";
 import { ApiClient } from "@/lib/api";
 import { purgePersonalPlanLocalState } from "@/lib/planLocal";
+
+/** Books in the Bible — the denominator the Journey ring fills toward. */
+const TOTAL_BOOKS = 66;
 
 export default function CompletedPlans() {
   const router = useRouter();
@@ -16,12 +20,17 @@ export default function CompletedPlans() {
   const progress = useProgress();
   const groups = useGroups();
   const { data: plansData } = usePlans();
+  const journey = useJourney(new Date().getFullYear());
   const primary = useThemeColor("primary");
   const muted = useThemeColor("muted-foreground");
 
   const planById = new Map((plansData?.plans ?? []).map((p) => [p.id, p]));
   const completed = (progress.data ?? []).filter((p) => p.completedAt);
   const [busy, setBusy] = useState(false);
+
+  const journeyTotals = journey.data?.totals;
+  const booksVisited = journeyTotals?.books ?? 0;
+  const booksPercent = (booksVisited / TOTAL_BOOKS) * 100;
 
   // Take a finished plan again from day 1 — the completed run keeps its
   // reflections; the new run starts blank. Same one-active rule as starting.
@@ -73,6 +82,44 @@ export default function CompletedPlans() {
         contentContainerClassName="mx-auto w-full max-w-lg gap-3 px-4 py-4"
         showsVerticalScrollIndicator={false}
       >
+        {/* The ground covered, not just the plans finished. Sits above the list
+            because it's the bigger picture the finished plans add up to.
+
+            The ring counts BOOKS you've been in, not verses: a verse figure is
+            2-5% in even a strong year, which draws as a hairline and reads as
+            failure. Books move — open one and the ring gains a point and a half.
+            The exact verse truth for every book is on the screen behind this. */}
+        <Pressable
+          onPress={() => router.push("/plans/journey")}
+          className="mb-2 rounded-xl border border-border bg-card p-5 active:bg-muted/40"
+        >
+          {/* Title stays left-aligned like every other card in the app; the
+              chevron rides its line because a stacked card has no middle-right. */}
+          <View className="flex-row items-center justify-between gap-2">
+            <Text className="font-serif text-xl font-bold text-foreground">
+              Your Bible Journey
+            </Text>
+            <ChevronRight size={18} color={muted} />
+          </View>
+
+          <View className="my-4 items-center">
+            <ProgressRing percent={booksPercent} size={116} stroke={8} />
+          </View>
+
+          <Text className="text-center text-sm text-foreground">
+            {booksVisited} of {TOTAL_BOOKS} books this year
+          </Text>
+          {journeyTotals ? (
+            <Text className="mt-1 text-center text-xs text-muted-foreground">
+              {journeyTotals.chapters} chapter{journeyTotals.chapters === 1 ? "" : "s"} ·{" "}
+              {journeyTotals.days} day{journeyTotals.days === 1 ? "" : "s"} read
+              {journeyTotals.booksComplete > 0
+                ? ` · ${journeyTotals.booksComplete} finished`
+                : ""}
+            </Text>
+          ) : null}
+        </Pressable>
+
         {completed.length === 0 ? (
           <View className="items-center rounded-xl border border-border bg-card p-8">
             <CheckCircle2 size={26} color={primary} />

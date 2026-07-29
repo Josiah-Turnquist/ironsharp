@@ -155,6 +155,35 @@ export type PlanProgress = {
   completedAt: string | null;
 };
 
+/** One book's share of Your Bible Journey for a year. */
+export type JourneyBook = {
+  book: string;
+  testament: "OT" | "NT";
+  bookOrder: number;
+  versesRead: number;
+  /** The book's real length, straight from the stored Bible text. */
+  versesTotal: number;
+  chaptersRead: number;
+  /** Every verse read — a near miss stays a near miss rather than rounding up. */
+  complete: boolean;
+  /** What took you into this book, oldest first. Empty for an unopened book. */
+  entries: { ref: string; source: string; at: string }[];
+};
+
+export type Journey = {
+  year: number;
+  /** Years with any reading, newest first — what the year picker offers. */
+  availableYears: number[];
+  totals: {
+    books: number;
+    booksComplete: number;
+    chapters: number;
+    versesRead: number;
+    days: number;
+  };
+  books: JourneyBook[];
+};
+
 export type ActiveDevotional = {
   planId: string;
   planTitle: string;
@@ -573,6 +602,9 @@ export const ApiClient = {
     api<{ days: DevotionalDay[] }>(`/api/plans/${planId}/days`),
   getDay: (planId: string, dayNumber: number) =>
     api<{ day: DevotionalDay }>(`/api/plans/${planId}/days/${dayNumber}`),
+
+  getJourney: (year?: number) =>
+    api<Journey>(`/api/journey${year ? `?year=${year}` : ""}`),
 
   getProgress: () => api<{ progress: PlanProgress[] }>("/api/progress"),
   getActiveDevotional: () =>

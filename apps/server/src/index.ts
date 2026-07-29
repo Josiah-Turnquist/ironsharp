@@ -14,6 +14,7 @@ import { groupsRoute } from "./routes/groups.js";
 import { tts } from "./routes/tts.js";
 import { community } from "./routes/community.js";
 import { discipleship } from "./routes/discipleship.js";
+import { journey } from "./routes/journey.js";
 
 // Surface missing AI keys at startup — without this they only fail at request
 // time (plan generation → 500, TTS → 503), which reads as a mystery outage.
@@ -45,6 +46,7 @@ app.route("/api/groups", groupsRoute);
 app.route("/api/tts", tts);
 app.route("/api/community", community);
 app.route("/api/discipleship", discipleship);
+app.route("/api/journey", journey);
 
 const port = Number(process.env.PORT ?? 8787);
 serve({ fetch: app.fetch, port }, (info) => {

@@ -44,6 +44,19 @@ export function useActiveDevotional() {
   });
 }
 
+/**
+ * Your Bible Journey for a year. The year is passed from the device rather than
+ * left to the server so the board turns over on the reader's own New Year.
+ */
+export function useJourney(year: number) {
+  const { authed } = useAuthed();
+  return useQuery({
+    queryKey: ["journey", year],
+    queryFn: () => ApiClient.getJourney(year),
+    enabled: authed,
+  });
+}
+
 export function useProgress() {
   const { authed } = useAuthed();
   return useQuery({
