@@ -165,6 +165,11 @@ export const profiles = pgTable("profiles", {
   notifGroupComplete: boolean("notif_group_complete").notNull().default(true),
   notifDiscipleship: boolean("notif_discipleship").notNull().default(true),
   notifMailbox: boolean("notif_mailbox").notNull().default(true),
+  notifNudge: boolean("notif_nudge").notNull().default(true),
+  // Rate limit for peer nudges, held on the RECIPIENT and global across groups:
+  // being nudged silences every other would-be nudger for the cooldown, so three
+  // people in three groups can't each land one.
+  lastNudgedAt: timestamp("last_nudged_at", { withTimezone: true }),
   // family membership
   familyCode: text("family_code").unique(),
   familyAccountId: text("family_account_id"),

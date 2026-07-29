@@ -20,6 +20,7 @@ type Prefs = {
   notifGroupComplete: boolean;
   notifDiscipleship: boolean;
   notifMailbox: boolean;
+  notifNudge: boolean;
 };
 
 const ROWS: Array<{ key: keyof Prefs; label: string; hint: string }> = [
@@ -42,6 +43,12 @@ const ROWS: Array<{ key: keyof Prefs; label: string; hint: string }> = [
     key: "notifGroupComplete",
     label: "Group complete",
     hint: "Pinged when everyone in your group has submitted.",
+  },
+  {
+    // Distinct from "Daily nudge" above, which is your own reminder to yourself.
+    key: "notifNudge",
+    label: "Nudges from your group",
+    hint: "When someone in a small group reminds you to read today.",
   },
   {
     key: "notifDiscipleship",
@@ -71,6 +78,7 @@ export default function NotificationSettings() {
         notifGroupComplete: profile.data.notifGroupComplete,
         notifDiscipleship: profile.data.notifDiscipleship ?? true,
         notifMailbox: profile.data.notifMailbox ?? true,
+        notifNudge: profile.data.notifNudge ?? true,
       });
     }
   }, [profile.data]);
@@ -102,6 +110,7 @@ export default function NotificationSettings() {
     notifGroupComplete: true,
     notifDiscipleship: true,
     notifMailbox: true,
+    notifNudge: true,
   };
 
   return (

@@ -132,6 +132,7 @@ export type Profile = {
   notifGroupComplete: boolean;
   notifDiscipleship: boolean;
   notifMailbox: boolean;
+  notifNudge: boolean;
   familyCode: string | null;
   familyAccountId: string | null;
   createdAt: string;
@@ -531,7 +532,7 @@ export const ApiClient = {
       method: "POST",
       body: JSON.stringify({ token }),
     }),
-  saveNotifPrefs: (prefs: Partial<Pick<Profile, "notifMorningReminder" | "notifPartnerDone" | "notifDailyNudge" | "notifGroupComplete" | "notifDiscipleship" | "notifMailbox">>) =>
+  saveNotifPrefs: (prefs: Partial<Pick<Profile, "notifMorningReminder" | "notifPartnerDone" | "notifDailyNudge" | "notifGroupComplete" | "notifDiscipleship" | "notifMailbox" | "notifNudge">>) =>
     api<{ ok: boolean }>("/api/profile/notification-prefs", {
       method: "PATCH",
       body: JSON.stringify(prefs),
@@ -654,6 +655,12 @@ export const ApiClient = {
   removeGroupMember: (groupId: string, userId: string) =>
     api<{ ok: boolean }>(`/api/groups/${groupId}/members/${userId}`, {
       method: "DELETE",
+    }),
+  /** `delivered: false` means they're inside someone else's cooldown — not an error. */
+  nudgeMember: (groupId: string, userId: string) =>
+    api<{ ok: boolean; delivered: boolean; reason?: string }>(`/api/groups/${groupId}/nudge`, {
+      method: "POST",
+      body: JSON.stringify({ userId }),
     }),
   searchUsers: (q: string) =>
     api<{ users: UserSearchResult[] }>(`/api/profile/search?q=${encodeURIComponent(q)}`),

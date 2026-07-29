@@ -17,6 +17,7 @@ import { TIER_LIMITS, TIER_NAMES, type MembershipTier } from "../lib/tiers.js";
 import { clientDateString, clientDayWindow } from "../lib/localday.js";
 import { activeGroupRun, closeRun, ensureGroupRun, groupRuns, setRunDay } from "../lib/plan-runs.js";
 import { isCalendarPaced } from "../lib/group-pacing.js";
+import { notifyNudge } from "../lib/push.js";
 
 export const groupsRoute = new Hono<AppEnv>();
 groupsRoute.use("*", requireAuth);
@@ -28,6 +29,8 @@ const createGroupSchema = z.object({
   name: z.string().trim().min(1).max(100),
   groupType: z.enum(GROUP_TYPES),
 });
+
+const nudgeSchema = z.object({ userId: z.string().trim().min(1) });
 const joinSchema = z.object({ inviteCode: z.string().trim().min(1) });
 const updateNameSchema = z.object({ name: z.string().trim().min(1).max(100) });
 const addMemberSchema = z.object({ userId: z.string().min(1) });
@@ -727,6 +730,174 @@ groupsRoute.delete("/:id/members/:targetUserId", async (c) => {
     .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, targetUserId)));
 
   return c.json({ ok: true });
+});
+
+const NUDGE_COOLDOWN_HOURS = 4;
+const NUDGE_MAX_GROUP_SIZE = 10;
+/** Quiet window after anyone in a shared group finishes — see the check below. */
+const NUDGE_QUIET_AFTER_FINISH_MINUTES = 30;
+
+/**
+ * POST /api/groups/:id/nudge — remind a member who hasn't read today.
+ *
+ * The cooldown is held on the RECIPIENT and is global across groups, so several
+ * people (or several groups) can't stack pings on one person. A nudge that
+ * lands inside someone else's cooldown is NOT an error — it returns ok with
+ * `delivered: false`, because from the sender's side "they've already been
+ * reminded" is a fine outcome and not their problem to solve.
+ */
+groupsRoute.post("/:id/nudge", async (c) => {
+  const userId = c.var.user.id;
+  const groupId = c.req.param("id");
+  const parsed = nudgeSchema.safeParse(await c.req.json().catch(() => ({})));
+  if (!parsed.success) return c.json({ error: "Invalid body" }, 400);
+  const targetUserId = parsed.data.userId;
+
+  if (targetUserId === userId) return c.json({ error: "You can't nudge yourself." }, 400);
+
+  const [membership] = await db
+    .select({ id: groupMembers.id, archivedAt: groups.archivedAt })
+    .from(groupMembers)
+    .innerJoin(groups, eq(groups.id, groupMembers.groupId))
+    .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, userId)))
+    .limit(1);
+  if (!membership) return c.json({ error: "Not a member of this group" }, 403);
+  if (membership.archivedAt) return c.json({ error: "This group has ended." }, 410);
+
+  const [targetMembership] = await db
+    .select({ id: groupMembers.id })
+    .from(groupMembers)
+    .where(and(eq(groupMembers.groupId, groupId), eq(groupMembers.userId, targetUserId)))
+    .limit(1);
+  if (!targetMembership) return c.json({ error: "They're not in this group." }, 404);
+
+  const [group] = await db
+    .select({
+      name: groups.name,
+      groupType: groups.groupType,
+      currentDay: groups.currentDay,
+      currentPlanId: groups.currentPlanId,
+    })
+    .from(groups)
+    .where(eq(groups.id, groupId))
+    .limit(1);
+  if (!group) return c.json({ error: "Group not found" }, 404);
+
+  // Mirrors showsIndividualStatus() in apps/mobile/src/lib/groupTypes.ts. Size
+  // and type both gate it: a big group makes nudging a chore, and a public one
+  // makes it singling out however few people are in it. The client hides the
+  // affordance on the same terms, so this only catches a stale or forged call.
+  const [sizeRow] = await db
+    .select({ value: count() })
+    .from(groupMembers)
+    .where(eq(groupMembers.groupId, groupId));
+  const publicType = group.groupType === "large-group" || group.groupType === "community";
+  if ((sizeRow?.value ?? 0) > NUDGE_MAX_GROUP_SIZE || publicType) {
+    return c.json({ error: "Nudging isn't available in this group." }, 400);
+  }
+
+  // Nothing to nudge about if they've already done the group's current day.
+  if (group.currentPlanId && group.currentDay) {
+    const [done] = await db
+      .select({ userId: devotionalSubmissions.userId })
+      .from(devotionalSubmissions)
+      .where(
+        and(
+          eq(devotionalSubmissions.planId, group.currentPlanId),
+          eq(devotionalSubmissions.groupId, groupId),
+          eq(devotionalSubmissions.userId, targetUserId),
+          eq(devotionalSubmissions.dayNumber, group.currentDay)
+        )
+      )
+      .limit(1);
+    if (done) return c.json({ error: "They've already read today." }, 409);
+  }
+
+  const [target] = await db
+    .select({
+      lastNudgedAt: profiles.lastNudgedAt,
+      notifPartnerDone: profiles.notifPartnerDone,
+    })
+    .from(profiles)
+    .where(eq(profiles.userId, targetUserId))
+    .limit(1);
+
+  const cooldownMs = NUDGE_COOLDOWN_HOURS * 60 * 60 * 1000;
+  if (
+    target?.lastNudgedAt &&
+    Date.now() - new Date(target.lastNudgedAt).getTime() < cooldownMs
+  ) {
+    return c.json({ ok: true, delivered: false, reason: "cooldown" });
+  }
+
+  // Someone finishing already pings the rest of the group ("Partner finished"),
+  // which lands as a nudge in everything but name. Stay quiet for a while after
+  // one rather than buzzing the same person twice for the same reason. Derived
+  // from the submission itself, so it needs no bookkeeping of its own — and it
+  // only applies when they'd actually have received that ping.
+  if (target?.notifPartnerDone) {
+    const since = new Date(Date.now() - NUDGE_QUIET_AFTER_FINISH_MINUTES * 60 * 1000);
+    const [recent] = await db
+      .select({ userId: devotionalSubmissions.userId })
+      .from(devotionalSubmissions)
+      .innerJoin(
+        groupMembers,
+        and(
+          eq(groupMembers.groupId, devotionalSubmissions.groupId),
+          eq(groupMembers.userId, targetUserId)
+        )
+      )
+      .where(
+        and(
+          ne(devotionalSubmissions.userId, targetUserId),
+          gte(devotionalSubmissions.submittedAt, since)
+        )
+      )
+      .limit(1);
+    if (recent) {
+      return c.json({ ok: true, delivered: false, reason: "recent-activity" });
+    }
+  }
+
+  const [sender] = await db
+    .select({ displayName: profiles.displayName })
+    .from(profiles)
+    .where(eq(profiles.userId, userId))
+    .limit(1);
+
+  let chapter: string | null = null;
+  if (group.currentPlanId && group.currentDay) {
+    const [dayRow] = await db
+      .select({ chapter: devotionalDays.chapter })
+      .from(devotionalDays)
+      .where(
+        and(
+          eq(devotionalDays.planId, group.currentPlanId),
+          eq(devotionalDays.dayNumber, group.currentDay)
+        )
+      )
+      .limit(1);
+    chapter = dayRow?.chapter ?? null;
+  }
+
+  // Stamped BEFORE sending: two people tapping at once would otherwise both pass
+  // the check above and land two notifications, which is the exact thing the
+  // cooldown exists to prevent. A failed push costs one silent cooldown window,
+  // which is the cheaper mistake.
+  await db
+    .update(profiles)
+    .set({ lastNudgedAt: new Date() })
+    .where(eq(profiles.userId, targetUserId));
+
+  await notifyNudge(
+    targetUserId,
+    sender?.displayName ?? "Someone",
+    groupId,
+    group.name,
+    chapter
+  );
+
+  return c.json({ ok: true, delivered: true });
 });
 
 // PATCH /api/groups/:id/plan — assign a plan to a group (must be a member)

@@ -210,13 +210,14 @@ async function pushToUser(
   title: string,
   body: string,
   url?: string,
-  pref?: "notifDiscipleship" | "notifMailbox"
+  pref?: "notifDiscipleship" | "notifMailbox" | "notifNudge"
 ): Promise<void> {
   const [recipient] = await db
     .select({
       pushToken: profiles.pushToken,
       notifDiscipleship: profiles.notifDiscipleship,
       notifMailbox: profiles.notifMailbox,
+      notifNudge: profiles.notifNudge,
     })
     .from(profiles)
     .where(eq(profiles.userId, userId))
@@ -247,6 +248,32 @@ export async function notifyDiscipleshipInvite(
     `${discipler.displayName} would like to disciple you. Open IronSharp to respond.`,
     "/(tabs)/groups",
     "notifDiscipleship"
+  );
+}
+
+/**
+ * A peer nudge — one member reminding another that the group is reading today.
+ *
+ * The sender is named deliberately: an anonymous nudge reads as surveillance,
+ * and knowing your name is attached keeps people from being careless with it.
+ * Lands on the group page rather than straight in the reading, so the nudged
+ * member arrives with the context of who else has read.
+ */
+export async function notifyNudge(
+  recipientId: string,
+  senderName: string,
+  groupId: string,
+  groupName: string,
+  chapter: string | null
+): Promise<void> {
+  await pushToUser(
+    recipientId,
+    `${senderName} nudged you`,
+    chapter
+      ? `${groupName} is reading ${chapter} today.`
+      : `${groupName} is reading today.`,
+    `/groups/${groupId}`,
+    "notifNudge"
   );
 }
 
