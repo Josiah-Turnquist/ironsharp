@@ -174,7 +174,7 @@ export default function ProfileScreen() {
             className="flex-row items-center gap-3 border-b border-border p-4 active:bg-muted/40"
           >
             <UserCog size={20} color={primary} />
-            <Text className="flex-1 text-base text-foreground">Edit Profile</Text>
+            <Text className="flex-1 text-base text-foreground">Profile</Text>
             <ChevronRight size={18} color={muted} />
           </Pressable>
           <Pressable

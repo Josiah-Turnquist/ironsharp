@@ -195,11 +195,11 @@ export const HELP_SECTIONS: HelpSection[] = [
     articles: [
       {
         q: "How do I update my name or profile?",
-        a: "Open Profile → Edit Profile to update your display name and church information.",
+        a: "Open the Profile tab and tap Profile to update your display name and church information.",
       },
       {
         q: "How do I change my password?",
-        a: "Go to Profile → Edit Profile → Change Password.",
+        a: "Open the Profile tab, tap Profile, then Change Password.",
       },
       {
         q: "How do I delete my account?",

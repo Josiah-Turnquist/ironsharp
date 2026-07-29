@@ -1,4 +1,4 @@
-/** Canonical US state list shared by the onboarding survey and Edit Profile. */
+/** Canonical US state list shared by the onboarding survey and the Profile screen. */
 export const US_STATES = [
   "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
   "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
