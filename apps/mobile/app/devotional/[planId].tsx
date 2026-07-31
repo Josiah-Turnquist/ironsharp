@@ -424,7 +424,7 @@ const TRANSLATION_STORAGE_KEY = "@ironsharp/bible_translation";
 
 const VERSES_PER_PAGE = 15;
 
-function BiblePassageCard({ passageRef, onPageChange, passageRead, onMarkRead }: { passageRef: string; onPageChange?: () => void; passageRead?: boolean; onMarkRead?: () => void; }) {
+function BiblePassageCard({ passageRef, readThrough, onPageChange, passageRead, onMarkRead }: { passageRef: string; readThrough?: boolean; onPageChange?: () => void; passageRead?: boolean; onMarkRead?: () => void; }) {
   const cardBg = useThemeColor("card");
   const mutedBg = useThemeColor("muted");
   const borderColor = useThemeColor("border");
@@ -487,6 +487,25 @@ function BiblePassageCard({ passageRef, onPageChange, passageRead, onMarkRead }:
     : allVerses;
   const startVerseNum = verseRange ? verseRange.from : 1;
 
+  // Read-throughs are one chapter a day, so the header reads "Matthew 26"
+  // rather than echoing a verse range that covers the whole chapter anyway.
+  // A chapter too long for one sitting gets split across two days, and which
+  // half you are on is derived from the range against the chapter's real
+  // length — no stored label to fall out of sync with the passage. Themed
+  // plans use partial chapters constantly and must keep the plain reference.
+  // Only two parts are detectable this way; a chapter needing three (Psalm 119,
+  // Numbers 7) would need the part number carried in the data.
+  const headerLabel = (() => {
+    if (!readThrough || !parsed) {
+      return verseRange ? passageRef : parsed ? `${parsed.book} Chapter ${parsed.chapter}` : passageRef;
+    }
+    const base = `${parsed.book} ${parsed.chapter}`;
+    if (!verseRange || allVerses.length === 0) return base;
+    const wholeChapter = verseRange.from === 1 && verseRange.to >= allVerses.length;
+    if (wholeChapter) return base;
+    return `${base} ${verseRange.from === 1 ? "Part One" : "Part Two"}`;
+  })();
+
   const totalPages = Math.max(1, Math.ceil(displayVerses.length / VERSES_PER_PAGE));
   const startIndex = page * VERSES_PER_PAGE;
   const pageVerses = displayVerses.slice(startIndex, startIndex + VERSES_PER_PAGE);
@@ -505,7 +524,7 @@ function BiblePassageCard({ passageRef, onPageChange, passageRead, onMarkRead }:
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             <BookOpen size={13} color={mutedFg} />
             <Text style={{ fontSize: 9, letterSpacing: 2, color: mutedFg, textTransform: "uppercase", fontFamily: "DMSans_400Regular" }}>
-              {verseRange ? passageRef : parsed ? `${parsed.book} Chapter ${parsed.chapter}` : passageRef}
+              {headerLabel}
             </Text>
           </View>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
@@ -1510,6 +1529,10 @@ export default function DevotionalReader() {
           <View onLayout={(e) => { cardYRef.current = e.nativeEvent.layout.y; }}>
             <BiblePassageCard
               passageRef={day?.chapter ?? ""}
+              // Same read-through signal used just below for onMarkRead: a day
+              // with no reflection. Guarded on `day` so a still-loading themed
+              // day never flashes the read-through header.
+              readThrough={!!day && !day.reflection}
               onPageChange={() => scrollRef.current?.scrollTo({ y: cardYRef.current, animated: true })}
               passageRead={passageRead}
               onMarkRead={day?.reflection ? () => { setPassageRead(true); scrollRef.current?.scrollTo({ y: 0, animated: true }); } : undefined}
@@ -1715,6 +1738,21 @@ export default function DevotionalReader() {
                 </View>
               </>
             )}
+
+            {/* Disclosure. Stated as an exclusion rather than a list: the theme,
+                passage context, study notes, reflection, questions and book
+                intro are ALL generated, and naming them one by one goes stale
+                the moment a field is added. The passage itself is a real
+                translation fetched from the Bible API, so it is the one thing
+                the line has to hold outside the claim — and saying so keeps a
+                reader from ever reading "AI-generated" as reaching the
+                Scripture. True as written on a read-through day too, where only
+                the questions are on the page. */}
+            <Text
+              style={{ textAlign: "center", fontSize: 11, lineHeight: 16, color: muted }}
+            >
+              Everything but the Scripture is AI-generated.
+            </Text>
         </ScrollView>
         {showScrollTop && (
           <Pressable
