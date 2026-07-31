@@ -75,6 +75,19 @@ export default function ReadThroughIntro() {
           Each day is the passage and two questions. There are no notes and no
           commentary. The thinking is yours to do.
         </Text>
+
+        {/* The reading screen carries the same disclosure, but this is its own
+            screen and the introduction above is the only thing on it, so the
+            line has to be here too. Worded for this page: no Scripture is
+            displayed here, so the exclusion the reader sees elsewhere
+            ("everything but the Scripture") would be pointing at nothing. */}
+        {plan.data?.howToUse ? (
+          <Text
+            style={{ textAlign: "center", fontSize: 11, lineHeight: 16, color: muted, marginTop: 28 }}
+          >
+            This introduction is AI-generated.
+          </Text>
+        ) : null}
       </ScrollView>
 
       <View style={{ paddingHorizontal: 24, paddingTop: 8, paddingBottom: 8 }}>
