@@ -531,7 +531,7 @@ export const PLANS: PlanSeed[] = [
           { "verse_ref": "v19", "note": "You are not of the world because he chose you out of it — the sense of not quite fitting in is not a flaw but evidence of whose you are." }
         ],
         "reflection": "Jesus says something in the upper room his disciples couldn't have fully processed in the moment: you did not choose me, but I chose you. In their world, that was backwards. A student picked which rabbi he wanted to follow; the disciple chose the teacher. Jesus flips the entire framework of spiritual pursuit. These men didn't size him up and decide he was the best option available. He came to them, called them by name, and appointed them to a purpose they never initiated. I don't want you to miss the order — the choosing comes first, and the fruitfulness flows out of it. This matters more than it sounds, because it means your relationship with God didn't begin with your seeking. It began with his finding. Everyone who comes to Christ does so because God was already at work before they ever started looking. And the security Jesus wants this to give is exactly what he names: that you would go and bear fruit, fruit that lasts. The fruit was never yours to manufacture by sheer effort. It's the overflow of staying close to the one who chose you first.",
-        "reflectionQ1": "Do you still think of your faith mainly as something you chose and maintain, rather than something he started — and what does that reveal?",
+        "reflectionQ1": "Do you still think of your faith mainly as something you chose and maintain, rather than something God started — and what does that reveal?",
         "reflectionQ2": "Jesus says the fruit comes from abiding, not effort. Name where you're straining to produce it, and just stay close to him today instead.",
         "prayerPrompt": "Come to God today not with your effort or your report card but simply in the posture of someone who was found — and ask him to make the choosing feel more real to you than your own striving."
       },
@@ -1027,55 +1027,44 @@ export const PLANS: PlanSeed[] = [
         ],
         "reflection": "Lamentations is the most honest book in the Bible about suffering. Jeremiah is sitting in the rubble of Jerusalem, and he isn't pretending. He describes God as someone who has driven him into darkness, made him sit in shadows, worn him down. He doesn't skip the pain to rush to the comfort. And then, right in the middle of the grief, three verses arrive that have held the people of God for thousands of years: the steadfast love of the Lord never ceases; his mercies never come to an end; they are new every morning; great is your faithfulness. I don't want you to miss where those verses sit — not at the end of a resolved story, but in the middle of devastation. The steadfast love Jeremiah is clinging to isn't a feeling. It's a conviction about the character of God, held onto when nothing felt true. For any mother finishing a hard season, or sitting in the middle of one, this isn't a dismissal of how heavy it's been. It's the promise that the God whose mercies are new every morning has not changed — and tomorrow morning, the same God who met you yesterday will be there to meet you again. The exhaustion is real. The mercy is more real. And it resets while you sleep.",
         "reflectionQ1": "What season of motherhood has most tested your belief that God's love is real — and what has that testing cost your relationship with him?",
-        "reflectionQ2": "Lamentations says his mercies are new each morning. Name one thing from this season you need to lay down tonight instead of carrying into tomorrow.",
+        "reflectionQ2": "Lamentations says God's mercies are new each morning. Name one thing from this season you need to lay down tonight instead of carrying into tomorrow.",
         "prayerPrompt": "Bring to God the honest grief or exhaustion of this season — not the sanitized version, but the real one — and ask him to meet you tomorrow morning with the mercy this passage promises."
       }
     ]
   },
   {
     "title": "The Book of Ephesians",
-    "subtitle": "Seven days, start to finish.",
+    "subtitle": "Six days, a chapter a day.",
     "category": "general",
-    "totalDays": 7,
-    "description": "Read Ephesians the way it was written, straight through in seven days. No reflection and no study notes: just the passage, and two questions that leave the thinking to you.",
+    "totalDays": 6,
+    "description": "Read Ephesians the way it was written, straight through, one chapter a day. No reflection and no study notes: just the passage, and two questions that leave the thinking to you.",
     "howToUse": "Paul writes Ephesians from a prison cell, probably in Rome, to believers in a city famous for its temple to Artemis and its thriving trade in magic. He is not putting out a fire. Unlike most of his letters there is no crisis being corrected here, no scandal, no argument to settle, which is part of why many think it was written to circulate among several churches rather than one. That freedom shows. Paul spends the first three chapters simply telling Christians what is already true of them: chosen, adopted, redeemed, sealed, raised, seated, brought near. Then everything turns at 4:1 on a single word, therefore, and the last three chapters describe what a life looks like when someone actually believes the first three. Watch for that hinge as you read, because it is the architecture of the whole letter. Identity first, instruction second. Paul never tells you to behave your way into belonging. He tells you what you belong to, then asks you to walk like it.",
     "imageUrl": null,
     "days": [
       {
         "dayNumber": 1,
-        "chapter": "Ephesians 1:1–14",
+        "chapter": "Ephesians 1:1–23",
         "theme": null,
         "passageContext": null,
         "studyNotes": [],
         "reflection": null,
-        "reflectionQ1": "In the original Greek, verses 3 through 14 are a single unbroken sentence, the longest one in the New Testament, because Paul starts listing what God has done and cannot find a place to stop. Read it again and notice who is doing the verbs. He chose, he predestined, he blessed, he lavished, he sealed. You are the object of nearly every action in this passage, not the subject. So where does your daily sense of standing with God still rise and fall on your own performance, and what has that scorekeeping cost you?",
-        "reflectionQ2": "Paul says you were marked with a seal, the Holy Spirit, who is the guarantee of an inheritance you have not received yet. The word he uses there was a business term in the first century: a down payment that legally obligates the buyer to complete the purchase. God has put money down on you. Write down the one area of your life where you are still living like the deal might fall through, and pray over that specific thing before you close your day.",
+        "reflectionQ1": "In Greek, verses 3 through 14 are one unbroken sentence, because Paul starts listing what God has done and cannot find a place to stop. Notice who is doing the verbs: he chose, he blessed, he lavished, he sealed. What do you make of you being the object of almost every action here?",
+        "reflectionQ2": "Ephesus ran a busy trade in magic, and the whole business rested on knowing the right names to say. Paul prays they would grasp the power already at work in them, then measures it: the power that raised Christ and seated him above every name that is named. Where have you been asking God for something new when the real problem is that you have never taken hold of what he already gave you?",
         "prayerPrompt": null
       },
       {
         "dayNumber": 2,
-        "chapter": "Ephesians 1:15–23",
-        "theme": null,
-        "passageContext": null,
-        "studyNotes": [],
-        "reflection": null,
-        "reflectionQ1": "Paul has just spent thirteen verses listing what God has done, and now he prays they would actually know it. Watch what he asks for: not more blessings, but eyes to see the ones already given. Then he measures the power at work in believers against a single event, the resurrection, and says it is the same power. Where have you been asking God for something new when the real problem is that you have never taken hold of what he already gave you?",
-        "reflectionQ2": "Paul prays for a spirit of wisdom and revelation so they would know the hope of their calling, and notice he prays this for people he already calls faithful. Knowing about God and knowing him are not the same thing, and the gap between them does not close on its own. Pray Paul's prayer for yourself today in your own words, and name the one thing you most need your eyes opened to.",
-        "prayerPrompt": null
-      },
-      {
-        "dayNumber": 3,
         "chapter": "Ephesians 2:1–22",
         "theme": null,
         "passageContext": null,
         "studyNotes": [],
         "reflection": null,
-        "reflectionQ1": "Chapter 2 is one long before and after, and Paul does not soften the before. You were dead, following the course of this world, by nature deserving wrath. Then two words turn the entire passage: but God. Everything after that is something done to you while you were incapable of doing it yourself. So be honest about the before: what part of your old life do you still quietly treat as a strength rather than something you were rescued from?",
-        "reflectionQ2": "The second half of the chapter uses an image Paul's readers had seen with their own eyes. There was a wall in the temple courts with signs warning Gentiles that crossing it meant death, and Paul says Christ tore that wall down in his own body to make one new humanity out of two. Name the person or group you still keep on the other side of a wall, and this week do one concrete thing that treats them like family. Not a feeling. Something they would notice.",
+        "reflectionQ1": "There was a wall in the temple courts with signs in Greek and Latin warning Gentiles that going past it meant death, and two of those signs have actually been dug up. Paul says Christ tore that wall down in his own body. Who are you still keeping on the other side of one?",
+        "reflectionQ2": "Paul does not soften the before: dead, following the world, by nature deserving wrath. Then two words turn the whole chapter, but God. What part of your old life do you still quietly count as a strength?",
         "prayerPrompt": null
       },
       {
-        "dayNumber": 4,
+        "dayNumber": 3,
         "chapter": "Ephesians 3:1–21",
         "theme": null,
         "passageContext": null,
@@ -1086,7 +1075,7 @@ export const PLANS: PlanSeed[] = [
         "prayerPrompt": null
       },
       {
-        "dayNumber": 5,
+        "dayNumber": 4,
         "chapter": "Ephesians 4:1–32",
         "theme": null,
         "passageContext": null,
@@ -1097,7 +1086,7 @@ export const PLANS: PlanSeed[] = [
         "prayerPrompt": null
       },
       {
-        "dayNumber": 6,
+        "dayNumber": 5,
         "chapter": "Ephesians 5:1–33",
         "theme": null,
         "passageContext": null,
@@ -1108,7 +1097,7 @@ export const PLANS: PlanSeed[] = [
         "prayerPrompt": null
       },
       {
-        "dayNumber": 7,
+        "dayNumber": 6,
         "chapter": "Ephesians 6:1–24",
         "theme": null,
         "passageContext": null,
@@ -1116,6 +1105,347 @@ export const PLANS: PlanSeed[] = [
         "reflection": null,
         "reflectionQ1": "Paul ends a letter about being seated with Christ by telling you to stand. Then look at the armor he lists: truth, righteousness, peace, faith, salvation, the word of God. Every single piece is something he already told you that you have, back in chapters 1 through 3. He is not asking you to go acquire equipment. He is asking you to put on what you were handed. Which piece have you been leaving off, and what has that cost you in the fight you are actually in?",
         "reflectionQ2": "Notice how the armor section ends. Not with a weapon, but with praying at all times for all the saints. The final instruction of the entire letter is to pray for other people. So do it now, before you close this. Pick one person by name, pray for them specifically rather than generally, and then tell them you did.",
+        "prayerPrompt": null
+      }
+    ]
+  },
+  {
+    "title": "The Book of Galatians",
+    "subtitle": "Six days, a chapter a day.",
+    "category": "general",
+    "totalDays": 6,
+    "description": "Read Galatians the way it was written, straight through, one chapter a day. No reflection and no study notes: just the passage, and two questions that leave the thinking to you.",
+    "howToUse": "Galatians may be the first letter Paul ever wrote, and it is easily the angriest. He had planted these churches, and after he left, other teachers arrived telling his Gentile converts that faith in Jesus was a fine start but they would need circumcision and the law to really belong. Paul treats that as a different gospel altogether, and he does not ease into it. Every other letter he writes opens by thanking God for the readers; this one skips the pleasantries and goes straight to I am astonished at you. The shape is easy to follow. Chapters 1 and 2 defend where his message came from, chapters 3 and 4 argue it out of Scripture, and chapters 5 and 6 show what the freedom actually looks like on a Tuesday. Watch one thing as you read: Paul never says the law was bad. He says it was never the door. And notice how fast he moves from that argument to how you treat the person next to you, because for him those were never two subjects.",
+    "imageUrl": null,
+    "days": [
+      {
+        "dayNumber": 1,
+        "chapter": "Galatians 1:1–24",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Paul usually opens a letter by thanking God for the people he is writing to. Here he skips it completely and goes straight to I am astonished at you. What have you quietly added to what saves you?",
+        "reflectionQ2": "He describes himself as the man who tried to destroy the thing he now preaches, and says the churches praised God over exactly that. What part of your story are you still hoping nobody brings up?",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 2,
+        "chapter": "Galatians 2:1–21",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Peter never says anything wrong here. He just quietly stops eating with certain people once a certain crowd shows up, and Paul says that alone was out of step with the gospel. Whose opinion of you still runs the room?",
+        "reflectionQ2": "Paul ends by saying the Son of God loved me and gave himself for me. Singular, not for us. Where do you still hear that as something said about everyone else?",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 3,
+        "chapter": "Galatians 3:1–29",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "The word translated guardian is not a teacher. It was the household slave who walked a boy to school and kept him out of trouble until he grew up, and he had no say in anything once the boy came of age. Do you come to God like a son, or like someone still on probation?",
+        "reflectionQ2": "Paul asks whether they received the Spirit by working for it or by hearing and believing, then asks why they think they will finish a different way than they started. Where have you started earning something you know you were given?",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 4,
+        "chapter": "Galatians 4:1–31",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "In the middle of a Greek letter Paul leaves one word untranslated: Abba, Aramaic, the word a child uses for their father at home. He does not explain it. He just drops it in as the thing the Spirit says inside you. What do you call God when nobody is listening?",
+        "reflectionQ2": "Paul reminds them they once would have torn out their own eyes for him, then asks whether he became their enemy by telling them the truth. What do you do to people who tell you the truth?",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 5,
+        "chapter": "Galatians 5:1–26",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Paul asks who cut in on them, and the word is from footracing: someone stepping into your lane and breaking your stride. Nobody stops running because they sat down and decided to. What did you start believing that made you slow down?",
+        "reflectionQ2": "Paul says works of the flesh, plural, but fruit of the Spirit, singular. It is not nine things to go collect. It is one thing that grows. Write the nine down, mark the one furthest along in you, and mark the one that has not started.",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 6,
+        "chapter": "Galatians 6:1–18",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Verse 2 says carry each other's burdens and verse 5 says each will carry his own load, which reads like a contradiction until you notice they are two different words. One is a crushing weight nobody should be under alone; the other is the pack every soldier carries himself. Which is it for you, too proud to be carried or too tired to carry?",
+        "reflectionQ2": "Paul signs off saying he carries the marks of Jesus on his body, and the word he picks is the one used for the brand burned into a slave. He is not showing scars. He is showing whose he is. What has following Jesus actually cost you that someone could point to?",
+        "prayerPrompt": null
+      }
+    ]
+  },
+  {
+    "title": "The Book of Philippians",
+    "subtitle": "Four days, a chapter a day.",
+    "category": "general",
+    "totalDays": 4,
+    "description": "Read Philippians the way it was written, straight through, one chapter a day. No reflection and no study notes: just the passage, and two questions that leave the thinking to you.",
+    "howToUse": "Paul writes this one from a prison cell, and it is the warmest letter he ever sent. Philippi was a Roman colony in Macedonia and the first place he planted a church in Europe, which started with a businesswoman named Lydia and a jailer who tried to kill himself. Years later that church took up a collection and sent it to Paul in prison by the hand of a man named Epaphroditus, who nearly died on the trip. So part of what you are reading is a thank-you note. The heart of the letter is in chapter 2, a hymn about Christ going all the way down before God raised him up, and it was probably a song these people already sang. Everything around it is Paul showing what that downward movement looks like in ordinary people, including two of his friends and two women who were not getting along. Watch how often he says rejoice, and remember where he is sitting while he writes it. This is not a man describing a good mood. He is describing something he says he had to learn.",
+    "imageUrl": null,
+    "days": [
+      {
+        "dayNumber": 1,
+        "chapter": "Philippians 1:1–30",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "He who began a good work in you will bring it to completion gets read as a promise to one person. In Greek the you is plural, said to a church that had stood with him since day one. Who are the people God has been using to finish what he started in you?",
+        "reflectionQ2": "Some people were preaching Christ on purpose to make Paul's imprisonment harder, and his answer is that Christ gets preached either way, so he is glad. Whose success are you having trouble being glad about?",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 2,
+        "chapter": "Philippians 2:1–30",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Paul goes from the highest thing in the whole letter, Christ emptying himself and God lifting him above every name, and the very next instruction is do everything without grumbling. What does your complaining say you think you are owed?",
+        "reflectionQ2": "Counting others more significant than yourself is not a feeling, it is a decision about who goes first. Write down the person you have quietly ranked below you, and one moment this week where you are going to let them go first.",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 3,
+        "chapter": "Philippians 3:1–21",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Philippi was a Roman colony, and its people were proud of carrying Roman citizenship in a town a long way from Rome. It was the thing that made them somebody, and Paul tells them the citizenship that counts is somewhere else. Where does your sense of being somebody actually come from?",
+        "reflectionQ2": "Paul lists everything that ever made him impressive and then calls the whole list garbage, using a word most translations quietly clean up. What is on your list that you have never been able to put in that category?",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 4,
+        "chapter": "Philippians 4:1–23",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Two women at Philippi were not getting along, and Paul names them both in a letter he knew would be read out loud to the entire church. Euodia and Syntyche have been famous for one disagreement for two thousand years. What are you protecting in that fight that matters more to you than the person?",
+        "reflectionQ2": "I can do all things through him who strengthens me sits in the middle of a paragraph about being hungry and being full. The word Paul uses for how he learned contentment is an initiation word, the kind used for being let in on a secret. What are you still waiting to get before you will be alright?",
+        "prayerPrompt": null
+      }
+    ]
+  },
+  {
+    "title": "The Book of Colossians",
+    "subtitle": "Four days, a chapter a day.",
+    "category": "general",
+    "totalDays": 4,
+    "description": "Read Colossians the way it was written, straight through, one chapter a day. No reflection and no study notes: just the passage, and two questions that leave the thinking to you.",
+    "howToUse": "Paul writes this one from prison to a church he had never actually visited. Colossae was a small town in a river valley in what is now Turkey, and the church there had been started by a man named Epaphras, who then came to Paul worried about what was happening. Teachers had arrived selling extras: special knowledge, visions, angels to go through, food rules, festival days, and a hard line on treating the body severely. Paul does not argue with the rules one at a time. He does something better, and it is the reason this letter exists: he makes Christ so large there is no room left for anything to be added. Chapter 1 holds the centerpiece, most likely a hymn the church already sang, about the one in whom everything was made and in whom everything holds together. Everything after it is the consequence. You are already complete in him, so stop letting people grade you. Watch how often Paul says in him, with him, and through him, and notice that a runaway slave named Onesimus shows up by name in the last chapter as simply one of you.",
+    "imageUrl": null,
+    "days": [
+      {
+        "dayNumber": 1,
+        "chapter": "Colossians 1:1–29",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Paul does not say God improved your situation. He says God transferred you: out from under one authority, into the kingdom of God's own Son. Where are you still living like a citizen of the place God brought you out of?",
+        "reflectionQ2": "Paul calls it the mystery kept hidden for ages and then says the whole thing in four words: Christ in you. What do you believe about yourself that cannot be true if that is?",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 2,
+        "chapter": "Colossians 2:1–23",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "The record of debt is a specific word: a handwritten IOU, signed by the person who owed it. Paul says God wiped yours out and nailed it to the cross. What are you still making payments on?",
+        "reflectionQ2": "Disqualify is a sports word: the official ruling against you and taking the prize away. Paul says people were doing that to this church over food, festival days, and who had seen visions. Who have you let umpire your standing with God?",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 3,
+        "chapter": "Colossians 3:1–25",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "In chapter 2 Paul used a sports word for an official ruling against you. Here he uses the same root again and says let the peace of Christ be the one making the calls in your heart. What has actually been settling things inside you, if not peace?",
+        "reflectionQ2": "In the middle of telling everyone to submit and obey, Paul turns and tells fathers not to provoke their children, because they will lose heart. Who has less heart than they used to because of how you handle them?",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 4,
+        "chapter": "Colossians 4:1–18",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Onesimus is in this list of names, described simply as one of you. He was a runaway slave, and Paul was sending him back to a household in that same town with a letter asking them to take him as a brother. Who would you have trouble putting in a list like that?",
+        "reflectionQ2": "Paul says Epaphras is always wrestling for them in prayer, and the word is the one used for an athlete straining in a contest. Write down the name of someone nobody is praying for like that, and be the one who does it this week.",
+        "prayerPrompt": null
+      }
+    ]
+  },
+  {
+    "title": "The Book of 2 Corinthians",
+    "subtitle": "Thirteen days, a chapter a day.",
+    "category": "general",
+    "totalDays": 13,
+    "description": "Read 2 Corinthians the way it was written, straight through, one chapter a day. No reflection and no study notes: just the passage, and two questions that leave the thinking to you.",
+    "howToUse": "This is the most personal thing Paul ever wrote, and it comes out of a mess. He had planted the church at Corinth, written to them, visited once in a way he calls painful, and then sent a hard letter that we no longer have. While he waited to hear how they took it he could not sleep. Meanwhile teachers had arrived telling the Corinthians that Paul was not much to look at, not much of a speaker, and therefore probably not a real apostle. Then Titus brought word that they had come around, and Paul sat down and wrote this. So you are reading relief and defense at the same time, which is why it swings. Chapters 1 through 7 are about the relationship and the work, 8 and 9 are a fundraising appeal for the poor in Jerusalem, and 10 through 13 are the hardest self-defense in the New Testament. Watch what he does with the accusation that he is unimpressive. He does not argue with it. He agrees, and then builds his entire case on it, ending his list of credentials with the story of escaping a city by being lowered down a wall in a basket.",
+    "imageUrl": null,
+    "days": [
+      {
+        "dayNumber": 1,
+        "chapter": "2 Corinthians 1:1–24",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "The word Paul keeps repeating here, comfort, is not a soothing word. It is the same one behind the name for the Holy Spirit, and it means someone called over to stand next to you. What have you come through that God has not used for anyone else yet?",
+        "reflectionQ2": "Paul says the pressure in Asia was so far past his strength that he gave up on living, and that it happened so he would stop relying on himself and lean on the God who raises the dead. What are you still relying on yourself for?",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 2,
+        "chapter": "2 Corinthians 2:1–17",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Paul is picturing a Roman victory parade, where incense burned all along the route. To the soldiers that smell meant celebration, and to the prisoners being marched to their execution it meant this was the last day. What do you smell like to the people who do not believe what you believe?",
+        "reflectionQ2": "Paul tells them to forgive the man who caused the trouble and take him back, and he gives a reason: otherwise the enemy gets an opening he did not have before. Who are you keeping at arm's length long after it stopped being about justice?",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 3,
+        "chapter": "2 Corinthians 3:1–18",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Paul says Moses wore the veil so nobody would watch the shine fade off his face. The old glory had an expiration date on it, and the veil hid that. What are you covering because you are afraid someone will notice it is fading?",
+        "reflectionQ2": "Paul says he does not need a letter of recommendation, because the people themselves are his letter, written on hearts and read by everybody. Who is reading your life as evidence, whether you meant them to or not?",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 4,
+        "chapter": "2 Corinthians 4:1–18",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Jars of clay were the cheapest container there was, thrown out the moment they cracked. Paul says God picked that on purpose to hold the treasure, so nobody could be confused about where the power was coming from. What weakness have you been hiding instead of letting it prove the point?",
+        "reflectionQ2": "Paul admits the outside is wearing out and says the inside is being renewed every day, which means both are happening to you at once. Which one have you been paying attention to?",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 5,
+        "chapter": "2 Corinthians 5:1–21",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Paul says you are an ambassador, and an ambassador has no authority of his own. Everything he carries is borrowed from God, who sent him, and he does not get to adjust the message to suit the room. Whose message have you been softening because you have to live near the people hearing it?",
+        "reflectionQ2": "Paul says the love of Christ controls him, and the word is closer to being hemmed in, pressed from both sides until there is only one direction left to move. What decision are you keeping open that his love should have closed already?",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 6,
+        "chapter": "2 Corinthians 6:1–18",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Paul lists everything he has absorbed, beatings and sleepless nights and hunger, and then says the problem between them is none of that. He says they have gotten narrow in their own affections. Where have you gone small toward someone who never actually wronged you?",
+        "reflectionQ2": "The picture behind unequally yoked is an old farming law: do not plow with an ox and a donkey together, because they pull at different strides and the field gets torn up. What are you tied to that is pulling you at a speed you never chose?",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 7,
+        "chapter": "2 Corinthians 7:1–16",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Paul says there are two kinds of sorrow over sin and only one of them changes anything: one turns you around and leaves no regret behind it, the other just wears you down. Which one have you been calling repentance?",
+        "reflectionQ2": "Paul admits he was so anxious waiting for news that his body got no rest, fighting on the outside and afraid on the inside, until Titus finally walked in. Who is the person whose arrival would settle you like that?",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 8,
+        "chapter": "2 Corinthians 8:1–24",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "The churches Paul holds up as the example were in deep poverty themselves, and they begged him for the privilege of giving. He did not have to ask them. What would have to change in you before generosity felt like something you got to do?",
+        "reflectionQ2": "Paul's entire argument for generosity is one sentence about Jesus: he was rich, and for your sake he became poor, so that you would end up rich. What has his poverty actually bought you that you never think about?",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 9,
+        "chapter": "2 Corinthians 9:1–15",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "The word behind cheerful giver is the one our word hilarious comes from. Paul is not describing someone who gives without complaining. He is describing someone who finds it almost funny how good it feels. What is the last thing you gave away that felt like that?",
+        "reflectionQ2": "Paul says God is able to give you enough of everything so that you always have something to share. Write down one amount and one name, and give it away this week before you have talked yourself out of it.",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 10,
+        "chapter": "2 Corinthians 10:1–18",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Paul quotes what people were saying about him: his letters are strong, but in person he is unimpressive and a poor speaker. He puts their insult into his own letter, in writing, and keeps going. What has been said about you that you still cannot repeat without flinching?",
+        "reflectionQ2": "Paul says the weapons are not the usual ones, and then names the targets: arguments, and every thought that sets itself up against the knowledge of God. Which thought have you let live in you unchallenged for years?",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 11,
+        "chapter": "2 Corinthians 11:1–33",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "Rome gave its highest battlefield honor to the first soldier over an enemy wall. Paul ends his own list of credentials by being lowered down a wall in a basket, running away in the dark. What would your list look like if you built it the way he built his?",
+        "reflectionQ2": "Paul opens by saying he is jealous over them with God's own kind of jealousy, which is not insecurity but the jealousy of someone who actually has a claim. Who has a claim on you that you have been treating as optional?",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 12,
+        "chapter": "2 Corinthians 12:1–21",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "The word for thorn is not a splinter. It means a stake, the kind driven into the ground, and the word for what it keeps doing to Paul means being punched. Paul asked God three times. What have you asked for three times and then quietly stopped asking about?",
+        "reflectionQ2": "God's answer was not to take it away. It was that his grace is enough and that his power finishes in weakness. What would it mean if the thing you keep asking him to remove is the place he intends to show up?",
+        "prayerPrompt": null
+      },
+      {
+        "dayNumber": 13,
+        "chapter": "2 Corinthians 13:1–14",
+        "theme": null,
+        "passageContext": null,
+        "studyNotes": [],
+        "reflection": null,
+        "reflectionQ1": "After twelve chapters of defending himself against their examination, Paul finally tells them to run the test on themselves instead. Do you actually know that Christ is in you, or have you been assuming it?",
+        "reflectionQ2": "Paul ends by saying he would rather be the weak one if it means they come out strong, and that everything he wrote was aimed at building them up. Write down one person you have been correcting, and what you would say differently if building them up were the only goal.",
         "prayerPrompt": null
       }
     ]

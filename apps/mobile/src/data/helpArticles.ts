@@ -112,7 +112,7 @@ export const HELP_SECTIONS: HelpSection[] = [
       },
       {
         q: "Where do I find new plans?",
-        a: "Tap New plan in the Groups tab (or Start a plan on Home) to browse the library by category — Men's, Women's, Marriage, Family, General, and more — or generate your own with AI.",
+        a: "Tap New plan in the Groups tab (or Start a plan on Home) to browse the library by category — Men's, Women's, Marriage, Family, Books of the Bible, and more — or generate your own with AI.",
       },
       {
         q: "What happens when I finish a plan?",
