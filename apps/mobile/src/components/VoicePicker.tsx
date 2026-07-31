@@ -65,7 +65,7 @@ export function VoicePicker({
         Tap ▶ to hear a sample, then tap a name to use it.
       </Text>
 
-      <ScrollView showsVerticalScrollIndicator={false} style={{ flexGrow: 0 }}>
+      <ScrollView showsVerticalScrollIndicator={false} style={{ flexGrow: 0, flexShrink: 1 }}>
         {TTS_VOICES.map((v) => {
           const isSel = v.id === selected;
           const isActive = active === v.id;

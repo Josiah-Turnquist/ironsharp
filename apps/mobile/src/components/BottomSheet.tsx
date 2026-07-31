@@ -44,7 +44,12 @@ export function BottomSheet({
   children: ReactNode;
   contentStyle?: StyleProp<ViewStyle>;
 }) {
-  const bg = useThemeColor("background");
+  // The sheet's own surface, NOT the page background. They are the same value in
+  // every theme except the near-black ones, where a sheet painted in the page
+  // colour is indistinguishable from the dimmed page behind it — Onyx sits at 4%
+  // lightness and the backdrop dims the page to about 2%. Giving sheets their own
+  // token means that one theme can be lifted without touching the other eleven.
+  const bg = useThemeColor("popover");
   const insets = useSafeAreaInsets();
 
   const [mounted, setMounted] = useState(visible);
@@ -84,6 +89,19 @@ export function BottomSheet({
         ? content.padding
         : 0;
 
+  // Callers write maxHeight as a percentage, but a percentage resolves against the
+  // PARENT's height — and this view's parent is sized by this very view, so the cap
+  // silently evaporates. An uncapped sheet grows past the screen and takes any
+  // scroller inside it along, which strands whatever sits at the bottom. Resolving
+  // against the window in pixels makes the cap actually bind.
+  const rawMax = content.maxHeight;
+  const maxHeight =
+    typeof rawMax === "string" && rawMax.trim().endsWith("%")
+      ? (screenH * parseFloat(rawMax)) / 100
+      : typeof rawMax === "number"
+        ? rawMax
+        : screenH * 0.9;
+
   return (
     <Modal visible transparent animationType="none" onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
@@ -100,7 +118,15 @@ export function BottomSheet({
                   marginBottom: -BLEED,
                 }}
               >
-                <View style={[content, { paddingBottom: basePad + insets.bottom }]}>
+                {/* flexShrink lets the box give way to the cap above instead of
+                    pushing past it — without it a tall sheet overflows rather
+                    than handing the overflow to the scroller inside. */}
+                <View
+                  style={[
+                    content,
+                    { maxHeight, flexShrink: 1, paddingBottom: basePad + insets.bottom },
+                  ]}
+                >
                   {children}
                 </View>
               </Pressable>

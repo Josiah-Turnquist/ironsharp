@@ -168,6 +168,7 @@ export default function EditProfile() {
           </Pressable>
         </View>
         <FlatList
+          style={{ flexShrink: 1 }}
           data={US_STATES}
           keyExtractor={(item) => item}
           renderItem={({ item }) => (

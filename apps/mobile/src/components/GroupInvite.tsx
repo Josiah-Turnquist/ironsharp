@@ -111,22 +111,39 @@ export function MemberSearch({
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<UserSearchResult[]>([]);
   const [searching, setSearching] = useState(false);
+  const [failed, setFailed] = useState(false);
   const [adding, setAdding] = useState<string | null>(null);
   const toast = useToast();
 
+  const term = query.trim();
+
+  // Deliberately NOT keyed on existingUserIds. The group refetches in the
+  // background and hands down a freshly built Set each time, which restarts the
+  // countdown below — on a group that refreshes faster than the delay, the
+  // search never fires at all. Who is already a member is a filter on what came
+  // back, so it belongs in render rather than in here.
   useEffect(() => {
-    if (query.length < 2) { setResults([]); return; }
+    if (term.length < 2) { setResults([]); setFailed(false); return; }
+    let cancelled = false;
     const t = setTimeout(async () => {
       setSearching(true);
+      setFailed(false);
       try {
-        const { users } = await ApiClient.searchUsers(query);
-        setResults(users.filter((u) => !existingUserIds.has(u.userId)));
+        const { users } = await ApiClient.searchUsers(term);
+        if (!cancelled) setResults(users);
+      } catch {
+        // Failing to an empty list reads as "nobody by that name", which sends
+        // someone hunting for a person who is right there. Say so instead.
+        if (!cancelled) { setResults([]); setFailed(true); }
       } finally {
-        setSearching(false);
+        if (!cancelled) setSearching(false);
       }
     }, 300);
-    return () => clearTimeout(t);
-  }, [query, existingUserIds]);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [term]);
+
+  const matches = results.filter((u) => !existingUserIds.has(u.userId));
+  const empty = term.length >= 2 && !searching && !failed && matches.length === 0;
 
   const handleAdd = async (userId: string) => {
     const name = results.find((u) => u.userId === userId)?.displayName ?? "them";
@@ -175,20 +192,47 @@ export function MemberSearch({
           marginBottom: 8,
         }}
       />
-      {searching && <ActivityIndicator size="small" color={accent} style={{ marginBottom: 8 }} />}
-      {results.map((user) => (
+      {/* One dropdown anchored under the field, rather than a stack of loose
+          cards — and it always says something, so a search that found nothing
+          and a search that failed never look like a dead control. */}
+      {searching || failed || empty || matches.length > 0 ? (
+      <View
+        style={{
+          borderWidth: 1,
+          borderColor: border,
+          borderRadius: 10,
+          backgroundColor: card,
+          overflow: "hidden",
+        }}
+      >
+      {searching ? (
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10, padding: 12 }}>
+          <ActivityIndicator size="small" color={accent} />
+          <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 13, color: muted }}>
+            Searching…
+          </Text>
+        </View>
+      ) : failed ? (
+        <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 13, color: muted, padding: 12 }}>
+          Couldn&apos;t search just now. Check your connection and try again.
+        </Text>
+      ) : empty ? (
+        <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 13, color: muted, padding: 12 }}>
+          No one by that name.
+        </Text>
+      ) : (
+      matches.map((user, i) => (
         <View
           key={user.userId}
           style={{
             flexDirection: "row",
             alignItems: "center",
-            backgroundColor: card,
-            borderWidth: 1,
-            borderColor: border,
-            borderRadius: 10,
             padding: 12,
-            marginBottom: 6,
             gap: 10,
+            // Hairlines between rows, never above the first — the panel's own
+            // border already draws that edge.
+            borderTopWidth: i === 0 ? 0 : 1,
+            borderTopColor: border,
           }}
         >
           <View
@@ -227,7 +271,10 @@ export function MemberSearch({
             )}
           </Pressable>
         </View>
-      ))}
+      ))
+      )}
+      </View>
+      ) : null}
     </View>
   );
 }

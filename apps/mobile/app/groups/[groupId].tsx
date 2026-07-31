@@ -818,7 +818,9 @@ export default function GroupPage() {
           </Pressable>
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false}>
+        {/* flexShrink keeps this inside the sheet's height cap — everything below
+            the fold (Add People, End/Leave) is only reachable if this scrolls. */}
+        <ScrollView style={{ flexShrink: 1 }} showsVerticalScrollIndicator={false}>
           <Text className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Group Name</Text>
           <Input value={editName} onChangeText={setEditName} style={{ marginBottom: 16 }} />
           <Button
