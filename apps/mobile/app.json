@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.ironsharp.app",
-      "buildNumber": "30",
+      "buildNumber": "31",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "IronSharp uses your photos to set your profile picture.",
         "NSCameraUsageDescription": "IronSharp uses your camera to take a profile photo.",
